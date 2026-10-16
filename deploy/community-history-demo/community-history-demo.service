@@ -1,0 +1,18 @@
+[Unit]
+Description=ATProto community retained V0 evidence demo container (read-only)
+Requires=docker.service
+After=docker.service network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/docker start -a atproto-community-demo
+ExecStop=/usr/bin/docker stop -t 15 atproto-community-demo
+Restart=always
+RestartSec=5
+TimeoutStopSec=15
+
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

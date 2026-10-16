@@ -1,0 +1,27 @@
+{
+  "profile": "scv0-disposable-public-demo/1",
+  "sourceRepository": "https://github.com/unpingable/atproto-community",
+  "sourceCommit": "6416d54cd3ab7c0643b75ab192f6050ff6e898d9",
+  "publicationRepository": "https://github.com/unpingable/atproto-community-demo",
+  "publicationCommit": "65f0d4aded424bc6c20cd0f5ed228e8849d928c8",
+  "publicationUrl": "https://unpingable.github.io/atproto-community-demo/",
+  "pagesBuildId": 1168804228,
+  "pagesBuildStatus": "built",
+  "observedAt": "2026-08-23T00:57:57Z",
+  "bundleId": "sha256:9bc2a8935f1f239fbcd311287fcf3602fa4a7f1ebfd9bcada0d413dc26455b5e",
+  "generatedFileCount": 20,
+  "hostedBodiesVerified": 20,
+  "directoryRoutesVerified": [
+    "./",
+    "added/",
+    "changed_at_source/",
+    "source_unavailable/",
+    "removed/"
+  ],
+  "liveAtprotoData": false,
+  "secretMaterialPresent": false,
+  "humanParticipants": 0,
+  "humanUsabilityClaim": false,
+  "authorityClaim": false,
+  "productionReadinessClaim": false
+}

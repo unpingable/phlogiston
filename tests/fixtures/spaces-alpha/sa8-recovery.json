@@ -1,0 +1,26 @@
+{
+  "format": "spaces-alpha-sa8-recovery-vector-v1",
+  "compatibility": {
+    "referenceCommit": "89deb9faca20e56fa2a262fe9746ed52bc1095ba",
+    "recoveryVersion": "sa8-v1",
+    "method": "sa5-path-selection+sa4-or-sa2-sa1-sa6"
+  },
+  "doctrine": "Recovery can restore observability. It cannot manufacture missing provenance.",
+  "positive": [
+    {"name": "RCV1", "known": "n", "ops": "o1CompleteBatch", "targetCar": "n1", "expected": "qualified_transition"},
+    {"name": "RCV2", "known": "n1", "ops": "o2MultiPage:first-two", "targetCar": "n2", "expected": "snapshot_only"},
+    {"name": "RCV3", "known": "n1", "ops": "compacted-or-unavailable", "targetCar": "n2", "expected": "snapshot_only"},
+    {"name": "RCV4", "known": "n1", "ops": "o2MultiPage:first-two", "targetCar": "n1", "expected": "equal_state"},
+    {"name": "RCV5", "known": "n1", "ops": "o2MultiPage:mutated-complete", "targetCar": "n2", "expected": "snapshot_only"}
+  ],
+  "hostile": [
+    "RCV-H1-older-snapshot",
+    "RCV-H2-same-revision-conflict",
+    "RCV-H3-invalid-full-snapshot",
+    "RCV-H4-source-context-substitution",
+    "RCV-H5-retry-semantic-upgrade",
+    "RCV-H6-retry-conflicting-evidence",
+    "RCV-H7-timestamp-currentness-laundering",
+    "RCV-H8-recovery-authority-relabeling"
+  ]
+}

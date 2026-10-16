@@ -1,0 +1,22 @@
+[Unit]
+Description=ATProto community authority writer
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=communityd
+Group=community-authority
+EnvironmentFile=/etc/atproto-community/communityd.env
+RuntimeDirectory=community-authority
+RuntimeDirectoryMode=0750
+ExecStart=/opt/atproto-community/.venv/bin/communityd-serve --config /etc/atproto-community/communityd.toml
+Restart=on-failure
+UMask=0077
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/communityd /run/community-authority
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

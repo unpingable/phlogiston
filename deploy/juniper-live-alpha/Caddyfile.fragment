@@ -1,0 +1,7 @@
+# Exact names only. No wildcard or on-demand TLS policy is added.
+juniper-pds.sp00ky.net,
+authority.juniper-pds.sp00ky.net,
+author.juniper-pds.sp00ky.net,
+moderator.juniper-pds.sp00ky.net {
+    reverse_proxy 127.0.0.1:3001
+}

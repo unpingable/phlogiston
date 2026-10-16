@@ -1,0 +1,22 @@
+{
+  "lexicon": 1,
+  "id": "net.sp00ky.juniper-pds.authority.juniperRemoval",
+  "defs": {
+    "main": {
+      "type": "record",
+      "key": "tid",
+      "description": "A community-actor removal of one exact admitted occurrence.",
+      "record": {
+        "type": "object",
+        "required": ["admission", "subject", "authorizationOccurrence", "reasonCategory", "createdAt"],
+        "properties": {
+          "admission": {"type": "ref", "ref": "com.atproto.repo.strongRef"},
+          "subject": {"type": "ref", "ref": "com.atproto.repo.strongRef"},
+          "authorizationOccurrence": {"type": "string", "maxLength": 71},
+          "reasonCategory": {"type": "string", "maxGraphemes": 64, "maxLength": 640},
+          "createdAt": {"type": "string", "format": "datetime"}
+        }
+      }
+    }
+  }
+}

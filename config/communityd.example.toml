@@ -1,0 +1,36 @@
+# Example communityd authority-writer configuration (offline fake adapters).
+# Never store secret values here: credential_ref is an external reference only.
+community_did = "did:web:community.invalid"
+administrator_did = "did:web:admin.invalid"
+community_pds_url = "https://pds.invalid"
+allowed_uid = 1000
+reader_adapter = "fake"
+ledger_adapter = "fake"
+writer_adapter = "fake"
+credential_provider = "fake"
+credential_ref = "fake://communityd-admin"
+request_timeout_ms = 5000
+max_retries = 2
+plc_directory_url = "https://plc.directory"
+did_cache_size = 256
+allow_loopback_public_endpoints = false
+
+# --- Real PDS adapters (V0-M7; OQ-3/A authenticated capability, OQ-4/A local
+# --- administrator).  Uncomment and adjust for a live deployment.  The
+# --- community_pds_url must be a bare https origin; loopback http is accepted
+# --- only for offline tests.  credential_provider = "env_file" requires an
+# --- env:VARNAME reference whose value is the path of a JSON file OUTSIDE
+# --- this repository containing {"identifier": ..., "app_password": ...}.
+# --- The app password grants an authenticated capability; the PDS signs and
+# --- commits, and communityd never takes key custody.
+# community_did = "did:plc:example-community"
+# administrator_did = "did:plc:example-admin"   # may equal community_did in V0
+# community_pds_url = "https://pds.example.com"
+# plc_directory_url = "https://plc.directory"
+# did_cache_size = 256
+# allow_loopback_public_endpoints = false
+# reader_adapter = "pds"
+# ledger_adapter = "pds"
+# writer_adapter = "pds"
+# credential_provider = "env_file"
+# credential_ref = "env:COMMUNITYD_CREDENTIAL_FILE"

@@ -1,0 +1,36 @@
+{
+  "format": "spaces-alpha-sa9d-a-oauth-dpop-vector-v1",
+  "oauthSpec": "https://atproto.com/specs/oauth",
+  "oauthSpecObservedDate": "2026-08-21",
+  "dpopSpec": "RFC9449",
+  "spacesProposalCommit": "54c9cf5153d668c4f4fb4438529967412e861775",
+  "doctrine": "Authentication binds a credential to a request. It does not bind that request to governance authority.",
+  "request": {
+    "method": "GET",
+    "url": "https://pds.invalid.test/xrpc/com.atproto.space.getRepo?space=at%3A%2F%2Fdid%3Aplc%3Asa9dspaceauthority%2Fspace%2Finvalid.test.communityspace%2Fforum&repo=did%3Aplc%3Asa9dfixtureuser",
+    "jti": "jti-fixture-0001",
+    "iat": 1787342400,
+    "nonceSha256": "12d8da41e69e5af8b6d460fe97d40172f339ec26b2d769a3f5d2231421a3584a"
+  },
+  "publicJwk": {
+    "kty": "EC",
+    "crv": "P-256",
+    "x": "0Slp9fsZVm42x7HIrzhe6hr_UHYTMKT4lgasxCskW94",
+    "y": "MYVSKe-CucU7miCmwG5IMLXTGW1pyznKKOIafUMVI_U"
+  },
+  "jwkThumbprint": "M0pUdR1M-9omkjW55Mrx775I7HEJwcTAW9GyZfDcLQQ",
+  "accessTokenSha256": "c5674558167919350a09c910616cfb59b2030d23a04f039d1e890050da7c13ce",
+  "ath": "xWdFWBZ5GTUKCckQYWz7WbIDDSOgTwOdHokAUNp8E84",
+  "grantReceiptId": "sha256:a9202caa8e3beb9231acef07b486fa8c84f09b436013c2478c186a96a3145df7",
+  "proofSha256": "ee3e56d0b68d6ec4c6fbaca33e41275fbdb1f4e9e900ddc431c5e75ec88eddcf",
+  "requestReceiptId": "sha256:04408f4f0babe582acdf8df78e7aa566d70571d486a42d4b5d93922334528924",
+  "secretMaterialPresent": false,
+  "positiveWitnesses": [
+    "AUTH1", "AUTH2", "AUTH3", "AUTH4", "AUTH5", "AUTH6", "AUTH7", "AUTH8", "AUTH9", "AUTH10",
+    "AUTH-E2E1", "AUTH-E2E2", "AUTH-E2E3"
+  ],
+  "hostileWitnesses": [
+    "AUTH-H1", "AUTH-H2", "AUTH-H3", "AUTH-H4", "AUTH-H5", "AUTH-H6", "AUTH-H7", "AUTH-H8", "AUTH-H9", "AUTH-H10",
+    "AUTH-H11", "AUTH-H12", "AUTH-H13", "AUTH-H14", "AUTH-H15", "AUTH-H16", "AUTH-H17", "AUTH-H18", "AUTH-H19", "AUTH-H20"
+  ]
+}

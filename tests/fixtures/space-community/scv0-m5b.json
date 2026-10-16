@@ -1,0 +1,11 @@
+{
+  "profile": "scv0-local-fixture-renderer/1",
+  "artifactFixture": "tests/fixtures/space-community/scv0-m5a.json",
+  "stateNotices": {
+    "added": "Added by this community.",
+    "changed_at_source": "Source changed after admission; the admitted presentation was not replaced.",
+    "source_unavailable": "The previously admitted source is currently unavailable.",
+    "removed": "Removed from this community projection; the author source was not mutated."
+  },
+  "secretMaterialPresent": false
+}

@@ -1,0 +1,6 @@
+{
+  "$type": "app.phlogiston.community.profile",
+  "displayName": "Homelab",
+  "description": "Tiny computers, loud fans, unnecessary VLANs.",
+  "createdAt": "2026-07-10T14:00:00Z"
+}

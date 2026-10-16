@@ -1,0 +1,28 @@
+{
+  "schema": "operator-decision-receipt-v1",
+  "receipt_id": "OQDR-OQ-99-2026-08-14-A-01",
+  "supersedes": null,
+  "decision_payload": {
+    "question_id": "OQ-99",
+    "packet_sha256": "sha256:dc43675bd807d93e188eb125c82c90a1b5b42bef45c3e9a0796bfa6d2389e5ee",
+    "operator_id": "operator-jbeck",
+    "decided_at": "2026-08-14T01:00:00Z",
+    "ruling": "select-with-notes",
+    "answer_id": "A",
+    "required_change_set_id": "OQCS-OQ-99-2026-08-14-A-01",
+    "required_change_set_sha256": "sha256:1d2436b8911239cdd4f9d4ce8f2a40dfe8447bada260b9d2e5a553365ebe0339"
+  },
+  "authentication": {
+    "payload_sha256": "sha256:69e345cb616f64070f9364c9a0a0afac6bfe10df3753f0a417b874da0a6e97fc",
+    "method": "manual_controller_channel",
+    "trust_policy_id": "manual-controller-channel-v1",
+    "trust_policy_version": 1,
+    "trust_policy_sha256": "sha256:6aeadc519ba9e05e594f3347d7d040a1e37084d4ad50785cafb44c901f417d71",
+    "channel_id": "manual-channel-1",
+    "attested_principal": "operator-jbeck",
+    "evidence_uri": "file:///evidence/OQDR-OQ-99-2026-08-14-A-01.txt",
+    "evidence_media_type": "text/plain; charset=utf-8",
+    "evidence_bytes": 50,
+    "evidence_sha256": "sha256:3038ccf287bba6e289edbed634fbc688a28f1923f424c31675422e9831d58c72"
+  }
+}

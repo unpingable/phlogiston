@@ -1,0 +1,108 @@
+{
+  "compatibility": {
+    "label": "atproto-spaces-alpha-2026-08-20",
+    "proposalCommit": "54c9cf5153d668c4f4fb4438529967412e861775",
+    "referenceCommit": "89deb9faca20e56fa2a262fe9746ed52bc1095ba",
+    "bulletinCommit": "ccca73d212167e20da56db4691ba7c94e9ad5ccc"
+  },
+  "space": {
+    "authorityDid": "did:web:spaces.test.invalid",
+    "spaceType": "invalid.test.communityspace",
+    "skey": "alpha-board",
+    "spaceHost": "https://space-host.test.invalid"
+  },
+  "access": {
+    "issuerDid": "did:web:spaces.test.invalid",
+    "userDid": "did:plc:fixtureaccessuser",
+    "clientId": "https://observer.test.invalid/client-metadata.json",
+    "issuedAt": "2026-08-20T13:55:00Z",
+    "expiresAt": "2026-08-20T15:55:00Z",
+    "verifiedAt": "2026-08-20T14:00:00Z"
+  },
+  "repo": {
+    "authorDid": "did:plc:fixtureauthor",
+    "repoHost": "https://repo-host.test.invalid",
+    "bindingMethod": "did-document-atproto-pds",
+    "bindingEvidence": "fixture:spaces-alpha:author-did-document"
+  },
+  "states": {
+    "initial": {
+      "rev": "3mtaaaabbbbbc",
+      "hash": "1111111111111111111111111111111111111111111111111111111111111111",
+      "discoveredAt": "2026-08-20T14:00:01Z",
+      "acquiredAt": "2026-08-20T14:00:02Z",
+      "records": [
+        {
+          "collection": "invalid.test.spacepost",
+          "rkey": "first",
+          "cid": "bafyreicuy2luqzpdzwcidb27j72njmsobbyzic5m54kccc33svu7uumfqa",
+          "value": {
+            "$type": "invalid.test.spacepost",
+            "text": "first fixture record",
+            "createdAt": "2026-08-20T14:00:00Z"
+          }
+        }
+      ]
+    },
+    "advanced": {
+      "rev": "3mtaaaabbbbbe",
+      "hash": "2222222222222222222222222222222222222222222222222222222222222222",
+      "discoveredAt": "2026-08-20T14:05:01Z",
+      "acquiredAt": "2026-08-20T14:05:02Z",
+      "records": [
+        {
+          "collection": "invalid.test.spacepost",
+          "rkey": "first",
+          "cid": "bafyreicuy2luqzpdzwcidb27j72njmsobbyzic5m54kccc33svu7uumfqa",
+          "value": {
+            "$type": "invalid.test.spacepost",
+            "text": "first fixture record",
+            "createdAt": "2026-08-20T14:00:00Z"
+          }
+        },
+        {
+          "collection": "invalid.test.spacepost",
+          "rkey": "advanced",
+          "cid": "bafyreifw2eaym6gntg4lxulufjneqeggsr6uoqnxhlxxm6eyg7i67dfjfy",
+          "value": {
+            "$type": "invalid.test.spacepost",
+            "text": "advanced fixture record",
+            "createdAt": "2026-08-20T14:05:00Z"
+          }
+        }
+      ]
+    }
+  },
+  "notification": {
+    "rev": "3mtaaaabbbbbe",
+    "hash": "2222222222222222222222222222222222222222222222222222222222222222",
+    "receivedAt": "2026-08-20T14:05:01Z"
+  },
+  "verification": {
+    "mode": "fixture",
+    "method": "fixture-spaces-repo-boundary",
+    "version": "1",
+    "authorKeyRef": "fixture:did:plc:fixtureauthor#atproto",
+    "claims": [
+      "author_signature_context",
+      "commit_mac",
+      "lthash_record_set",
+      "record_cids",
+      "space_context"
+    ]
+  },
+  "hostile": {
+    "writerSetSubstitutionHash": "3333333333333333333333333333333333333333333333333333333333333333",
+    "wrongSpace": {
+      "authorityDid": "did:web:other-space.test.invalid",
+      "spaceType": "invalid.test.communityspace",
+      "skey": "alpha-board"
+    },
+    "wrongAuthorDid": "did:plc:substituteauthor",
+    "substituteRepoHost": "https://substitute-host.test.invalid",
+    "spaceTypeDeclarations": {
+      "t0": ["invalid.test.spacepost"],
+      "t1": ["invalid.test.spacepost", "invalid.test.spaceeffect"]
+    }
+  }
+}

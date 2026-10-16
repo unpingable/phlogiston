@@ -1,0 +1,146 @@
+{
+  "format": "spaces-alpha-sa9e-hosted-read-only-v1",
+  "observedAt": "2026-08-22T02:38:44Z",
+  "upstream": {
+    "proposalCommit": "54c9cf5153d668c4f4fb4438529967412e861775",
+    "referenceCommit": "89deb9faca20e56fa2a262fe9746ed52bc1095ba",
+    "bulletinCommit": "ccca73d212167e20da56db4691ba7c94e9ad5ccc",
+    "bulletinOAuthPackages": "0.0.0-spaces-alpha-20260818163953"
+  },
+  "identity": {
+    "did": "did:plc:ccqpqqfk4ihtbimtbomhnjle",
+    "space": "at://did:plc:ccqpqqfk4ihtbimtbomhnjle/space/my.bulletin.board/self",
+    "repo": "did:plc:ccqpqqfk4ihtbimtbomhnjle",
+    "repoHost": "https://spaces-alpha.host.bsky.network"
+  },
+  "plcAudit": [
+    {
+      "did": "did:plc:ccqpqqfk4ihtbimtbomhnjle",
+      "operation": {
+        "sig": "2CeT4k_6LECpxX3ak_9rHPWNyzb0e6jLxeIvNhdTbpsRTL7Wuvg_wqohCQgzTqyN5lJOwSWjvLmzsgmGt4Znwg",
+        "prev": null,
+        "type": "plc_operation",
+        "services": {
+          "atproto_pds": {
+            "type": "AtprotoPersonalDataServer",
+            "endpoint": "https://spaces-alpha.host.bsky.network"
+          }
+        },
+        "alsoKnownAs": [
+          "at://neutralautomation.spaces-alpha.bsky.network"
+        ],
+        "rotationKeys": [
+          "did:key:zQ3shhCGUqDKjStzuDxPkTxN6ujddP4RkEKJJouJGRRkaLGbg",
+          "did:key:zQ3shkPYmhiPxvtFkTf2eTwixHame7YFmbquPfbMvP8mJfPwQ"
+        ],
+        "verificationMethods": {
+          "atproto": "did:key:zQ3shWtHTXeQvseBsST2b5QSCuBKteXPcy3WdkfSxuh3tYzso"
+        }
+      },
+      "cid": "bafyreiaqud4ebkxcb4ykdeyltb3kkzfnfugytp5kokdlmjumowwmu4qraa",
+      "nullified": false,
+      "createdAt": "2026-08-21T23:31:26.558Z"
+    }
+  ],
+  "identityQualification": {
+    "qualifiedAt": "2026-08-22T02:38:43Z",
+    "plcReceiptId": "sha256:ece7a63681e329c3891c17cfc06d96b853a8622e0cdaa6e1417df7769af72076",
+    "documentSha256": "b1a0b435aeef0d208bea4d74804ac95337802f4ee37a505950cd075d51a2f6c0",
+    "repoHostBindingReceiptId": "sha256:7ed1ef9119bfa5372a4975cd27434a3dd52012bdacbf02a415a7bb11b00decd0",
+    "accountKeyBindingReceiptId": "sha256:534faa66bde81635bc10ece2d3855f960338e008ae43057c126ca909c65076a0",
+    "spaceHostBindingReceiptId": "sha256:47d69673d4eb7149e79da498218f836a13ad6d63a02e0d8214143f0e1d84b9dd",
+    "spaceKeyBindingReceiptId": "sha256:ba0164637f7fa0f979b94d66bbd0ab3d0cecd1cc2a9538a3e4986abd017994be",
+    "accountKeyCurve": "k256"
+  },
+  "authenticationQualification": {
+    "oauthReceiptId": "sha256:6cd96042aa086fe0e2c33694cdd0ee031d96435941a4368dd5f2cca6fa97d263",
+    "oauthDpopCurve": "P-256",
+    "oauthDpopThumbprint": "NxYIUbRIdeBNvLe_kb0JF1NhcSP9IgXsXRM8VGxCRns",
+    "grantedScope": "space:my.bulletin.board?authority=*&skey=self&collection=my.bulletin.position&collection=my.bulletin.post&collection=my.bulletin.removal&manage=create&manage=update&manage=delete atproto blob?accept=image/jpeg&accept=image/png&accept=image/webp",
+    "delegationReceiptId": "sha256:6a4ff8531bc44c6f6741f56347606b85fe708e0cb03fcfd43e0cc312bdcdc6a5",
+    "delegationRequestBindingReceiptId": "sha256:ccfea48e20c7c211293396c4cd71f54eb2bd179039458e6b302422d987257ed4",
+    "delegationAlgorithm": "ES256K",
+    "spaceAccessReceiptId": "sha256:dbe9c664ee82edc3863e7627e68475367854419076ea3be1344e7c8ab7811b7b",
+    "spaceAccessAlgorithm": "ES256K",
+    "spaceAccessSemantics": "whole_space_read_sync",
+    "liveHostAcceptedBoundedRequests": true,
+    "communityStanding": false,
+    "governanceAuthority": false
+  },
+  "oauthCompatibility": {
+    "hostedSupportedAlgorithms": [
+      "RS256",
+      "RS384",
+      "RS512",
+      "PS256",
+      "PS384",
+      "PS512",
+      "ES256",
+      "ES256K",
+      "ES384",
+      "ES512"
+    ],
+    "pinnedBulletinDefaultObservedCurve": "secp256k1",
+    "sa9dAQualifiedCurve": "P-256",
+    "resolution": "reference client runtime constrained to hosted-supported ES256; SA9d-a unchanged"
+  },
+  "getRepo": {
+    "bodyFile": "sa9e-hosted-alpha-get-repo.car.b64",
+    "bodyEncoding": "base64",
+    "bodyLength": 609,
+    "bodySha256": "483c4bf1f9eb5da79f768260452ab269fb9c857db607995d313fc389ff15cb48",
+    "requestedUrl": "https://spaces-alpha.host.bsky.network/xrpc/com.atproto.space.getRepo?space=at%3A%2F%2Fdid%3Aplc%3Accqpqqfk4ihtbimtbomhnjle%2Fspace%2Fmy.bulletin.board%2Fself&repo=did%3Aplc%3Accqpqqfk4ihtbimtbomhnjle",
+    "status": 200,
+    "contentType": "application/vnd.ipld.car",
+    "automaticRetries": 0,
+    "redirectsFollowed": 0,
+    "acquisitionReceiptId": "sha256:3646da52c62e28dd673386c77d40248df3376cda6a780a09174d3dd83be02329",
+    "requestBindingReceiptId": "sha256:b7f9f6c6c317df5896e032224d28b12cca6ed1b757742f96a6ad06846f061c8a",
+    "orderedRoots": [
+      "bafyreicibp6g4bdksvyp76tpvrdyev2dmtwknad5scv5gs5lpbz5lno2va",
+      "bafyreib7vybqqouvnbp6jbrqnmicndblx5w3vfqz6wrdz6azttd3nebeum"
+    ],
+    "orderedBlocks": [
+      "bafyreicibp6g4bdksvyp76tpvrdyev2dmtwknad5scv5gs5lpbz5lno2va",
+      "bafyreib7vybqqouvnbp6jbrqnmicndblx5w3vfqz6wrdz6azttd3nebeum",
+      "bafyreiciv75rleuo6rww5jbyxygbkfy3zs4h5zivho345qu6b5iv7owa3e"
+    ],
+    "repoRev": "3mtn3fop2xe25",
+    "stateHash": "1a9979c238e19924f4df2a7f11af6ffe25de6f78adcc3330f0dca3499c4b101a",
+    "recordCount": 1,
+    "recordUri": "at://did:plc:ccqpqqfk4ihtbimtbomhnjle/space/my.bulletin.board/self/did:plc:ccqpqqfk4ihtbimtbomhnjle/my.bulletin.post/3mtn3fooyyu25",
+    "recordCid": "bafyreiciv75rleuo6rww5jbyxygbkfy3zs4h5zivho345qu6b5iv7owa3e",
+    "sa1ReceiptId": "sha256:4b18bbeb00223397b683e066db37646e28e54f23f1b1016e87f2cbba68b4bf7e",
+    "sa10dReceiptId": "sha256:5fdb283bce1d327b0599f4d9018d3b4f19b3d47f4bcaf092877a6024e874b259",
+    "endpointBindingEstablished": true,
+    "admissionCount": 0
+  },
+  "listRepoOps": {
+    "bodyFile": "sa9e-hosted-alpha-list-repo-ops.json.b64",
+    "bodyEncoding": "base64",
+    "bodyLength": 347,
+    "bodySha256": "f3130a273d6c651f074aab8057396201815fda2c5bc060e556ea78c76e566eae",
+    "requestedUrl": "https://spaces-alpha.host.bsky.network/xrpc/com.atproto.space.listRepoOps?space=at%3A%2F%2Fdid%3Aplc%3Accqpqqfk4ihtbimtbomhnjle%2Fspace%2Fmy.bulletin.board%2Fself&repo=did%3Aplc%3Accqpqqfk4ihtbimtbomhnjle&since=3mtn3fop2xe25&limit=100&excludeValues=true",
+    "status": 200,
+    "acquisitionReceiptId": "sha256:0afcaf8d3ea42f03c4ac71d067398b852edd90dd01cb4f3f325dcbf0d3acf44e",
+    "requestBindingReceiptId": "sha256:a1d148c2dc2b827944c5ba60e3a0288be4e6d3dddbc64ecca2459cdea4eedb10",
+    "sa5Status": "empty_terminal_page",
+    "operationCount": 0,
+    "paginationChainClosed": true,
+    "completeHistory": false,
+    "transitionQualified": false
+  },
+  "claims": {
+    "exactHostedBytesAcquired": true,
+    "identityAndServiceReceiptsComposed": true,
+    "oauthDelegationAndSpaceAccessQualified": true,
+    "hostedGetRepoQualifiedBySa10d": true,
+    "hostedListRepoOpsQualifiedBySa5": true,
+    "artifactCurrentForever": false,
+    "completeHistory": false,
+    "communityStanding": false,
+    "governanceAuthority": false,
+    "effectAuthorized": false
+  },
+  "secretMaterialPresent": false
+}

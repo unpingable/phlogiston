@@ -1,0 +1,25 @@
+{
+  "lexicon": 1,
+  "id": "app.phlogiston.community.replyAction",
+  "defs": {
+    "main": {
+      "type": "record",
+      "key": "any",
+      "description": "An append-only remove or restore action in a logical reply moderation chain.",
+      "record": {
+        "type": "object",
+        "required": ["action", "admission", "subject", "moderationKey", "actor", "createdAt"],
+        "properties": {
+          "action": {"type": "string", "knownValues": ["remove", "restore"]},
+          "admission": {"type": "ref", "ref": "com.atproto.repo.strongRef"},
+          "subject": {"type": "ref", "ref": "com.atproto.repo.strongRef"},
+          "moderationKey": {"type": "string", "minLength": 71, "maxLength": 71},
+          "previousAction": {"type": "ref", "ref": "com.atproto.repo.strongRef"},
+          "actor": {"type": "string", "format": "did"},
+          "reason": {"type": "string", "maxGraphemes": 300, "maxLength": 3000},
+          "createdAt": {"type": "string", "format": "datetime"}
+        }
+      }
+    }
+  }
+}

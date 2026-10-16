@@ -1,0 +1,23 @@
+{
+  "lexicon": 1,
+  "id": "app.phlogiston.community.replyAdmission",
+  "defs": {
+    "main": {
+      "type": "record",
+      "key": "any",
+      "description": "A community actor's automatic acceptance of one exact author reply opt-in.",
+      "record": {
+        "type": "object",
+        "required": ["submission", "subject", "discussion", "policy", "actor", "createdAt"],
+        "properties": {
+          "submission": {"type": "ref", "ref": "com.atproto.repo.strongRef"},
+          "subject": {"type": "ref", "ref": "com.atproto.repo.strongRef"},
+          "discussion": {"type": "ref", "ref": "com.atproto.repo.strongRef"},
+          "policy": {"type": "ref", "ref": "com.atproto.repo.strongRef"},
+          "actor": {"type": "string", "format": "did"},
+          "createdAt": {"type": "string", "format": "datetime"}
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,6 @@
+community_did = "did:plc:exampleparticipantabcdef"
+observer_origin = "http://127.0.0.1:8080"
+authority_socket = "/run/community-authority/communityd.sock"
+state_path = "/var/lib/community-policy/operations.sqlite3"
+poll_interval_seconds = 5.0
+request_timeout_seconds = 10.0

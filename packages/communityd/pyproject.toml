@@ -1,0 +1,42 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "communityd"
+version = "0.1.0"
+license = "MIT OR Apache-2.0"
+description = "Isolated authority-bearing writer contracts for ATProto communities."
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "community-model==0.1.0",
+    "community-space-model==0.1.0",
+    "community-space-wire==0.1.0",
+]
+
+[project.scripts]
+communityd = "communityd.cli:main"
+communityd-serve = "communityd.serve_cli:main"
+communityd-spaces-alpha = "communityd.spaces_alpha_cli:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+include-package-data = false
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["communityd", "communityd.*"]
+namespaces = false
+
+[tool.setuptools.package-data]
+communityd = ["py.typed"]
+
+[tool.pytest.ini_options]
+addopts = ["--strict-config", "--strict-markers", "-ra"]
+testpaths = ["tests"]
+pythonpath = [
+    "src",
+    "../community-model/src",
+    "../community-space-model/src",
+    "../community-space-wire/src",
+]

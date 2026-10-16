@@ -1,0 +1,53 @@
+{
+  "schema": "gstrict-v1",
+  "id": "required-change-set",
+  "version": "1",
+  "root": {
+    "type": "object",
+    "fields": {
+      "schema": {"type": "string", "enum": ["required-change-set-v1"]},
+      "change_set_id": {"type": "string", "format": "id"},
+      "question_id": {"type": "string", "format": "id", "pattern": "^OQ-\\d+$"},
+      "answer_id": {"type": "string", "format": "id"},
+      "packet_id": {"type": "string", "format": "id"},
+      "receipt_id": {"type": "string", "format": "id"},
+      "targets": {
+        "type": "array",
+        "min_items": 1,
+        "items": {
+          "type": "object",
+          "fields": {
+            "path": {"type": "string", "format": "path"},
+            "base_sha256": {"type": "string", "format": "digest"},
+            "operations": {
+              "type": "array",
+              "min_items": 1,
+              "items": {
+                "type": "object",
+                "fields": {
+                  "op": {"type": "string", "enum": ["unified_diff"]},
+                  "uri": {"type": "string", "format": "uri"},
+                  "media_type": {"type": "string", "min_length": 1},
+                  "bytes": {"type": "integer", "minimum": 0},
+                  "sha256": {"type": "string", "format": "digest"}
+                },
+                "required": ["op", "uri", "media_type", "bytes", "sha256"]
+              }
+            },
+            "result_sha256": {"type": "string", "format": "digest"}
+          },
+          "required": ["path", "base_sha256", "operations", "result_sha256"]
+        }
+      }
+    },
+    "required": [
+      "schema",
+      "change_set_id",
+      "question_id",
+      "answer_id",
+      "packet_id",
+      "receipt_id",
+      "targets"
+    ]
+  }
+}

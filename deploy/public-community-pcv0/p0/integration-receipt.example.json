@@ -1,0 +1,93 @@
+{
+  "schema": "phlogiston-p0-receipt-v1",
+  "campaignId": "P0-REPLACE-WITH-DATE-01",
+  "status": "pending",
+  "completedAt": null,
+  "communityDid": "did:plc:yrdhg6whfezek67fchtrmqgu",
+  "schemaAuthorityDid": "did:plc:replacewithschemaauthority",
+  "participants": [
+    {
+      "role": "moderator",
+      "did": "did:plc:yrdhg6whfezek67fchtrmqgu",
+      "pdsOrigin": "https://phlogiston.social"
+    },
+    {
+      "role": "participant",
+      "did": "did:plc:exampleparticipantabcdef",
+      "pdsOrigin": "https://phellinus.us-west.host.bsky.network"
+    }
+  ],
+  "serviceVersions": {},
+  "checks": [
+    {
+      "id": "publication",
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "bluesky-oauth",
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "authorized-submit-write",
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "unknown-did-actual-stream",
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "bounded-fair-intake",
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "admit-decline-render",
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "identity-custody-scopes",
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "duplicate-and-uncertain-writes",
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "observer-recovery",
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "pause-readonly-and-removal",
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "notifier-absent",
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "host-loss-and-rollback",
+      "status": "pending",
+      "evidence": []
+    }
+  ],
+  "publicRecords": [],
+  "humanDogfood": {
+    "status": "BLOCKED_MISSING_PARTICIPANTS",
+    "receipt": null
+  },
+  "nonClaims": [
+    "P0 implementation approval does not authorize deployment or publication.",
+    "Operator-controlled accounts do not establish recruited human usability or demand.",
+    "Juche/local fixture evidence never establishes ordinary Bluesky-hosted compatibility."
+  ]
+}

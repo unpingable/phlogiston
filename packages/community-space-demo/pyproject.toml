@@ -1,0 +1,47 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "community-space-demo"
+version = "0.1.0"
+license = "MIT OR Apache-2.0"
+description = "Deterministic static exporter for the synthetic SCV0 public demo."
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "community-space-artifact==0.1.0",
+    "community-space-comprehension==0.1.0",
+    "community-space-feed==0.1.0",
+    "community-space-prototype==0.1.0",
+]
+
+[project.scripts]
+build-scv0-demo = "community_space_demo.__main__:main"
+build-scv0-showcase = "community_space_demo.showcase_cli:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+include-package-data = false
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["community_space_demo", "community_space_demo.*"]
+namespaces = false
+
+[tool.setuptools.package-data]
+community_space_demo = ["py.typed", "assets/*.css"]
+
+[tool.pytest.ini_options]
+addopts = ["--strict-config", "--strict-markers", "-ra"]
+testpaths = ["tests"]
+pythonpath = [
+    "src",
+    "../community-model/src",
+    "../community-space-model/src",
+    "../community-space-projection/src",
+    "../community-space-artifact/src",
+    "../community-space-renderer/src",
+    "../community-space-feed/src",
+    "../community-space-prototype/src",
+    "../community-space-comprehension/src",
+]

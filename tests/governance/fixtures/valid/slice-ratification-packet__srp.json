@@ -1,0 +1,37 @@
+{
+  "schema": "slice-ratification-packet-v1",
+  "packet_id": "SRP-S19-2026-08-14-01",
+  "slice_id": "S19",
+  "prepared_at": "2026-08-14T03:00:00Z",
+  "preparer": "agent-prepared draft",
+  "base_commit": "317cd78b2c673632691ba40e69649a6e72c9a858",
+  "forcing_case": {
+    "predicate": "S19 is forced when its entry evidence exists.",
+    "evidence": [
+      {
+        "role": "forcing",
+        "uri": "file:///evidence/s19-forcing",
+        "media_type": "text/plain; charset=utf-8",
+        "bytes": 16,
+        "sha256": "sha256:dcbabdd91c3ba4f9d287d960eca0b9ebf747562d82edb9c37daf61d744169be2"
+      }
+    ]
+  },
+  "decision_receipt_sha256s": [
+    "sha256:16ca55950b73f26a98b173973b4d6f7357eee8abcbfd374b4fc8d11ee504a388"
+  ],
+  "amendments": [
+    {
+      "path": "BUILD.md",
+      "change_set_id": "SRCS-S19-2026-08-14-01",
+      "base_sha256": "sha256:a5a70777aa88d208be1f5babf95dd6683b74afb6270093a547047b899a88b853",
+      "result_sha256": "sha256:02796ff9a0227837731562458491525b7f6bea80c8b8efbbf08c7464f76ee9b6"
+    },
+    {
+      "path": "ROADMAP.md",
+      "change_set_id": "SRCS-S19-2026-08-14-01",
+      "base_sha256": "sha256:a5b366e343800f9d0ea9f29473a0effe5384f6e11f7c4551fe8d3a070eaa6c5d",
+      "result_sha256": "sha256:af92dad65d5f49b6c1ccd2a3511b93599f33e84928e64ee36b2450a08b8438d4"
+    }
+  ]
+}

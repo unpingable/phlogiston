@@ -1,0 +1,27 @@
+{
+  "schema": "operator-decision-receipt-v1",
+  "receipt_id": "OQDR-OQ-99-2026-08-14-R-01",
+  "supersedes": null,
+  "decision_payload": {
+    "question_id": "OQ-99",
+    "packet_sha256": "sha256:dc43675bd807d93e188eb125c82c90a1b5b42bef45c3e9a0796bfa6d2389e5ee",
+    "operator_id": "operator-jbeck",
+    "decided_at": "2026-08-14T01:15:00Z",
+    "ruling": "reject_packet",
+    "reason_class": "insufficient_evidence",
+    "replacement_packet": "required"
+  },
+  "authentication": {
+    "payload_sha256": "sha256:ee8e1e9faf12859cdfbc2e5c9579477401c588aee025a2234c47b78d713f4306",
+    "method": "manual_controller_channel",
+    "trust_policy_id": "manual-controller-channel-v1",
+    "trust_policy_version": 1,
+    "trust_policy_sha256": "sha256:6aeadc519ba9e05e594f3347d7d040a1e37084d4ad50785cafb44c901f417d71",
+    "channel_id": "manual-channel-1",
+    "attested_principal": "operator-jbeck",
+    "evidence_uri": "file:///evidence/OQDR-OQ-99-2026-08-14-R-01.txt",
+    "evidence_media_type": "text/plain; charset=utf-8",
+    "evidence_bytes": 50,
+    "evidence_sha256": "sha256:416dec188c0665846917fe22be2cd529c42d541c5cc4c025414f4df3db68b430"
+  }
+}

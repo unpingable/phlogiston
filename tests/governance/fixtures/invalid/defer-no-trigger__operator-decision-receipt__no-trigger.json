@@ -1,0 +1,34 @@
+{
+  "schema": "operator-decision-receipt-v1",
+  "receipt_id": "tmp",
+  "supersedes": null,
+  "decision_payload": {
+    "question_id": "OQ-99",
+    "packet_sha256": "sha256:dc43675bd807d93e188eb125c82c90a1b5b42bef45c3e9a0796bfa6d2389e5ee",
+    "operator_id": "operator-jbeck",
+    "decided_at": "2026-08-14T01:10:00Z",
+    "ruling": "defer",
+    "requested_evidence": [
+      {
+        "role": "requested",
+        "uri": "file:///evidence/more-evidence",
+        "media_type": "text/plain; charset=utf-8",
+        "bytes": 20,
+        "sha256": "sha256:1ae712eb0e9f568f780e9342dd51ee8dc3036a5b339fda2d5ce47ab807c57dcc"
+      }
+    ]
+  },
+  "authentication": {
+    "payload_sha256": "sha256:abd19f3f8ba2b0ab2e75773d14029b7bff208dc9f2e688c265a1436dca5fc831",
+    "method": "manual_controller_channel",
+    "trust_policy_id": "manual-controller-channel-v1",
+    "trust_policy_version": 1,
+    "trust_policy_sha256": "sha256:6aeadc519ba9e05e594f3347d7d040a1e37084d4ad50785cafb44c901f417d71",
+    "channel_id": "manual-channel-1",
+    "attested_principal": "operator-jbeck",
+    "evidence_uri": "file:///evidence/tmp.txt",
+    "evidence_media_type": "text/plain; charset=utf-8",
+    "evidence_bytes": 27,
+    "evidence_sha256": "sha256:c45932884528fa16b30c8ba6be9bc10a2ffc0681f9485b4dc5d18b87a3a36062"
+  }
+}

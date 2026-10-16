@@ -1,0 +1,76 @@
+{
+  "format": "spaces-alpha-sa9e-local-pds-v1",
+  "upstream": {
+    "repository": "bluesky-social/atproto",
+    "commit": "89deb9faca20e56fa2a262fe9746ed52bc1095ba",
+    "package": "@atproto/space",
+    "packageVersion": "0.0.1"
+  },
+  "acquisition": {
+    "method": "GET",
+    "endpoint": "com.atproto.space.getRepo",
+    "requestedUrl": "http://localhost:45401/xrpc/com.atproto.space.getRepo?space=at%3A%2F%2Fdid%3Aplc%3Akol4ljbu2336zmxh556ukihg%2Fspace%2Fcom.example.group%2Fsa9e-local-read-only&repo=did%3Aplc%3A36vlkmkg2szekuspsmcruwsw",
+    "status": 200,
+    "contentType": "application/vnd.ipld.car",
+    "bodyLength": 806,
+    "bodySha256": "ac8b3a16b1a3d5178d1b75515a3bd8255fa5892d6ae8e780d3d3bcc66ca5f8a3",
+    "transport": "reference-local-http-pds",
+    "authenticated": true,
+    "credentialsPersisted": false
+  },
+  "space": "at://did:plc:kol4ljbu2336zmxh556ukihg/space/com.example.group/sa9e-local-read-only",
+  "authorityDid": "did:plc:kol4ljbu2336zmxh556ukihg",
+  "authorDid": "did:plc:36vlkmkg2szekuspsmcruwsw",
+  "authorDidKey": "did:key:zQ3shZwv5ugeHyEC948YUWutjjGyGxrczN9PWMZEgrmyagxXs",
+  "authorPublicKeyB64": "ArpFiOxdZ8/fuSptXGar7RnUqnEEQ+Vu4WEAvvL0np5i",
+  "signatureAlgorithm": "ES256K",
+  "repoState": {
+    "rev": "3mtmnywimi22h",
+    "setHashB64": "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",
+    "recordCount": 2,
+    "records": [
+      {
+        "collection": "com.example.spaceNote",
+        "rkey": "second",
+        "cid": "bafyreih4dtp3lxidbpmg52qizq7oaavopklh63omvsu7ltpzkw25agzcqe"
+      },
+      {
+        "collection": "com.example.spaceRecord",
+        "rkey": "first",
+        "cid": "bafyreiccznn5ejgltkm35uiwd443ddj43gv42jafc5qrxg5ytia4gvtfpa"
+      }
+    ]
+  },
+  "localQualification": {
+    "sourceVectorIdentifier": "reference:pds:sa9e-local",
+    "verifiedAt": "2026-08-21T18:05:00Z",
+    "sourceContext": {
+      "repoHost": "https://reference-local-pds.invalid",
+      "authorKeyRef": "did:key:zQ3shZwv5ugeHyEC948YUWutjjGyGxrczN9PWMZEgrmyagxXs",
+      "authorKeyBindingMethod": "pinned-reference-local-pds-public-key",
+      "evidenceRef": "reference:pds:sa9e-local"
+    },
+    "orderedRoots": [
+      "bafyreiaipujf6ovw2aqwdakkbwvjb2hsveq3znzkpkm3cghdlaxyybzzsm",
+      "bafyreiaq2yjwjtrk4sdw6lbsr5nenqdh3zec5hrv3ks5hyjzccx2nvmupu"
+    ],
+    "orderedBlocks": [
+      "bafyreiaipujf6ovw2aqwdakkbwvjb2hsveq3znzkpkm3cghdlaxyybzzsm",
+      "bafyreiaq2yjwjtrk4sdw6lbsr5nenqdh3zec5hrv3ks5hyjzccx2nvmupu",
+      "bafyreih4dtp3lxidbpmg52qizq7oaavopklh63omvsu7ltpzkw25agzcqe",
+      "bafyreiccznn5ejgltkm35uiwd443ddj43gv42jafc5qrxg5ytia4gvtfpa"
+    ],
+    "receiptIds": [
+      "sha256:af3782c9f06ea99c928f8b74005c4ab94195296d819ed9b786a5924f8f409be2",
+      "sha256:3acdeec65604cc9d4d0d19b633bd0cc356b0ceaa286f8609e8a6be6145620d12"
+    ],
+    "networkSourceIdentityQualified": false,
+    "governanceAuthority": false
+  },
+  "claims": {
+    "referenceCarVerified": true,
+    "governanceAuthority": false,
+    "completeHistory": false,
+    "currentForever": false
+  }
+}

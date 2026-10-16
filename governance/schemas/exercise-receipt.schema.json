@@ -1,0 +1,88 @@
+{
+  "schema": "gstrict-v1",
+  "id": "exercise-receipt",
+  "version": "1",
+  "root": {
+    "type": "object",
+    "fields": {
+      "schema": {"type": "string", "enum": ["exercise-receipt-v1"]},
+      "receipt_id": {"type": "string", "format": "id"},
+      "operation_id": {
+        "type": "string",
+        "enum": [
+          "V0-X6-READ-SMOKE",
+          "V0-X7-WRITE-SMOKE",
+          "V0-X8-HUMAN-TRIAL"
+        ]
+      },
+      "controller_entry_packet_sha256": {"type": "string", "format": "digest"},
+      "harness_sha256": {"type": "string", "format": "digest"},
+      "started_at": {"type": "string", "format": "timestamp"},
+      "ended_at": {"type": "string", "format": "timestamp"},
+      "targets_contacted": {
+        "type": "array",
+        "unique_items": true,
+        "items": {"type": "string", "min_length": 1}
+      },
+      "counters": {
+        "type": "object",
+        "fields": {
+          "requests": {"type": "integer", "minimum": 0},
+          "events": {"type": "integer", "minimum": 0},
+          "proof_fetches": {"type": "integer", "minimum": 0},
+          "bytes": {"type": "integer", "minimum": 0},
+          "writes": {"type": "integer", "minimum": 0},
+          "retries": {"type": "integer", "minimum": 0}
+        },
+        "required": [
+          "requests",
+          "events",
+          "proof_fetches",
+          "bytes",
+          "writes",
+          "retries"
+        ]
+      },
+      "stop_rule": {"type": "string", "min_length": 1},
+      "artifacts": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "fields": {
+            "role": {"type": "string", "min_length": 1},
+            "uri": {"type": "string", "format": "uri"},
+            "media_type": {"type": "string", "min_length": 1},
+            "bytes": {"type": "integer", "minimum": 0},
+            "sha256": {"type": "string", "format": "digest"}
+          },
+          "required": ["role", "uri", "media_type", "bytes", "sha256"]
+        }
+      },
+      "outcome": {
+        "type": "string",
+        "enum": [
+          "PASS",
+          "CHECK_FAILED",
+          "ENVIRONMENT_BLOCKED",
+          "UNAUTHORIZED",
+          "CONTRACT_INVALID"
+        ]
+      },
+      "notes": {"type": "string"}
+    },
+    "required": [
+      "schema",
+      "receipt_id",
+      "operation_id",
+      "controller_entry_packet_sha256",
+      "harness_sha256",
+      "started_at",
+      "ended_at",
+      "targets_contacted",
+      "counters",
+      "stop_rule",
+      "artifacts",
+      "outcome"
+    ]
+  }
+}

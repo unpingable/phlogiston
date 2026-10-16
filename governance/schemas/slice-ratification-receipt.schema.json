@@ -1,0 +1,69 @@
+{
+  "schema": "gstrict-v1",
+  "id": "slice-ratification-receipt",
+  "version": "1",
+  "root": {
+    "type": "object",
+    "fields": {
+      "schema": {"type": "string", "enum": ["slice-ratification-receipt-v1"]},
+      "receipt_id": {"type": "string", "format": "id"},
+      "ratification_payload": {
+        "type": "object",
+        "fields": {
+          "slice_id": {"type": "string", "format": "id", "pattern": "^S\\d+$"},
+          "packet_sha256": {"type": "string", "format": "digest"},
+          "change_set_sha256": {"type": "string", "format": "digest"},
+          "decision_receipt_sha256s": {
+            "type": "array",
+            "items": {"type": "string", "format": "digest"},
+            "unique_items": true
+          },
+          "governance_commit": {"type": "string", "format": "commit"},
+          "governance_tree": {"type": "string", "format": "commit"},
+          "operator_id": {"type": "string", "format": "id"},
+          "decided_at": {"type": "string", "format": "timestamp"}
+        },
+        "required": [
+          "slice_id",
+          "packet_sha256",
+          "change_set_sha256",
+          "decision_receipt_sha256s",
+          "governance_commit",
+          "governance_tree",
+          "operator_id",
+          "decided_at"
+        ]
+      },
+      "authentication": {
+        "type": "object",
+        "fields": {
+          "payload_sha256": {"type": "string", "format": "digest"},
+          "method": {"type": "string", "format": "id"},
+          "trust_policy_id": {"type": "string", "format": "id"},
+          "trust_policy_version": {"type": "integer", "minimum": 1},
+          "trust_policy_sha256": {"type": "string", "format": "digest"},
+          "channel_id": {"type": "string", "format": "id"},
+          "attested_principal": {"type": "string", "format": "id"},
+          "evidence_uri": {"type": "string", "format": "uri"},
+          "evidence_media_type": {"type": "string", "min_length": 1},
+          "evidence_bytes": {"type": "integer", "minimum": 0},
+          "evidence_sha256": {"type": "string", "format": "digest"}
+        },
+        "required": [
+          "payload_sha256",
+          "method",
+          "trust_policy_id",
+          "trust_policy_version",
+          "trust_policy_sha256",
+          "channel_id",
+          "attested_principal",
+          "evidence_uri",
+          "evidence_media_type",
+          "evidence_bytes",
+          "evidence_sha256"
+        ]
+      }
+    },
+    "required": ["schema", "receipt_id", "ratification_payload", "authentication"]
+  }
+}

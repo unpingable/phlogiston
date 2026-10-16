@@ -1,0 +1,25 @@
+{
+  "schema": "required-change-set-v1",
+  "change_set_id": "OQCS-OQ-99-2026-08-14-A-01",
+  "question_id": "OQ-99",
+  "answer_id": "A",
+  "packet_id": "OQP-OQ-99-2026-08-14-01",
+  "receipt_id": "OQDR-OQ-99-2026-08-14-A-01",
+  "targets": [
+    {
+      "path": "docs/EXAMPLE.md",
+      "base_sha256": "sha256:43545873aa1aac9afd27e090e00911ef2dba2c83eb8b09cab82e3b0e89204664",
+      "operations": [
+        {
+          "op": "unified_diff",
+          "uri": "file:///evidence/patches/oq99-a.patch",
+          "media_type": "text/x-diff; charset=utf-8",
+          "bytes": 12,
+          "sha256": "sha256:47136674894d4dad59ded636e1131c3027a7350bec262ec6537a6ef5da19e2aa"
+        }
+      ],
+      "result_sha256": "sha256:204071c04495e5e08c8c78c70cd1c80c8e7405c6345164a5f548e291705a137f",
+      "receipt_sha256": "sha256:0b1b87a018d1b4dd7925861a2f5f5a597e3600bef31486460ecd7f0ad24dbd6b"
+    }
+  ]
+}

@@ -1,0 +1,50 @@
+{
+  "schema": "pcv0-integration-campaign-v1",
+  "campaignId": "PCV0-INTERNAL-REPLACE-WITH-DATE-01",
+  "publicOrigin": "https://phlogiston.app",
+  "communityActor": {
+    "did": "did:plc:exampleparticipantabcdef",
+    "handle": "participant.example.com",
+    "pdsOrigin": "https://phellinus.us-west.host.bsky.network"
+  },
+  "schemaAuthority": {
+    "did": "did:plc:replacewithschemaauthority",
+    "handle": "replace-with-schema-authority-handle.invalid",
+    "dnsName": "_lexicon.community.phlogiston.app",
+    "expectedTxt": "did=did:plc:replacewithschemaauthority"
+  },
+  "servicePrincipals": {
+    "communityWebUid": 42001,
+    "communityPolicyUid": 42002,
+    "communitydUid": 42003,
+    "communitywatchUid": 42004,
+    "communityNotifyUid": 42005
+  },
+  "integrationIdentities": [
+    {
+      "role": "moderator",
+      "did": "did:plc:replacewithtestmoderator",
+      "handle": "replace-with-moderator-handle.invalid",
+      "pdsOrigin": "https://participant-one-pds.invalid",
+      "controller": "REPLACE_WITH_ACCOUNT_CONTROLLER"
+    },
+    {
+      "role": "participant",
+      "did": "did:plc:replacewithtestparticipant",
+      "handle": "replace-with-participant-handle.invalid",
+      "pdsOrigin": "https://participant-two-pds.invalid",
+      "controller": "REPLACE_WITH_ACCOUNT_CONTROLLER"
+    }
+  ],
+  "publicationEvidence": {
+    "manifestPath": "/etc/atproto-community/lexicon-publication-manifest.json",
+    "acceptancePath": "/etc/atproto-community/lexicon-publication-acceptance.json",
+    "receiptPath": "/var/lib/community-lexicon-publisher/publication-receipt.json"
+  },
+  "humanDogfood": {
+    "status": "BLOCKED_MISSING_PARTICIPANTS",
+    "maintainers": [],
+    "topic": null,
+    "activity": null
+  }
+}

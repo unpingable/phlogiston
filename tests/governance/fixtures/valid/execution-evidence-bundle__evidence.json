@@ -1,0 +1,73 @@
+{
+  "schema": "execution-evidence-manifest-v1",
+  "run_id": "run-2026-08-14-01",
+  "task_id": "V0-G0",
+  "controller_entry_packet_sha256": "sha256:7c8bf818faedbac748a5324c4cceed9997a185831bf3378512360f5793e42450",
+  "base_commit": "317cd78b2c673632691ba40e69649a6e72c9a858",
+  "candidate_commit": "cccccccccccccccccccccccccccccccccccccccc",
+  "candidate_tree": "dddddddddddddddddddddddddddddddddddddddd",
+  "protected_inputs": [
+    {
+      "path": "BUILD.md",
+      "bytes": 5,
+      "sha256": "sha256:44575cf5b28512d75644bf54a517dcef304ff809fd511747621b4d64f19aac66"
+    }
+  ],
+  "gate_sha256": "sha256:da20a58788183fdd88cdd2507048e343fb4016f8c2a086143a7d85abbf6f193b",
+  "commands": [
+    {
+      "argv": [
+        "./scripts/v0-gate",
+        "V0-G0"
+      ],
+      "exit_code": 0,
+      "started_at": "2026-08-14T05:00:00Z",
+      "ended_at": "2026-08-14T05:01:00Z",
+      "stdout_sha256": "sha256:4f02c60190e0d13c0815025d88d6149af6d1be8788dc59cb3b3647311ceac8d4",
+      "stderr_sha256": "sha256:c388500c384dfd9a8530da79bc39b98bf365326c21f4afbf74738e1e7997cb9e"
+    }
+  ],
+  "changed_paths": [
+    "governance/manifest/v0-task-manifest.json"
+  ],
+  "commit_topology": {
+    "commit_count": 1,
+    "parents": [
+      "317cd78b2c673632691ba40e69649a6e72c9a858"
+    ]
+  },
+  "clean_tree": true,
+  "network_mode": "denied",
+  "credential_mode": "none",
+  "donor_mode": "inaccessible",
+  "candidate_outputs": [
+    {
+      "role": "task_manifest",
+      "path": "governance/manifest/v0-task-manifest.json",
+      "uri": "file:///evidence/run-01/candidate/v0-task-manifest.json",
+      "media_type": "application/json",
+      "bytes": 9,
+      "sha256": "sha256:0904a95a18ca8c006533d77728b9d968e271ceb3abe14d7511c950dec1f51146"
+    }
+  ],
+  "evidence_artifacts": [
+    {
+      "role": "transcript",
+      "uri": "file:///evidence/run-01/stdout.txt",
+      "media_type": "text/plain; charset=utf-8",
+      "bytes": 17,
+      "sha256": "sha256:4f02c60190e0d13c0815025d88d6149af6d1be8788dc59cb3b3647311ceac8d4"
+    }
+  ],
+  "requirement_coverage": [
+    {
+      "requirement_id": "TP-GOV-01",
+      "status": "pass"
+    },
+    {
+      "requirement_id": "TP-SCHEMA-01",
+      "status": "not_applicable"
+    }
+  ],
+  "outcome": "PASS"
+}

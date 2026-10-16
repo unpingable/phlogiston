@@ -1,0 +1,78 @@
+{
+  "profile": "scv0-m3-test-wire/1",
+  "namespaceStatus": "synthetic-noncanonical-invalid.test",
+  "sourcePost": {
+    "profile": "scv0-m3-test-wire/1",
+    "namespaceStatus": "synthetic-noncanonical-invalid.test",
+    "kind": "source_post",
+    "record": {
+      "space": {
+        "authorityDid": "did:web:space-authority.invalid.test",
+        "spaceType": "test.invalid.community",
+        "skey": "community-lab",
+        "uri": "at://did:web:space-authority.invalid.test/space/test.invalid.community/community-lab"
+      },
+      "authorDid": "did:web:author.invalid.test",
+      "collection": "test.invalid.community.post",
+      "rkey": "post-1",
+      "cid": "bafyreicl6ujc6ncfktctxxroxognfn7d2fqavvrryoc2lv6m4i6hpbkfti",
+      "uri": "at://did:web:space-authority.invalid.test/space/test.invalid.community/community-lab/did:web:author.invalid.test/test.invalid.community.post/post-1"
+    },
+    "sourceQualificationReceiptId": "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+  },
+  "submission": {
+    "profile": "scv0-m3-test-wire/1",
+    "namespaceStatus": "synthetic-noncanonical-invalid.test",
+    "kind": "submission",
+    "record": {
+      "space": {
+        "authorityDid": "did:web:space-authority.invalid.test",
+        "spaceType": "test.invalid.community",
+        "skey": "community-lab",
+        "uri": "at://did:web:space-authority.invalid.test/space/test.invalid.community/community-lab"
+      },
+      "authorDid": "did:web:author.invalid.test",
+      "collection": "test.invalid.community.submit",
+      "rkey": "submission-1",
+      "cid": "bafyreig3yg2msah74sgvow25uxddqbabex3f3mh6hysess3w5kmgiv6zqy",
+      "uri": "at://did:web:space-authority.invalid.test/space/test.invalid.community/community-lab/did:web:author.invalid.test/test.invalid.community.submit/submission-1"
+    },
+    "source": {
+      "referenceId": "sha256:33981b56015a979c8f4333d2ae46aa2cdc7f00090a2dbca4e1f23aed18560688",
+      "uri": "at://did:web:space-authority.invalid.test/space/test.invalid.community/community-lab/did:web:author.invalid.test/test.invalid.community.post/post-1",
+      "cid": "bafyreicl6ujc6ncfktctxxroxognfn7d2fqavvrryoc2lv6m4i6hpbkfti"
+    },
+    "targetCommunity": {
+      "identityId": "sha256:03fc5c38c1fab43f8eebe9194ea3814022e055949c68290f5002c465360baa4f",
+      "actorDid": "did:web:community.invalid.test"
+    },
+    "submittingActorDid": "did:web:author.invalid.test",
+    "submittedAt": "2026-08-21T12:00:00Z",
+    "submissionEvidenceReceiptId": "sha256:2222222222222222222222222222222222222222222222222222222222222222",
+    "occurrenceId": "sha256:96cdbb1bad15e1b6689d148cd3238f36fcee43587b09db288221d12b1ab99baf"
+  },
+  "admissionInput": {
+    "profile": "scv0-m3-test-wire/1",
+    "namespaceStatus": "synthetic-noncanonical-invalid.test",
+    "kind": "admission_input",
+    "record": {
+      "space": {
+        "authorityDid": "did:web:space-authority.invalid.test",
+        "spaceType": "test.invalid.community",
+        "skey": "community-lab",
+        "uri": "at://did:web:space-authority.invalid.test/space/test.invalid.community/community-lab"
+      },
+      "authorDid": "did:web:community.invalid.test",
+      "collection": "test.invalid.community.admission",
+      "rkey": "admission-1",
+      "cid": "bafyreiaij7wqrolyv5gx2glkordkq22yacpgg23bdwyweenwlknk37zjyu",
+      "uri": "at://did:web:space-authority.invalid.test/space/test.invalid.community/community-lab/did:web:community.invalid.test/test.invalid.community.admission/admission-1"
+    },
+    "communityIdentityId": "sha256:03fc5c38c1fab43f8eebe9194ea3814022e055949c68290f5002c465360baa4f",
+    "postReferenceId": "sha256:33981b56015a979c8f4333d2ae46aa2cdc7f00090a2dbca4e1f23aed18560688",
+    "submissionId": "sha256:96cdbb1bad15e1b6689d148cd3238f36fcee43587b09db288221d12b1ab99baf",
+    "sourceObservationReceiptId": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+    "admittedAt": "2026-08-21T12:02:00Z"
+  },
+  "secretMaterialPresent": false
+}

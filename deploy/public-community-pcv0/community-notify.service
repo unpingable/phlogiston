@@ -1,0 +1,20 @@
+[Unit]
+Description=Unprivileged community room webhook notifier
+After=network-online.target communitywatch-web.service
+Wants=communitywatch-web.service
+
+[Service]
+User=community-notify
+Group=community-notify
+ExecStart=/opt/atproto-community/.venv/bin/community-notify --config /etc/atproto-community/community-notify.toml
+Restart=on-failure
+UMask=0077
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/community-notify
+PrivateTmp=true
+RestrictAddressFamilies=AF_INET AF_INET6
+
+[Install]
+WantedBy=multi-user.target

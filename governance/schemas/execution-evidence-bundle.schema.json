@@ -1,0 +1,167 @@
+{
+  "schema": "gstrict-v1",
+  "id": "execution-evidence-bundle",
+  "version": "1",
+  "root": {
+    "type": "object",
+    "fields": {
+      "schema": {"type": "string", "enum": ["execution-evidence-manifest-v1"]},
+      "run_id": {"type": "string", "format": "id"},
+      "task_id": {"type": "string", "format": "id"},
+      "controller_entry_packet_sha256": {"type": "string", "format": "digest"},
+      "base_commit": {"type": "string", "format": "commit"},
+      "candidate_commit": {"type": "string", "format": "commit"},
+      "candidate_tree": {"type": "string", "format": "commit"},
+      "protected_inputs": {
+        "type": "array",
+        "min_items": 1,
+        "items": {
+          "type": "object",
+          "fields": {
+            "path": {"type": "string", "format": "path"},
+            "bytes": {"type": "integer", "minimum": 0},
+            "sha256": {"type": "string", "format": "digest"}
+          },
+          "required": ["path", "bytes", "sha256"]
+        }
+      },
+      "gate_sha256": {"type": "string", "format": "digest"},
+      "commands": {
+        "type": "array",
+        "min_items": 1,
+        "items": {
+          "type": "object",
+          "fields": {
+            "argv": {
+              "type": "array",
+              "min_items": 1,
+              "items": {"type": "string", "min_length": 1}
+            },
+            "exit_code": {"type": "integer", "minimum": 0},
+            "started_at": {"type": "string", "format": "timestamp"},
+            "ended_at": {"type": "string", "format": "timestamp"},
+            "stdout_sha256": {"type": "string", "format": "digest"},
+            "stderr_sha256": {"type": "string", "format": "digest"}
+          },
+          "required": [
+            "argv",
+            "exit_code",
+            "started_at",
+            "ended_at",
+            "stdout_sha256",
+            "stderr_sha256"
+          ]
+        }
+      },
+      "changed_paths": {
+        "type": "array",
+        "unique_items": true,
+        "items": {"type": "string", "format": "path"}
+      },
+      "commit_topology": {
+        "type": "object",
+        "fields": {
+          "commit_count": {"type": "integer", "minimum": 1},
+          "parents": {
+            "type": "array",
+            "min_items": 1,
+            "unique_items": true,
+            "items": {"type": "string", "format": "commit"}
+          }
+        },
+        "required": ["commit_count", "parents"]
+      },
+      "clean_tree": {"type": "boolean"},
+      "network_mode": {
+        "type": "string",
+        "enum": ["denied", "public_read", "nonproduction_write"]
+      },
+      "credential_mode": {
+        "type": "string",
+        "enum": ["none", "nonproduction_external_ref"]
+      },
+      "donor_mode": {
+        "type": "string",
+        "enum": ["inaccessible", "licensed"]
+      },
+      "candidate_outputs": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "fields": {
+            "role": {"type": "string", "min_length": 1},
+            "path": {"type": "string", "format": "path"},
+            "uri": {"type": "string", "format": "uri"},
+            "media_type": {"type": "string", "min_length": 1},
+            "bytes": {"type": "integer", "minimum": 0},
+            "sha256": {"type": "string", "format": "digest"}
+          },
+          "required": ["role", "path", "uri", "media_type", "bytes", "sha256"]
+        }
+      },
+      "evidence_artifacts": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "fields": {
+            "role": {"type": "string", "min_length": 1},
+            "uri": {"type": "string", "format": "uri"},
+            "media_type": {"type": "string", "min_length": 1},
+            "bytes": {"type": "integer", "minimum": 0},
+            "sha256": {"type": "string", "format": "digest"}
+          },
+          "required": ["role", "uri", "media_type", "bytes", "sha256"]
+        }
+      },
+      "requirement_coverage": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "fields": {
+            "requirement_id": {"type": "string", "format": "id"},
+            "status": {
+              "type": "string",
+              "enum": ["pass", "fail", "not_applicable"]
+            }
+          },
+          "required": ["requirement_id", "status"]
+        }
+      },
+      "outcome": {
+        "type": "string",
+        "enum": [
+          "PASS",
+          "CHECK_FAILED",
+          "BLOCKED_HUMAN",
+          "AWAITING_HUMAN",
+          "UNAUTHORIZED",
+          "DIRTY_BASE",
+          "ENVIRONMENT_BLOCKED",
+          "CONTRACT_INVALID"
+        ]
+      }
+    },
+    "required": [
+      "schema",
+      "run_id",
+      "task_id",
+      "controller_entry_packet_sha256",
+      "base_commit",
+      "candidate_commit",
+      "candidate_tree",
+      "protected_inputs",
+      "gate_sha256",
+      "commands",
+      "changed_paths",
+      "commit_topology",
+      "clean_tree",
+      "network_mode",
+      "credential_mode",
+      "donor_mode",
+      "candidate_outputs",
+      "evidence_artifacts",
+      "requirement_coverage",
+      "outcome"
+    ]
+  }
+}

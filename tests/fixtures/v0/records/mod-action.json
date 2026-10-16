@@ -1,0 +1,15 @@
+{
+  "$type": "app.phlogiston.community.modAction",
+  "action": "remove",
+  "admission": {
+    "uri": "at://did:web:community.invalid/app.phlogiston.community.admission/admit-de883656842409496d11323720b4de4dbd575635b9491b7244e988d0651a5247",
+    "cid": "bafyreibcp43fxdv7ppt5fwlyr2gpzi2eszfs3oda7ajdjx5vetycx7jpbe"
+  },
+  "subject": {
+    "uri": "at://did:web:alice.invalid/app.bsky.feed.post/3jzfcijpj2z2a",
+    "cid": "bafyreic7cldbweyx7ta42gvymb5xkglmqauaawvyxsoqmtxfowrudsavli"
+  },
+  "actor": "did:web:admin.invalid",
+  "reason": "Off-topic for this community.",
+  "createdAt": "2026-07-10T14:03:00Z"
+}

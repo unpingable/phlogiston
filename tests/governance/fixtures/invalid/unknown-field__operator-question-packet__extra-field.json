@@ -1,0 +1,113 @@
+{
+  "schema": "operator-question-packet-v1",
+  "packet_id": "OQP-OQ-99-2026-08-14-01",
+  "question_id": "OQ-99",
+  "prepared_at": "2026-08-14T00:00:00Z",
+  "preparer": "agent-prepared draft",
+  "question": "Should the fixture question choose answer A or answer B?",
+  "why_now": "V0-X1 cannot be selected until this is decided.",
+  "blocks": "V0-X1 selection.",
+  "bounded_by": [
+    "BUILD.md",
+    "DOCTRINE.md",
+    "AGENTS.md"
+  ],
+  "base_commit": "317cd78b2c673632691ba40e69649a6e72c9a858",
+  "governing_inputs": [
+    {
+      "role": "scope authority",
+      "path": "BUILD.md",
+      "bytes": 10,
+      "sha256": "sha256:54b3531ae668d104b8575d584f854528be1cd1e16d5bf9070be6ef464cf56bb6"
+    }
+  ],
+  "forcing_case": {
+    "predicate": "Selection is sufficient when the gate output names V0-X1.",
+    "evidence": [
+      {
+        "role": "gate output",
+        "uri": "file:///evidence/gate-output",
+        "media_type": "text/plain; charset=utf-8",
+        "bytes": 15,
+        "sha256": "sha256:b935f777d0d0b5aea3c48518ad94e1fe4e018c75e8d8aeeced165234e0750608"
+      }
+    ]
+  },
+  "answers": [
+    {
+      "answer_id": "A",
+      "fit": "Matches the observed forcing case.",
+      "basis": "Within BUILD.md V0 scope.",
+      "supporting": [
+        {
+          "role": "analysis",
+          "uri": "file:///evidence/support-a",
+          "media_type": "text/plain; charset=utf-8",
+          "bytes": 10,
+          "sha256": "sha256:560e6f5c25f9731e4dc13dc91d2116034d1e29fa8db3fdb11ead3d1efb2c2395"
+        }
+      ],
+      "opposing": [
+        {
+          "role": "counterevidence",
+          "uri": "file:///evidence/oppose-a",
+          "media_type": "text/plain; charset=utf-8",
+          "bytes": 9,
+          "sha256": "sha256:2bf1fa438c0f02046b112d71eaf192b5c5c8aeff6a9a393129547bc5bdb90ea1"
+        }
+      ],
+      "uncertainty": "Residual uncertainty about scale.",
+      "consequences": {
+        "authority_deltas": "No community authority changes.",
+        "guarantee_deltas": "No guarantee changes.",
+        "blockers_satisfied": [
+          "OQ-99 blocks V0-X1 selection"
+        ],
+        "blockers_remaining": [
+          "OQ-2 remains open"
+        ],
+        "tasks_eligible": [
+          "V0-X1 would become eligible once independently authorized"
+        ],
+        "amendments": [
+          "BUILD.md governed-execution block for V0-X1"
+        ],
+        "replay_fork": "No replay seam impact.",
+        "abuse_ts": "No new abuse surface."
+      }
+    },
+    {
+      "answer_id": "B",
+      "fit": "Defers the forcing case.",
+      "basis": "Within BUILD.md V0 scope.",
+      "supporting": [],
+      "opposing": [],
+      "uncertainty": "Residual uncertainty about timing.",
+      "consequences": {
+        "authority_deltas": "No community authority changes.",
+        "guarantee_deltas": "No guarantee changes.",
+        "blockers_satisfied": [],
+        "blockers_remaining": [
+          "OQ-99 blocks V0-X1 selection"
+        ],
+        "tasks_eligible": [],
+        "amendments": [],
+        "replay_fork": "No replay seam impact.",
+        "abuse_ts": "No new abuse surface."
+      }
+    }
+  ],
+  "recommendation": {
+    "answer_id": "A",
+    "rationale": "The forcing case is observed and A is admissible."
+  },
+  "novelty_condition": "Evidence that fits neither A nor B requires a replacement packet.",
+  "excluded_answers": [
+    {
+      "answer_id": "Z",
+      "conflict": "Conflicts with DOCTRINE.md clause 7.",
+      "required_amendment": "A doctrine amendment packet."
+    }
+  ],
+  "unexpected": "field"
+}

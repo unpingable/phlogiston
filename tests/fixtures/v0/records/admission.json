@@ -1,0 +1,13 @@
+{
+  "$type": "app.phlogiston.community.admission",
+  "submission": {
+    "uri": "at://did:web:alice.invalid/app.phlogiston.community.submit/3jzfcijpj2z2b",
+    "cid": "bafyreibzkyxijisnjswekliycxpcz7xy76rbrrguqtspgvihqsz5bwux2a"
+  },
+  "subject": {
+    "uri": "at://did:web:alice.invalid/app.bsky.feed.post/3jzfcijpj2z2a",
+    "cid": "bafyreic7cldbweyx7ta42gvymb5xkglmqauaawvyxsoqmtxfowrudsavli"
+  },
+  "actor": "did:web:admin.invalid",
+  "createdAt": "2026-07-10T14:02:00Z"
+}

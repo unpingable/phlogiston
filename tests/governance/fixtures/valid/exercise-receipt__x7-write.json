@@ -1,0 +1,55 @@
+{
+  "schema": "exercise-receipt-v1",
+  "receipt_id": "EXR-V0-X7-WRITE-SMOKE-x7-run-2026-08-14-01-20260814110500",
+  "operation_id": "V0-X7-WRITE-SMOKE",
+  "controller_entry_packet_sha256": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+  "harness_sha256": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+  "started_at": "2026-08-14T11:05:00Z",
+  "ended_at": "2026-08-14T11:05:09Z",
+  "targets_contacted": [
+    "http://127.0.0.1:8801",
+    "http://127.0.0.1:8802",
+    "ws://127.0.0.1:8803"
+  ],
+  "counters": {
+    "requests": 9,
+    "events": 4,
+    "proof_fetches": 4,
+    "bytes": 16384,
+    "writes": 4,
+    "retries": 0
+  },
+  "stop_rule": "completed",
+  "artifacts": [
+    {
+      "role": "events_ndjson",
+      "uri": "file:///evidence/v0-x7-run-1/events.ndjson",
+      "media_type": "application/x-ndjson",
+      "bytes": 1024,
+      "sha256": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
+    },
+    {
+      "role": "did_doc",
+      "uri": "file:///evidence/v0-x7-run-1/did_docs/did_plc_abc.json",
+      "media_type": "application/did+json",
+      "bytes": 300,
+      "sha256": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
+    },
+    {
+      "role": "daemon_config",
+      "uri": "file:///evidence/v0-x7-run-1/communityd.toml",
+      "media_type": "application/toml",
+      "bytes": 400,
+      "sha256": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
+    },
+    {
+      "role": "projection_snapshot",
+      "uri": "file:///evidence/v0-x7-run-1/projections.json",
+      "media_type": "application/json",
+      "bytes": 512,
+      "sha256": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
+    }
+  ],
+  "outcome": "PASS",
+  "notes": "loopback write smoke run; artifacts retained until 2027-01-01T00:00:00Z"
+}

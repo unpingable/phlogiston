@@ -1,0 +1,37 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "community-space-comprehension"
+version = "0.1.0"
+license = "MIT OR Apache-2.0"
+description = "Synthetic comprehension instrument for the SCV0 local prototype."
+requires-python = ">=3.12,<3.13"
+dependencies = ["community-space-prototype==0.1.0"]
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+include-package-data = false
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["community_space_comprehension", "community_space_comprehension.*"]
+namespaces = false
+
+[tool.setuptools.package-data]
+community_space_comprehension = ["py.typed"]
+
+[tool.pytest.ini_options]
+addopts = ["--strict-config", "--strict-markers", "-ra"]
+testpaths = ["tests"]
+pythonpath = [
+    "src",
+    "../community-model/src",
+    "../community-space-model/src",
+    "../community-space-projection/src",
+    "../community-space-artifact/src",
+    "../community-space-renderer/src",
+    "../community-space-feed/src",
+    "../community-space-prototype/src",
+]

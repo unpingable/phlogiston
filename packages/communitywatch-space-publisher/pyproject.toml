@@ -1,0 +1,46 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "communitywatch-space-publisher"
+version = "0.1.0"
+license = "MIT OR Apache-2.0"
+description = "Observer-only Juniper projection compiler and atomic publisher."
+requires-python = ">=3.12,<3.13"
+dependencies = [
+  "community-model==0.1.0",
+  "community-space-model==0.1.0",
+  "community-space-projection==0.1.0",
+  "community-space-wire==0.1.0",
+  "community-space-artifact==0.1.0",
+  "community-space-feed==0.1.0",
+  "communitywatch-spaces-alpha==0.1.0",
+]
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+include-package-data = false
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["communitywatch_space_publisher", "communitywatch_space_publisher.*"]
+namespaces = false
+
+[tool.setuptools.package-data]
+communitywatch_space_publisher = ["py.typed"]
+
+[tool.pytest.ini_options]
+addopts = ["--strict-config", "--strict-markers", "-ra"]
+testpaths = ["tests"]
+pythonpath = [
+  "src",
+  "../community-model/src",
+  "../community-space-model/src",
+  "../community-space-projection/src",
+  "../community-space-wire/src",
+  "../community-space-artifact/src",
+  "../community-space-feed/src",
+  "../communitywatch-spaces-alpha/src",
+  "../communitywatch-spaces-alpha/tests",
+]

@@ -1,0 +1,32 @@
+{
+  "name": "community-live",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "license": "MIT OR Apache-2.0",
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "start": "tsx src/server.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "node --import tsx --test src/**/*.test.ts",
+    "test:browser": "node --import tsx --test src/browser.suite.ts",
+    "check": "pnpm typecheck && pnpm test && pnpm test:browser"
+  },
+  "dependencies": {
+    "@atproto/api": "0.20.42",
+    "@atproto/lex-client": "0.0.0-spaces-alpha-20260818163953",
+    "@atproto/lex-data": "0.1.7",
+    "@atproto/lex-schema": "0.0.0-spaces-alpha-20260818163953",
+    "@atproto/oauth-client-node": "0.0.0-spaces-alpha-20260818163953"
+  },
+  "devDependencies": {
+    "@types/node": "24.13.3",
+    "playwright-core": "1.63.0",
+    "tsx": "4.23.12",
+    "typescript": "5.9.3"
+  },
+  "engines": {
+    "node": ">=24"
+  },
+  "packageManager": "pnpm@11.11.0"
+}

@@ -1,0 +1,84 @@
+{
+  "format": "spaces-alpha-sa9b-did-binding-vector-v1",
+  "compatibility": {
+    "atprotoDidSpec": "https://atproto.com/specs/did",
+    "didSpecObservedDate": "2026-08-21",
+    "proposalCommit": "54c9cf5153d668c4f4fb4438529967412e861775",
+    "bindingVersion": "sa9b-v1",
+    "method": "bounded-did-json+ordered-atproto-spaces-selection"
+  },
+  "doctrine": "Service binding interprets identity evidence; it does not create identity evidence.",
+  "accountDid": "did:plc:sa9baccountaaaaaaaaaaaaa",
+  "spaceDid": "did:plc:sa9bspaceaaaaaaaaaaaaaaa",
+  "publicKeys": {
+    "accountK256": "zQ3shqwJEJyMBsBXCWyCBpUBMqxcon9oHB7mCvx4sSpMdLJwc",
+    "spaceP256": "zDnaembgSGUhZULN2Caob4HLJPaxBh92N7rtH21TErzqf8HQo"
+  },
+  "documents": {
+    "ordinaryAccount": {
+      "id": "did:plc:sa9baccountaaaaaaaaaaaaa",
+      "service": [
+        {
+          "id": "#atproto_pds",
+          "type": "AtprotoPersonalDataServer",
+          "serviceEndpoint": "https://PDS.invalid.test:443/"
+        }
+      ],
+      "verificationMethod": [
+        {
+          "id": "did:plc:sa9baccountaaaaaaaaaaaaa#atproto",
+          "type": "Multikey",
+          "controller": "did:plc:sa9baccountaaaaaaaaaaaaa",
+          "publicKeyMultibase": "zQ3shqwJEJyMBsBXCWyCBpUBMqxcon9oHB7mCvx4sSpMdLJwc"
+        }
+      ]
+    },
+    "dedicatedSpaceAuthority": {
+      "id": "did:plc:sa9bspaceaaaaaaaaaaaaaaa",
+      "service": [
+        {
+          "id": "did:plc:sa9bspaceaaaaaaaaaaaaaaa#atproto_pds",
+          "type": "AtprotoPersonalDataServer",
+          "serviceEndpoint": "https://pds-space.invalid.test"
+        },
+        {
+          "id": "#atproto_space_host",
+          "type": "AtprotoSpaceHost",
+          "serviceEndpoint": "https://spaces.invalid.test:8443"
+        }
+      ],
+      "verificationMethod": [
+        {
+          "id": "#atproto",
+          "type": "Multikey",
+          "controller": "did:plc:sa9bspaceaaaaaaaaaaaaaaa",
+          "publicKeyMultibase": "zQ3shqwJEJyMBsBXCWyCBpUBMqxcon9oHB7mCvx4sSpMdLJwc"
+        },
+        {
+          "id": "did:plc:sa9bspaceaaaaaaaaaaaaaaa#atproto_space",
+          "type": "Multikey",
+          "controller": "did:plc:sa9bspaceaaaaaaaaaaaaaaa",
+          "publicKeyMultibase": "zDnaembgSGUhZULN2Caob4HLJPaxBh92N7rtH21TErzqf8HQo"
+        }
+      ]
+    },
+    "fallbackSpaceAuthority": {
+      "id": "did:plc:sa9bspaceaaaaaaaaaaaaaaa",
+      "service": [
+        {
+          "id": "#atproto_pds",
+          "type": "AtprotoPersonalDataServer",
+          "serviceEndpoint": "https://fallback.invalid.test"
+        }
+      ],
+      "verificationMethod": [
+        {
+          "id": "#atproto",
+          "type": "Multikey",
+          "controller": "did:plc:sa9bspaceaaaaaaaaaaaaaaa",
+          "publicKeyMultibase": "zQ3shqwJEJyMBsBXCWyCBpUBMqxcon9oHB7mCvx4sSpMdLJwc"
+        }
+      ]
+    }
+  }
+}

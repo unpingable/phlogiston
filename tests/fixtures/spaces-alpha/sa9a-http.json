@@ -1,0 +1,22 @@
+{
+  "format": "spaces-alpha-sa9a-http-vector-v1",
+  "compatibility": {
+    "referenceCommit": "89deb9faca20e56fa2a262fe9746ed52bc1095ba",
+    "transportVersion": "sa9a-v1",
+    "method": "stdlib-urllib-get+bounded-body+same-origin-redirects"
+  },
+  "doctrine": "Transport success is acquisition evidence, not source authority.",
+  "policy": {
+    "methods": ["GET"],
+    "redirects": "same-origin-only",
+    "automaticRetries": 0,
+    "contentTransformation": "identity-only",
+    "contentTypeAuthority": false,
+    "tlsDidBinding": false
+  },
+  "positiveWitnesses": ["HTTP1", "HTTP2", "HTTP3", "HTTP4", "E2E1", "E2E2", "E2E3"],
+  "hostileWitnesses": [
+    "HTTP-H1", "HTTP-H2", "HTTP-H3", "HTTP-H4", "HTTP-H5", "HTTP-H6",
+    "HTTP-H7", "HTTP-H8", "HTTP-H9", "HTTP-H10", "HTTP-H11", "HTTP-H12"
+  ]
+}

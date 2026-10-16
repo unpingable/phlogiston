@@ -1,0 +1,15 @@
+{
+  "schema": "operator-decision-receipt-v1",
+  "receipt_id": "OQDR-OQ-99-2026-08-14-A-01",
+  "supersedes": null,
+  "decision_payload": {
+    "question_id": "OQ-99",
+    "packet_sha256": "sha256:dc43675bd807d93e188eb125c82c90a1b5b42bef45c3e9a0796bfa6d2389e5ee",
+    "operator_id": "operator-jbeck",
+    "decided_at": "2026-08-14T01:00:00Z",
+    "ruling": "select",
+    "answer_id": "A",
+    "required_change_set_id": "OQCS-OQ-99-2026-08-14-A-01",
+    "required_change_set_sha256": "sha256:1d2436b8911239cdd4f9d4ce8f2a40dfe8447bada260b9d2e5a553365ebe0339"
+  }
+}

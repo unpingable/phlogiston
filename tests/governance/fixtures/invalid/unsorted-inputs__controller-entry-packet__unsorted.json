@@ -1,0 +1,72 @@
+{
+  "schema": "controller-entry-packet-v1",
+  "packet_id": "CEP-V0-M4-2026-08-14-01",
+  "launch_payload": {
+    "authorization_id": "V0-M4-run-1",
+    "task_ids": [
+      "V0-M4"
+    ],
+    "base_commit": "317cd78b2c673632691ba40e69649a6e72c9a858",
+    "allowed_ancestry": [
+      "317cd78b2c673632691ba40e69649a6e72c9a858"
+    ],
+    "governance_inputs": [
+      {
+        "path": "ROADMAP.md",
+        "bytes": 7,
+        "sha256": "sha256:3de1580490d2abf875facdf5acf9d01a071b638e7ad52294628f31e392f0746c"
+      },
+      {
+        "path": "BUILD.md",
+        "bytes": 5,
+        "sha256": "sha256:44575cf5b28512d75644bf54a517dcef304ff809fd511747621b4d64f19aac66"
+      },
+      {
+        "path": "AGENTS.md",
+        "bytes": 6,
+        "sha256": "sha256:8c70b25cbbbe8e7935bbc70516181551934ae5e917b40d25c4a72bbbd865f2e4"
+      }
+    ],
+    "decisions": [
+      {
+        "question_id": "OQ-5",
+        "packet_sha256": "sha256:b6ee9df5f9d7cbc2a04db67125673218b34009bbe11f208423595bdd7647c301",
+        "answer_id": "A",
+        "receipt_sha256": "sha256:4c7cd931fd0ce3f59b747d8b36d44d0655a69bafed2782460876267eea47437f",
+        "required_change_set": "not_applicable"
+      }
+    ],
+    "allowed_paths": [
+      "packages/**",
+      "tests/**"
+    ],
+    "protected_paths": [
+      "AGENTS.md",
+      "BUILD.md",
+      "ROADMAP.md"
+    ],
+    "evidence_policy": {
+      "destination_uri": "file:///evidence/v0-m4-run-1",
+      "retention_until": "2027-01-01T00:00:00Z",
+      "readback_required": true
+    },
+    "network_mode": "denied",
+    "credential_mode": "none",
+    "donor_mode": "inaccessible",
+    "operator_id": "operator-jbeck",
+    "authorized_at": "2026-08-14T04:00:00Z"
+  },
+  "authentication": {
+    "payload_sha256": "sha256:35543e9b5bc700aa397630c21d6189544e788ec782d7a110a6b57657d86ac935",
+    "method": "manual_controller_channel",
+    "trust_policy_id": "manual-controller-channel-v1",
+    "trust_policy_version": 1,
+    "trust_policy_sha256": "sha256:6aeadc519ba9e05e594f3347d7d040a1e37084d4ad50785cafb44c901f417d71",
+    "channel_id": "manual-channel-1",
+    "attested_principal": "operator-jbeck",
+    "evidence_uri": "file:///evidence/CEP-V0-M4.txt",
+    "evidence_media_type": "text/plain; charset=utf-8",
+    "evidence_bytes": 33,
+    "evidence_sha256": "sha256:246ead77a9f2d34852aa3d19635d8890ebe0c01abd3a51221457582825c8d4a2"
+  }
+}

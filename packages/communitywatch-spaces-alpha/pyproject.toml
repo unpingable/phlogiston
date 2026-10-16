@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "communitywatch-spaces-alpha"
+version = "0.1.0"
+license = "MIT OR Apache-2.0"
+description = "Isolated fixture-first observer boundary for ATProto Spaces alpha."
+requires-python = ">=3.12,<3.13"
+dependencies = ["community-model==0.1.0"]
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+include-package-data = false
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["communitywatch_spaces_alpha", "communitywatch_spaces_alpha.*"]
+namespaces = false
+
+[tool.setuptools.package-data]
+communitywatch_spaces_alpha = ["py.typed"]
+
+[tool.pytest.ini_options]
+addopts = ["--strict-config", "--strict-markers", "-ra"]
+testpaths = ["tests"]
+pythonpath = ["src", "../community-model/src"]

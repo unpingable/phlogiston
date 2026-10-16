@@ -1,0 +1,136 @@
+{
+  "format": "spaces-alpha-sa5-list-repo-ops-vector-v1",
+  "compatibility": {
+    "endpoint": "com.atproto.space.listRepoOps",
+    "referenceCommit": "89deb9faca20e56fa2a262fe9746ed52bc1095ba",
+    "lexicon": "lexicons/com/atproto/space/listRepoOps.json",
+    "adapterVersion": "sa5-v1"
+  },
+  "source": {
+    "space": {
+      "authorityDid": "did:web:spaces.test.invalid",
+      "spaceType": "invalid.test.communityspace",
+      "skey": "transition-board"
+    },
+    "repoDid": "did:plc:fixturetransitionauthor",
+    "repoHost": "https://repo-transition.test.invalid",
+    "sourceRef": "fixture:listRepoOps:sa5",
+    "acquiredAt": "2026-08-21T10:00:00Z"
+  },
+  "o1CompleteBatch": {
+    "sourceState": "n",
+    "targetState": "n1",
+    "pages": [
+      {
+        "requestSince": "3mtaaaabbbbbf",
+        "requestCursor": null,
+        "receivedAt": "2026-08-21T10:00:01Z",
+        "response": {
+          "ops": [
+            {
+              "rev": "3mtaaaabbbbbg",
+              "collection": "invalid.test.spacepost",
+              "rkey": "gamma",
+              "cid": "bafyreigymkv56tdmuv677ty3kpdsrioj4s7wvcwarrevkuxh4snsv7m7xy",
+              "prev": null
+            }
+          ],
+          "commit": {
+            "ver": 1,
+            "hash": {"$bytes": "2pgTW6JY28mHu8YVuOULzxQuAwH/48JTn8vLY4nZ4RM="},
+            "mac": {"$bytes": "+PsumOmq/Z+b0naNLk4aUhTQ3VXrNjLTnnUuZdbRREY="},
+            "ikm": {"$bytes": "hohORmP+vMLjTPHlMVllwTJwewZaXGJ2MHmQM7mGibc="},
+            "sig": {"$bytes": "w/6Aj7BpLAR2hIP4FQHplOaYJw7FkPAA0mLiVCzwyCVpARbqAzL5PjgJmXmG+Y1l2RXEJkjVUSYfxi33+EdxDw=="},
+            "rev": "3mtaaaabbbbbg"
+          }
+        }
+      }
+    ]
+  },
+  "o2MultiPage": {
+    "sourceState": "n1",
+    "targetState": "n2",
+    "pages": [
+      {
+        "requestSince": "3mtaaaabbbbbg",
+        "requestCursor": null,
+        "receivedAt": "2026-08-21T10:01:01Z",
+        "response": {
+          "ops": [
+            {
+              "rev": "3mtaaaabbbbbh",
+              "collection": "invalid.test.spacepost",
+              "rkey": "delta",
+              "cid": "bafyreiczkilsqh2ecqnko5awg6mzhcwunvqnwrsaaku3dlxbvm4ef3g6oa",
+              "prev": null,
+              "value": {"$type": "invalid.test.spacepost", "text": "context only"}
+            }
+          ],
+          "cursor": "3mtaaaabbbbbh/0"
+        }
+      },
+      {
+        "requestSince": "3mtaaaabbbbbg",
+        "requestCursor": "3mtaaaabbbbbh/0",
+        "receivedAt": "2026-08-21T10:01:02Z",
+        "response": {
+          "ops": [
+            {
+              "rev": "3mtaaaabbbbbh",
+              "collection": "invalid.test.spacepost",
+              "rkey": "beta",
+              "cid": "bafyreibu26x74wgmxcyu75ldnpctdcqefgjxn7qm6n6v2tkqbx4nezsbji",
+              "prev": "bafyreifdsf6upd44au3sy2txtendw25fxguopxlhzv4caxmfrvif2n7jye"
+            }
+          ],
+          "cursor": "3mtaaaabbbbbh/1"
+        }
+      },
+      {
+        "requestSince": "3mtaaaabbbbbg",
+        "requestCursor": "3mtaaaabbbbbh/1",
+        "receivedAt": "2026-08-21T10:01:03Z",
+        "response": {
+          "ops": [
+            {
+              "rev": "3mtaaaabbbbbh",
+              "collection": "invalid.test.spacepost",
+              "rkey": "gamma",
+              "cid": null,
+              "prev": "bafyreigymkv56tdmuv677ty3kpdsrioj4s7wvcwarrevkuxh4snsv7m7xy"
+            }
+          ],
+          "commit": {
+            "ver": 1,
+            "hash": {"$bytes": "0fOBX4meOfHh6NwJAvw3vxLdjCj2Dbrsm9CQ9IyK2xw="},
+            "mac": {"$bytes": "79f3qRBA3Km95mA8GYVEwSvwtwBU4s96gfgHKld2v58="},
+            "ikm": {"$bytes": "A0CwYz+T7BjEy2149KVynLcbfO/AP+0hgrFn3vthWCM="},
+            "sig": {"$bytes": "IllQPLk6bIMU7rrPSZTqGFo4pNRGOwdQv1ksUHYn+BUMK5+lwarMMrpvi+FYjq7I9K6/4XwmUjZwakhZKCpjBg=="},
+            "rev": "3mtaaaabbbbbh"
+          }
+        }
+      }
+    ]
+  },
+  "o3EmptyTerminal": {
+    "sourceState": "n2",
+    "pages": [
+      {
+        "requestSince": "3mtaaaabbbbbh",
+        "requestCursor": null,
+        "receivedAt": "2026-08-21T10:02:01Z",
+        "response": {
+          "ops": [],
+          "commit": {
+            "ver": 1,
+            "hash": {"$bytes": "0fOBX4meOfHh6NwJAvw3vxLdjCj2Dbrsm9CQ9IyK2xw="},
+            "mac": {"$bytes": "79f3qRBA3Km95mA8GYVEwSvwtwBU4s96gfgHKld2v58="},
+            "ikm": {"$bytes": "A0CwYz+T7BjEy2149KVynLcbfO/AP+0hgrFn3vthWCM="},
+            "sig": {"$bytes": "IllQPLk6bIMU7rrPSZTqGFo4pNRGOwdQv1ksUHYn+BUMK5+lwarMMrpvi+FYjq7I9K6/4XwmUjZwakhZKCpjBg=="},
+            "rev": "3mtaaaabbbbbh"
+          }
+        }
+      }
+    ]
+  }
+}

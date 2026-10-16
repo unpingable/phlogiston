@@ -1,0 +1,21 @@
+{
+  "lexicon": 1,
+  "id": "app.phlogiston.community.replyPolicy",
+  "defs": {
+    "main": {
+      "type": "record",
+      "key": "any",
+      "description": "The immutable author-opt-in reply policy bound to one exact root admission.",
+      "record": {
+        "type": "object",
+        "required": ["discussion", "mode", "actor", "createdAt"],
+        "properties": {
+          "discussion": {"type": "ref", "ref": "com.atproto.repo.strongRef"},
+          "mode": {"type": "string", "knownValues": ["authorOptIn"]},
+          "actor": {"type": "string", "format": "did"},
+          "createdAt": {"type": "string", "format": "datetime"}
+        }
+      }
+    }
+  }
+}

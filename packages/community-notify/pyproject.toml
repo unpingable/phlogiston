@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "community-notify"
+version = "0.1.0"
+license = "MIT OR Apache-2.0"
+description = "Unprivileged best-effort room webhook notifier for one community."
+requires-python = ">=3.12,<3.13"
+dependencies = []
+
+[project.scripts]
+community-notify = "community_notify.cli:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+include-package-data = false
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["community_notify", "community_notify.*"]
+namespaces = false
+
+[tool.setuptools.package-data]
+community_notify = ["py.typed"]
+
+[tool.pytest.ini_options]
+addopts = ["--strict-config", "--strict-markers", "-ra"]
+testpaths = ["tests"]
+pythonpath = ["src"]

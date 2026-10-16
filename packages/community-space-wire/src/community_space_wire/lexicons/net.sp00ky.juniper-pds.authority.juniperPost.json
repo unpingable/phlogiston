@@ -1,0 +1,20 @@
+{
+  "lexicon": 1,
+  "id": "net.sp00ky.juniper-pds.authority.juniperPost",
+  "defs": {
+    "main": {
+      "type": "record",
+      "key": "tid",
+      "description": "An author-owned Juniper source post.",
+      "record": {
+        "type": "object",
+        "required": ["title", "body", "createdAt"],
+        "properties": {
+          "title": {"type": "string", "maxGraphemes": 140, "maxLength": 1400},
+          "body": {"type": "string", "maxGraphemes": 2000, "maxLength": 20000},
+          "createdAt": {"type": "string", "format": "datetime"}
+        }
+      }
+    }
+  }
+}

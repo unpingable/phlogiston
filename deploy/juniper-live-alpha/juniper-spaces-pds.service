@@ -1,0 +1,18 @@
+[Unit]
+Description=Juniper Commons disposable Spaces-alpha PDS
+Requires=docker.service
+After=docker.service network-online.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/docker start -a juniper-spaces-pds-alpha
+ExecStop=/usr/bin/docker stop -t 20 juniper-spaces-pds-alpha
+Restart=always
+RestartSec=5
+TimeoutStopSec=20
+
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

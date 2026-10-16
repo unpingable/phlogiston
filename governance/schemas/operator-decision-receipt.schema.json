@@ -1,0 +1,135 @@
+{
+  "schema": "gstrict-v1",
+  "id": "operator-decision-receipt",
+  "version": "1",
+  "root": {
+    "type": "object",
+    "fields": {
+      "schema": {"type": "string", "enum": ["operator-decision-receipt-v1"]},
+      "receipt_id": {"type": "string", "format": "id"},
+      "supersedes": {
+        "one_of": [
+          {"type": "null"},
+          {
+            "type": "object",
+            "fields": {
+              "receipt_id": {"type": "string", "format": "id"},
+              "receipt_sha256": {"type": "string", "format": "digest"}
+            },
+            "required": ["receipt_id", "receipt_sha256"]
+          }
+        ]
+      },
+      "decision_payload": {
+        "type": "object",
+        "fields": {
+          "question_id": {
+            "type": "string",
+            "format": "id",
+            "pattern": "^OQ-\\d+$"
+          },
+          "packet_sha256": {"type": "string", "format": "digest"},
+          "operator_id": {"type": "string", "format": "id"},
+          "decided_at": {"type": "string", "format": "timestamp"},
+          "ruling": {
+            "type": "string",
+            "enum": ["select", "defer", "reject_packet", "repack_required"]
+          },
+          "answer_id": {"type": "string", "format": "id"},
+          "required_change_set_id": {
+            "one_of": [
+              {
+                "type": "string",
+                "format": "id",
+                "pattern": "^(?!not_applicable$)"
+              },
+              {"type": "string", "enum": ["not_applicable"]}
+            ]
+          },
+          "required_change_set_sha256": {
+            "one_of": [
+              {"type": "string", "format": "digest"},
+              {"type": "string", "enum": ["not_applicable"]}
+            ]
+          },
+          "revisit_trigger": {"type": "string", "min_length": 1},
+          "revisit_deadline": {"type": "string", "format": "timestamp"},
+          "requested_evidence": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "fields": {
+                "role": {"type": "string", "min_length": 1},
+                "uri": {"type": "string", "format": "uri"},
+                "media_type": {"type": "string", "min_length": 1},
+                "bytes": {"type": "integer", "minimum": 0},
+                "sha256": {"type": "string", "format": "digest"}
+              },
+              "required": ["role", "uri", "media_type", "bytes", "sha256"]
+            }
+          },
+          "reason_class": {"type": "string", "min_length": 1},
+          "replacement_packet": {"type": "string", "enum": ["required"]},
+          "novel_evidence": {
+            "type": "array",
+            "min_items": 1,
+            "items": {
+              "type": "object",
+              "fields": {
+                "role": {"type": "string", "min_length": 1},
+                "uri": {"type": "string", "format": "uri"},
+                "media_type": {"type": "string", "min_length": 1},
+                "bytes": {"type": "integer", "minimum": 0},
+                "sha256": {"type": "string", "format": "digest"}
+              },
+              "required": ["role", "uri", "media_type", "bytes", "sha256"]
+            }
+          }
+        },
+        "required": [
+          "question_id",
+          "packet_sha256",
+          "operator_id",
+          "decided_at",
+          "ruling"
+        ]
+      },
+      "authentication": {
+        "type": "object",
+        "fields": {
+          "payload_sha256": {"type": "string", "format": "digest"},
+          "method": {"type": "string", "format": "id"},
+          "trust_policy_id": {"type": "string", "format": "id"},
+          "trust_policy_version": {"type": "integer", "minimum": 1},
+          "trust_policy_sha256": {"type": "string", "format": "digest"},
+          "channel_id": {"type": "string", "format": "id"},
+          "attested_principal": {"type": "string", "format": "id"},
+          "evidence_uri": {"type": "string", "format": "uri"},
+          "evidence_media_type": {"type": "string", "min_length": 1},
+          "evidence_bytes": {"type": "integer", "minimum": 0},
+          "evidence_sha256": {"type": "string", "format": "digest"}
+        },
+        "required": [
+          "payload_sha256",
+          "method",
+          "trust_policy_id",
+          "trust_policy_version",
+          "trust_policy_sha256",
+          "channel_id",
+          "attested_principal",
+          "evidence_uri",
+          "evidence_media_type",
+          "evidence_bytes",
+          "evidence_sha256"
+        ]
+      }
+    },
+    "required": [
+      "schema",
+      "receipt_id",
+      "supersedes",
+      "decision_payload",
+      "authentication"
+    ]
+  }
+}

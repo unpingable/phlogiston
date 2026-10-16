@@ -1,0 +1,278 @@
+{
+  "schema": "gstrict-v1",
+  "id": "controller-entry-packet",
+  "version": "1",
+  "root": {
+    "type": "object",
+    "fields": {
+      "schema": {"type": "string", "enum": ["controller-entry-packet-v1"]},
+      "packet_id": {"type": "string", "format": "id"},
+      "launch_payload": {
+        "type": "object",
+        "fields": {
+          "authorization_id": {"type": "string", "format": "id"},
+          "task_ids": {
+            "type": "array",
+            "min_items": 1,
+            "unique_items": true,
+            "items": {"type": "string", "format": "id"}
+          },
+          "base_commit": {"type": "string", "format": "commit"},
+          "allowed_ancestry": {
+            "type": "array",
+            "min_items": 1,
+            "unique_items": true,
+            "items": {"type": "string", "format": "commit"}
+          },
+          "governance_inputs": {
+            "type": "array",
+            "min_items": 1,
+            "items": {
+              "type": "object",
+              "fields": {
+                "path": {"type": "string", "format": "path"},
+                "bytes": {"type": "integer", "minimum": 0},
+                "sha256": {"type": "string", "format": "digest"}
+              },
+              "required": ["path", "bytes", "sha256"]
+            }
+          },
+          "decisions": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "fields": {
+                "question_id": {
+                  "type": "string",
+                  "format": "id",
+                  "pattern": "^OQ-\\d+$"
+                },
+                "packet_sha256": {"type": "string", "format": "digest"},
+                "answer_id": {"type": "string", "format": "id"},
+                "receipt_sha256": {"type": "string", "format": "digest"},
+                "required_change_set": {
+                  "one_of": [
+                    {
+                      "type": "object",
+                      "fields": {
+                        "change_set_id": {"type": "string", "format": "id"},
+                        "change_set_sha256": {
+                          "type": "string",
+                          "format": "digest"
+                        }
+                      },
+                      "required": ["change_set_id", "change_set_sha256"]
+                    },
+                    {"type": "string", "enum": ["not_applicable"]}
+                  ]
+                }
+              },
+              "required": [
+                "question_id",
+                "packet_sha256",
+                "answer_id",
+                "receipt_sha256",
+                "required_change_set"
+              ]
+            }
+          },
+          "allowed_paths": {
+            "type": "array",
+            "min_items": 1,
+            "unique_items": true,
+            "items": {"type": "string", "min_length": 1}
+          },
+          "protected_paths": {
+            "type": "array",
+            "min_items": 1,
+            "unique_items": true,
+            "items": {"type": "string", "format": "path"}
+          },
+          "evidence_policy": {
+            "type": "object",
+            "fields": {
+              "destination_uri": {"type": "string", "format": "uri"},
+              "retention_until": {"type": "string", "format": "timestamp"},
+              "readback_required": {"type": "boolean"}
+            },
+            "required": [
+              "destination_uri",
+              "retention_until",
+              "readback_required"
+            ]
+          },
+          "network_mode": {
+            "type": "string",
+            "enum": ["denied", "public_read", "nonproduction_write"]
+          },
+          "credential_mode": {
+            "type": "string",
+            "enum": ["none", "nonproduction_external_ref"]
+          },
+          "donor_mode": {
+            "type": "string",
+            "enum": ["inaccessible", "licensed"]
+          },
+          "operator_id": {"type": "string", "format": "id"},
+          "authorized_at": {"type": "string", "format": "timestamp"},
+          "live_exercise": {
+            "type": "object",
+            "fields": {
+              "operation_id": {
+                "type": "string",
+                "enum": [
+                  "V0-X6-READ-SMOKE",
+                  "V0-X7-WRITE-SMOKE",
+                  "V0-X8-HUMAN-TRIAL"
+                ]
+              },
+              "harness": {
+                "type": "object",
+                "fields": {
+                  "program_id": {"type": "string", "format": "id"},
+                  "version": {"type": "string", "min_length": 1},
+                  "uri": {"type": "string", "format": "uri"},
+                  "bytes": {"type": "integer", "minimum": 0},
+                  "sha256": {"type": "string", "format": "digest"}
+                },
+                "required": ["program_id", "version", "uri", "bytes", "sha256"]
+              },
+              "target_allow_list": {
+                "type": "array",
+                "min_items": 1,
+                "unique_items": true,
+                "items": {"type": "string", "min_length": 1}
+              },
+              "subject_allow_list": {
+                "type": "array",
+                "min_items": 1,
+                "unique_items": true,
+                "items": {
+                  "type": "string",
+                  "pattern": "^did:(plc:[a-z2-7]{24}|web:[a-zA-Z0-9][a-zA-Z0-9.-]*)$"
+                }
+              },
+              "ceilings": {
+                "type": "object",
+                "fields": {
+                  "max_requests": {"type": "integer", "minimum": 1},
+                  "max_events": {"type": "integer", "minimum": 0},
+                  "max_proof_fetches": {"type": "integer", "minimum": 0},
+                  "max_bytes": {"type": "integer", "minimum": 1},
+                  "max_wall_clock_seconds": {"type": "integer", "minimum": 1},
+                  "max_writes": {"type": "integer", "minimum": 0}
+                },
+                "required": [
+                  "max_requests",
+                  "max_events",
+                  "max_proof_fetches",
+                  "max_bytes",
+                  "max_wall_clock_seconds",
+                  "max_writes"
+                ]
+              },
+              "retry": {
+                "type": "object",
+                "fields": {
+                  "request_timeout_seconds": {"type": "integer", "minimum": 1},
+                  "max_retries": {"type": "integer", "minimum": 0},
+                  "retry_backoff_seconds": {"type": "integer", "minimum": 0}
+                },
+                "required": [
+                  "request_timeout_seconds",
+                  "max_retries",
+                  "retry_backoff_seconds"
+                ]
+              },
+              "idempotency_input": {"type": "string", "min_length": 1},
+              "allowed_record_kinds": {
+                "type": "array",
+                "min_items": 1,
+                "unique_items": true,
+                "items": {
+                  "type": "string",
+                  "pattern": "^[a-z][a-z0-9]*(\\.[a-zA-Z][a-zA-Z0-9]*){2,}$"
+                }
+              },
+              "retention": {
+                "type": "object",
+                "fields": {
+                  "retention_until": {"type": "string", "format": "timestamp"},
+                  "retain_artifacts": {"type": "boolean"}
+                },
+                "required": ["retention_until", "retain_artifacts"]
+              },
+              "receipt_schema": {
+                "type": "object",
+                "fields": {
+                  "schema_id": {"type": "string", "enum": ["exercise-receipt"]},
+                  "version": {"type": "string", "enum": ["1"]},
+                  "sha256": {"type": "string", "format": "digest"}
+                },
+                "required": ["schema_id", "version", "sha256"]
+              }
+            },
+            "required": [
+              "operation_id",
+              "harness",
+              "target_allow_list",
+              "subject_allow_list",
+              "ceilings",
+              "retry",
+              "idempotency_input",
+              "allowed_record_kinds",
+              "retention",
+              "receipt_schema"
+            ]
+          }
+        },
+        "required": [
+          "authorization_id",
+          "task_ids",
+          "base_commit",
+          "allowed_ancestry",
+          "governance_inputs",
+          "decisions",
+          "allowed_paths",
+          "protected_paths",
+          "evidence_policy",
+          "network_mode",
+          "credential_mode",
+          "donor_mode",
+          "operator_id",
+          "authorized_at"
+        ]
+      },
+      "authentication": {
+        "type": "object",
+        "fields": {
+          "payload_sha256": {"type": "string", "format": "digest"},
+          "method": {"type": "string", "format": "id"},
+          "trust_policy_id": {"type": "string", "format": "id"},
+          "trust_policy_version": {"type": "integer", "minimum": 1},
+          "trust_policy_sha256": {"type": "string", "format": "digest"},
+          "channel_id": {"type": "string", "format": "id"},
+          "attested_principal": {"type": "string", "format": "id"},
+          "evidence_uri": {"type": "string", "format": "uri"},
+          "evidence_media_type": {"type": "string", "min_length": 1},
+          "evidence_bytes": {"type": "integer", "minimum": 0},
+          "evidence_sha256": {"type": "string", "format": "digest"}
+        },
+        "required": [
+          "payload_sha256",
+          "method",
+          "trust_policy_id",
+          "trust_policy_version",
+          "trust_policy_sha256",
+          "channel_id",
+          "attested_principal",
+          "evidence_uri",
+          "evidence_media_type",
+          "evidence_bytes",
+          "evidence_sha256"
+        ]
+      }
+    },
+    "required": ["schema", "packet_id", "launch_payload", "authentication"]
+  }
+}

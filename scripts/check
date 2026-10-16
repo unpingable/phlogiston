@@ -1,0 +1,18 @@
+#!/bin/sh
+set -eu
+
+repository_root=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
+cd "$repository_root"
+
+# Prefer the project-local virtual environment when present. The separately
+# installed observer archive tool (V0-M2A) carries DuckDB/PyArrow, which live
+# only in that environment; the base system Python never acquires them.
+if [ -x "$repository_root/.venv/bin/python3" ]; then
+    python="$repository_root/.venv/bin/python3"
+else
+    python=python3
+fi
+
+"$python" -m ruff check .
+"$python" -m ruff format --check .
+"$python" -m pytest "$@"

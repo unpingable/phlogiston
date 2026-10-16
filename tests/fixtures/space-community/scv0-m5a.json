@@ -1,0 +1,18 @@
+{
+  "profile": "scv0-projection-artifact-compiler/1",
+  "m2Fixture": "tests/fixtures/space-community/scv0-m2.json",
+  "ordinaryPolicyReference": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "ordinaryPublicationReference": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "auditPolicyReference": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+  "auditPublicationReference": "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+  "presentation": {
+    "profile": "scv0-test-presentation/1",
+    "sourceReferenceId": "sha256:33981b56015a979c8f4333d2ae46aa2cdc7f00090a2dbca4e1f23aed18560688",
+    "sourceUri": "at://did:web:space-authority.invalid.test/space/test.invalid.community/community-lab/did:web:author.invalid.test/test.invalid.community.post/post-1",
+    "sourceCid": "bafyreicl6ujc6ncfktctxxroxognfn7d2fqavvrryoc2lv6m4i6hpbkfti",
+    "title": "Synthetic community post",
+    "body": "A bounded presentation copied for a synthetic reader artifact.",
+    "authorDisplayReference": "did:web:author.invalid.test"
+  },
+  "secretMaterialPresent": false
+}

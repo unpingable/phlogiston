@@ -1,0 +1,41 @@
+{
+  "profile": "scv0-m2-fixture/1",
+  "reducerVersion": "scv0-projection-reducer/1",
+  "m1Fixture": "tests/fixtures/space-community/scv0-m1.json",
+  "source": {
+    "changedCid": "bafyreihhponjv2pdbmg33nxvccrgj34546avahl3nojk5cplawofvn2d3m"
+  },
+  "observations": {
+    "initial": {
+      "evidenceReceipt": "sha256:8888888888888888888888888888888888888888888888888888888888888888",
+      "currentnessReceipt": "sha256:9999999999999999999999999999999999999999999999999999999999999999",
+      "observedAt": "2026-08-21T12:00:30Z"
+    },
+    "afterAdmission": {
+      "evidenceReceipt": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "currentnessReceipt": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "observedAt": "2026-08-21T12:03:00Z"
+    },
+    "changed": {
+      "evidenceReceipt": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      "currentnessReceipt": "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+      "observedAt": "2026-08-21T12:04:00Z"
+    },
+    "absent": {
+      "evidenceReceipt": "sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+      "currentnessReceipt": "sha256:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "observedAt": "2026-08-21T12:04:00Z"
+    },
+    "unavailable": {
+      "evidenceReceipt": "sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+      "currentnessReceipt": "sha256:123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0",
+      "observedAt": "2026-08-21T12:04:30Z"
+    },
+    "reappeared": {
+      "evidenceReceipt": "sha256:23456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef01",
+      "currentnessReceipt": "sha256:3456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef012",
+      "observedAt": "2026-08-21T12:06:00Z"
+    }
+  },
+  "secretMaterialPresent": false
+}

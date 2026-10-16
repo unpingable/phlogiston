@@ -1,0 +1,8 @@
+community_did = "did:plc:exampleparticipantabcdef"
+community_slug = "internal-dogfood"
+administrator_did = "did:plc:replacewithtestmoderator"
+sqlite_path = "/var/lib/communitywatch/communitywatch.sqlite3"
+event_source_url = "wss://jetstream2.us-east.bsky.network/subscribe"
+resolver_url = "https://plc.directory"
+bind = "127.0.0.1"
+port = 8080

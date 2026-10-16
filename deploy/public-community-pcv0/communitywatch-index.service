@@ -1,0 +1,19 @@
+[Unit]
+Description=Detect-only ATProto community observer
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=communitywatch
+Group=communitywatch
+ExecStart=/opt/atproto-community/.venv/bin/communitywatch-index --config /etc/atproto-community/communitywatch.toml
+Restart=on-failure
+UMask=0077
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/communitywatch
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

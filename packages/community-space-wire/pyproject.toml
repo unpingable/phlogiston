@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "community-space-wire"
+version = "0.1.0"
+license = "MIT OR Apache-2.0"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "community-model==0.1.0",
+    "community-space-model==0.1.0",
+]
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["community_space_wire", "community_space_wire.*"]
+namespaces = false
+
+[tool.setuptools.package-data]
+community_space_wire = ["py.typed", "lexicons/*.json"]

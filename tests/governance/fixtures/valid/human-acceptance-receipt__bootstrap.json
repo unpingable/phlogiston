@@ -1,0 +1,44 @@
+{
+  "schema": "human-acceptance-receipt-v1",
+  "receipt_id": "HAR-V0-G0-2026-08-14-01",
+  "acceptance_payload": {
+    "purpose": "bootstrap_outputs",
+    "subjects": [
+      {
+        "role": "task_manifest",
+        "path": "governance/manifest/v0-task-manifest.json",
+        "uri": "file:///evidence/run-01/candidate/v0-task-manifest.json",
+        "media_type": "application/json",
+        "bytes": 9,
+        "sha256": "sha256:0904a95a18ca8c006533d77728b9d968e271ceb3abe14d7511c950dec1f51146"
+      },
+      {
+        "role": "gate_program",
+        "path": "scripts/v0-gate",
+        "uri": "file:///evidence/run-01/candidate/v0-gate",
+        "media_type": "text/x-python",
+        "bytes": 5,
+        "sha256": "sha256:8a648249ecf744b3b4cb8c9bbe9c993032693a087cb98d2369a7acf39eb299af"
+      }
+    ],
+    "evidence_sha256s": [
+      "sha256:da6f42e7f7ebc20ca2d485b447eff34ba7c6a7cd6db5a940f462e5971163fccf"
+    ],
+    "verdict": "accepted",
+    "operator_id": "operator-jbeck",
+    "decided_at": "2026-08-14T06:00:00Z"
+  },
+  "authentication": {
+    "payload_sha256": "sha256:c5228fd4667cf6b757bca7eed9a2b4f07b2826c4d016bf9c1e84a3e5a537da47",
+    "method": "manual_controller_channel",
+    "trust_policy_id": "manual-controller-channel-v1",
+    "trust_policy_version": 1,
+    "trust_policy_sha256": "sha256:6aeadc519ba9e05e594f3347d7d040a1e37084d4ad50785cafb44c901f417d71",
+    "channel_id": "manual-channel-1",
+    "attested_principal": "operator-jbeck",
+    "evidence_uri": "file:///evidence/HAR-V0-G0.txt",
+    "evidence_media_type": "text/plain; charset=utf-8",
+    "evidence_bytes": 33,
+    "evidence_sha256": "sha256:99b397473cea0975021e9fe8242b7713676283e15e42fbe381b32aaf0b38a80d"
+  }
+}

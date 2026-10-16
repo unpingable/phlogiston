@@ -1,0 +1,89 @@
+{
+  "schema": "gstrict-v1",
+  "id": "human-acceptance-receipt",
+  "version": "1",
+  "root": {
+    "type": "object",
+    "fields": {
+      "schema": {"type": "string", "enum": ["human-acceptance-receipt-v1"]},
+      "receipt_id": {"type": "string", "format": "id"},
+      "acceptance_payload": {
+        "type": "object",
+        "fields": {
+          "purpose": {
+            "type": "string",
+            "enum": [
+              "bootstrap_outputs",
+              "contract_freeze",
+              "live_trial",
+              "slice_exit"
+            ]
+          },
+          "subjects": {
+            "type": "array",
+            "min_items": 1,
+            "items": {
+              "type": "object",
+              "fields": {
+                "role": {"type": "string", "min_length": 1},
+                "path": {"type": "string", "format": "path"},
+                "uri": {"type": "string", "format": "uri"},
+                "media_type": {"type": "string", "min_length": 1},
+                "bytes": {"type": "integer", "minimum": 0},
+                "sha256": {"type": "string", "format": "digest"}
+              },
+              "required": ["role", "uri", "media_type", "bytes", "sha256"]
+            }
+          },
+          "evidence_sha256s": {
+            "type": "array",
+            "min_items": 1,
+            "unique_items": true,
+            "items": {"type": "string", "format": "digest"}
+          },
+          "verdict": {"type": "string", "min_length": 1},
+          "operator_id": {"type": "string", "format": "id"},
+          "decided_at": {"type": "string", "format": "timestamp"}
+        },
+        "required": [
+          "purpose",
+          "subjects",
+          "evidence_sha256s",
+          "verdict",
+          "operator_id",
+          "decided_at"
+        ]
+      },
+      "authentication": {
+        "type": "object",
+        "fields": {
+          "payload_sha256": {"type": "string", "format": "digest"},
+          "method": {"type": "string", "format": "id"},
+          "trust_policy_id": {"type": "string", "format": "id"},
+          "trust_policy_version": {"type": "integer", "minimum": 1},
+          "trust_policy_sha256": {"type": "string", "format": "digest"},
+          "channel_id": {"type": "string", "format": "id"},
+          "attested_principal": {"type": "string", "format": "id"},
+          "evidence_uri": {"type": "string", "format": "uri"},
+          "evidence_media_type": {"type": "string", "min_length": 1},
+          "evidence_bytes": {"type": "integer", "minimum": 0},
+          "evidence_sha256": {"type": "string", "format": "digest"}
+        },
+        "required": [
+          "payload_sha256",
+          "method",
+          "trust_policy_id",
+          "trust_policy_version",
+          "trust_policy_sha256",
+          "channel_id",
+          "attested_principal",
+          "evidence_uri",
+          "evidence_media_type",
+          "evidence_bytes",
+          "evidence_sha256"
+        ]
+      }
+    },
+    "required": ["schema", "receipt_id", "acceptance_payload", "authentication"]
+  }
+}

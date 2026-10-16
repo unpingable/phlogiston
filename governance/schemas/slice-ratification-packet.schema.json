@@ -1,0 +1,67 @@
+{
+  "schema": "gstrict-v1",
+  "id": "slice-ratification-packet",
+  "version": "1",
+  "root": {
+    "type": "object",
+    "fields": {
+      "schema": {"type": "string", "enum": ["slice-ratification-packet-v1"]},
+      "packet_id": {"type": "string", "format": "id"},
+      "slice_id": {"type": "string", "format": "id", "pattern": "^S\\d+$"},
+      "prepared_at": {"type": "string", "format": "timestamp"},
+      "preparer": {"type": "string", "min_length": 1},
+      "base_commit": {"type": "string", "format": "commit"},
+      "forcing_case": {
+        "type": "object",
+        "fields": {
+          "predicate": {"type": "string", "min_length": 1},
+          "evidence": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "fields": {
+                "role": {"type": "string", "min_length": 1},
+                "uri": {"type": "string", "format": "uri"},
+                "media_type": {"type": "string", "min_length": 1},
+                "bytes": {"type": "integer", "minimum": 0},
+                "sha256": {"type": "string", "format": "digest"}
+              },
+              "required": ["role", "uri", "media_type", "bytes", "sha256"]
+            }
+          }
+        },
+        "required": ["predicate", "evidence"]
+      },
+      "decision_receipt_sha256s": {
+        "type": "array",
+        "items": {"type": "string", "format": "digest"},
+        "unique_items": true
+      },
+      "amendments": {
+        "type": "array",
+        "min_items": 1,
+        "items": {
+          "type": "object",
+          "fields": {
+            "path": {"type": "string", "format": "path"},
+            "change_set_id": {"type": "string", "format": "id"},
+            "base_sha256": {"type": "string", "format": "digest"},
+            "result_sha256": {"type": "string", "format": "digest"}
+          },
+          "required": ["path", "change_set_id", "base_sha256", "result_sha256"]
+        }
+      }
+    },
+    "required": [
+      "schema",
+      "packet_id",
+      "slice_id",
+      "prepared_at",
+      "preparer",
+      "base_commit",
+      "forcing_case",
+      "decision_receipt_sha256s",
+      "amendments"
+    ]
+  }
+}

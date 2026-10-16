@@ -1,0 +1,34 @@
+{
+  "lexicon": 1,
+  "id": "app.phlogiston.community.submit",
+  "defs": {
+    "main": {
+      "type": "record",
+      "key": "tid",
+      "description": "An author.s request to admit an exact version of their own post. discussion distinguishes a reply opt-in from a root submission.",
+      "record": {
+        "type": "object",
+        "required": ["community", "subject", "createdAt"],
+        "properties": {
+          "community": {
+            "type": "string",
+            "format": "did"
+          },
+          "subject": {
+            "type": "ref",
+            "ref": "com.atproto.repo.strongRef"
+          },
+          "discussion": {
+            "type": "ref",
+            "ref": "com.atproto.repo.strongRef",
+            "description": "Exact root admission for a reply opt-in. Its absence denotes a root submission."
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "datetime"
+          }
+        }
+      }
+    }
+  }
+}

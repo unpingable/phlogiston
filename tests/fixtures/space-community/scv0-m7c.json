@@ -1,0 +1,29 @@
+{
+  "profile": "scv0-human-facing-synthetic-showcase/2",
+  "communityName": "Juniper Commons",
+  "synthetic": true,
+  "expectedCorpusId": "sha256:248f97b0820707624e8f752ed6765e4feb36e99fa4aadeaf796eb19233db2e2d",
+  "expectedBundleId": "sha256:b8c1849636d9228450a2b6e7627bbfcee4b909e671d97922c027685f5608cb7d",
+  "embeddedM7aBundleId": "sha256:9bc2a8935f1f239fbcd311287fcf3602fa4a7f1ebfd9bcada0d413dc26455b5e",
+  "expectedFileCount": 45,
+  "publicationRepository": "https://github.com/unpingable/atproto-community-demo",
+  "publicationCommit": "2d4a33779c9b6d1ffa0cde27144671f1e21189af",
+  "publicationUrl": "https://unpingable.github.io/atproto-community-demo/",
+  "pagesBuildId": 0,
+  "pagesBuildStatus": "built",
+  "observedAt": "2026-08-24T20:53:39Z",
+  "hostedBodiesVerified": 45,
+  "communityEntryCount": 3,
+  "lifecycleCases": [
+    "added",
+    "changed_at_source",
+    "source_unavailable",
+    "removed"
+  ],
+  "liveAtprotoData": false,
+  "secretMaterialPresent": false,
+  "humanParticipants": 0,
+  "humanUsabilityClaim": false,
+  "authorityClaim": false,
+  "productionReadinessClaim": false
+}

@@ -1,0 +1,21 @@
+[Unit]
+Description=Public ATProto community browser app
+After=network-online.target communitywatch-web.service communityd.service
+Wants=communitywatch-web.service communityd.service
+
+[Service]
+User=community-web
+Group=community-authority
+WorkingDirectory=/opt/atproto-community/apps/community-live
+EnvironmentFile=/etc/atproto-community/community-web.env
+ExecStart=/opt/atproto-community/apps/community-live/node_modules/.bin/tsx src/server.ts
+Restart=on-failure
+UMask=0077
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/community-web /run/community-authority
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

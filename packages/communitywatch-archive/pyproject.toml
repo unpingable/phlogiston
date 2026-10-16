@@ -1,0 +1,36 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "communitywatch-archive"
+version = "0.1.0"
+license = "MIT OR Apache-2.0"
+description = "Offline sealed-history archive tool for the ATProto community observer."
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "community-model==0.1.0",
+    "communitywatch==0.1.0",
+    "duckdb>=1.5,<2",
+    "pyarrow>=25,<26",
+]
+
+[project.scripts]
+communitywatch-archive = "communitywatch_archive.cli:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+include-package-data = false
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["communitywatch_archive", "communitywatch_archive.*"]
+namespaces = false
+
+[tool.setuptools.package-data]
+communitywatch_archive = ["py.typed"]
+
+[tool.pytest.ini_options]
+addopts = ["--strict-config", "--strict-markers", "-ra"]
+testpaths = ["tests"]
+pythonpath = ["src", "../community-model/src", "../communitywatch/src"]

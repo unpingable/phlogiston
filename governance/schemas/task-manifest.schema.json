@@ -1,0 +1,47 @@
+{
+  "schema": "gstrict-v1",
+  "id": "v0-task-manifest",
+  "version": "1",
+  "root": {
+    "type": "object",
+    "fields": {
+      "schema": {"type": "string", "enum": ["v0-task-manifest-v1"]},
+      "manifest_id": {"type": "string", "format": "id"},
+      "version": {"type": "integer", "minimum": 1},
+      "tasks": {
+        "type": "array",
+        "min_items": 1,
+        "items": {
+          "type": "object",
+          "fields": {
+            "task_id": {"type": "string", "format": "id"},
+            "class": {"type": "string", "min_length": 1},
+            "prerequisites": {
+              "type": "array",
+              "items": {"type": "string", "format": "id"},
+              "unique_items": true
+            },
+            "human_blockers": {
+              "type": "array",
+              "items": {"type": "string", "min_length": 1},
+              "unique_items": true
+            },
+            "done_command": {"type": "string", "min_length": 1},
+            "network_mode": {"type": "string", "enum": ["denied"]},
+            "credential_mode": {"type": "string", "enum": ["none"]}
+          },
+          "required": [
+            "task_id",
+            "class",
+            "prerequisites",
+            "human_blockers",
+            "done_command",
+            "network_mode",
+            "credential_mode"
+          ]
+        }
+      }
+    },
+    "required": ["schema", "manifest_id", "version", "tasks"]
+  }
+}

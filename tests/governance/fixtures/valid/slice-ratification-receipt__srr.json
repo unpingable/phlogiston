@@ -1,0 +1,29 @@
+{
+  "schema": "slice-ratification-receipt-v1",
+  "receipt_id": "SRR-S19-2026-08-14-01",
+  "ratification_payload": {
+    "slice_id": "S19",
+    "packet_sha256": "sha256:de597f015604087522befd6c19d47b6e5fb9e788504dafde7438fbe3418a8d1b",
+    "change_set_sha256": "sha256:94d88705744ab0cf8fb548e92a733f4418a1ae9e649c77076cc6c975bc264808",
+    "decision_receipt_sha256s": [
+      "sha256:16ca55950b73f26a98b173973b4d6f7357eee8abcbfd374b4fc8d11ee504a388"
+    ],
+    "governance_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "governance_tree": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "operator_id": "operator-jbeck",
+    "decided_at": "2026-08-14T03:30:00Z"
+  },
+  "authentication": {
+    "payload_sha256": "sha256:f052a1d126d4bf738200fded938682bd398e43037f0fb5513409417f891d7e01",
+    "method": "manual_controller_channel",
+    "trust_policy_id": "manual-controller-channel-v1",
+    "trust_policy_version": 1,
+    "trust_policy_sha256": "sha256:6aeadc519ba9e05e594f3347d7d040a1e37084d4ad50785cafb44c901f417d71",
+    "channel_id": "manual-channel-1",
+    "attested_principal": "operator-jbeck",
+    "evidence_uri": "file:///evidence/SRR-S19-2026-08-14-01.txt",
+    "evidence_media_type": "text/plain; charset=utf-8",
+    "evidence_bytes": 45,
+    "evidence_sha256": "sha256:ec562c66df4b07d5fa715e21bdc9e7a1f3f52207db37c59fb18624d298eeef6f"
+  }
+}

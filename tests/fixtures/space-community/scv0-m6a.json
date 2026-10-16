@@ -1,0 +1,7 @@
+{
+  "profile": "scv0-public-projection-feed/1",
+  "artifactFixture": "tests/fixtures/space-community/scv0-m5a.json",
+  "ordinaryPublishedAt": "2026-08-22T16:00:00Z",
+  "auditPublishedAt": "2026-08-22T16:00:01Z",
+  "secretMaterialPresent": false
+}

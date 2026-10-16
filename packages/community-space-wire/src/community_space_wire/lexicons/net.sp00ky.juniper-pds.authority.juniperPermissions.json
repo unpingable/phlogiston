@@ -1,0 +1,29 @@
+{
+  "lexicon": 1,
+  "id": "net.sp00ky.juniper-pds.authority.juniperPermissions",
+  "defs": {
+    "main": {
+      "type": "permission-set",
+      "title": "Juniper Commons disposable alpha",
+      "detail": "Create and read narrowly scoped Juniper alpha records; governed writer scopes remain separately frozen.",
+      "permissions": [
+        {
+          "type": "permission",
+          "resource": "space",
+          "spaceType": "net.sp00ky.juniper-pds.authority.juniperCommunity",
+          "authority": "did:plc:wklgd4ebjiajx4gj3fthp62m",
+          "skey": "self",
+          "collection": [
+            "net.sp00ky.juniper-pds.authority.juniperPost",
+            "net.sp00ky.juniper-pds.authority.juniperSubmission",
+            "net.sp00ky.juniper-pds.authority.juniperAdmission",
+            "net.sp00ky.juniper-pds.authority.juniperRemoval",
+            "net.sp00ky.juniper-pds.authority.juniperWithdrawal"
+          ],
+          "action": ["read", "create", "update", "delete"],
+          "manage": ["create", "update", "delete"]
+        }
+      ]
+    }
+  }
+}

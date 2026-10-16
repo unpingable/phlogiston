@@ -1,0 +1,132 @@
+{
+  "schema": "v0-task-manifest-v1",
+  "manifest_id": "v0-task-manifest",
+  "version": 1,
+  "tasks": [
+    {
+      "task_id": "V0-G0",
+      "class": "governance bootstrap",
+      "prerequisites": [],
+      "human_blockers": [
+        "OQ-7 decided with selected answer A or B",
+        "valid OQ-7 operator-decision receipt and required change set",
+        "positive BUILD.md governed-execution authorization row",
+        "explicit human bootstrap controller-entry packet",
+        "clean pinned base"
+      ],
+      "done_command": "./scripts/v0-gate V0-G0",
+      "network_mode": "denied",
+      "credential_mode": "none"
+    },
+    {
+      "task_id": "V0-D1",
+      "class": "documentation and golden fixtures",
+      "prerequisites": ["V0-G0"],
+      "human_blockers": [
+        "bootstrap-output human-acceptance receipt",
+        "protected controller-entry packet"
+      ],
+      "done_command": "./scripts/v0-gate V0-D1",
+      "network_mode": "denied",
+      "credential_mode": "none"
+    },
+    {
+      "task_id": "V0-M1",
+      "class": "agent-local, offline",
+      "prerequisites": ["V0-D1"],
+      "human_blockers": [
+        "accepted contract-freeze human-acceptance receipt",
+        "donor mode fixed"
+      ],
+      "done_command": "./scripts/v0-gate V0-M1",
+      "network_mode": "denied",
+      "credential_mode": "none"
+    },
+    {
+      "task_id": "V0-D2",
+      "class": "documentation; storage refreeze",
+      "prerequisites": ["V0-M1"],
+      "human_blockers": ["explicit human storage-refreeze instruction"],
+      "done_command": "./scripts/v0-gate V0-D2",
+      "network_mode": "denied",
+      "credential_mode": "none"
+    },
+    {
+      "task_id": "V0-M2",
+      "class": "agent-local, offline",
+      "prerequisites": ["V0-D2"],
+      "human_blockers": [],
+      "done_command": "./scripts/v0-gate V0-M2",
+      "network_mode": "denied",
+      "credential_mode": "none"
+    },
+    {
+      "task_id": "V0-M2A",
+      "class": "agent-local, offline archive tooling",
+      "prerequisites": ["V0-M2"],
+      "human_blockers": [],
+      "done_command": "./scripts/v0-gate V0-M2A",
+      "network_mode": "denied",
+      "credential_mode": "none"
+    },
+    {
+      "task_id": "V0-M3",
+      "class": "agent-local, offline",
+      "prerequisites": ["V0-M2A"],
+      "human_blockers": [],
+      "done_command": "./scripts/v0-gate V0-M3",
+      "network_mode": "denied",
+      "credential_mode": "none"
+    },
+    {
+      "task_id": "V0-M4",
+      "class": "agent-local, offline",
+      "prerequisites": ["V0-M3"],
+      "human_blockers": ["OQ-5 decided with a valid selected answer"],
+      "done_command": "./scripts/v0-gate V0-M4",
+      "network_mode": "denied",
+      "credential_mode": "none"
+    },
+    {
+      "task_id": "V0-M5",
+      "class": "agent-local, offline",
+      "prerequisites": ["V0-M4"],
+      "human_blockers": [],
+      "done_command": "./scripts/v0-gate V0-M5",
+      "network_mode": "denied",
+      "credential_mode": "none"
+    },
+    {
+      "task_id": "V0-M6",
+      "class": "agent-local plus live read boundary",
+      "prerequisites": ["V0-M5"],
+      "human_blockers": ["OQ-2 decided with a valid selected answer"],
+      "done_command": "./scripts/v0-gate V0-M6",
+      "network_mode": "denied",
+      "credential_mode": "none"
+    },
+    {
+      "task_id": "V0-M7",
+      "class": "guarantee; isolated live writer",
+      "prerequisites": ["V0-M6"],
+      "human_blockers": [
+        "OQ-1 decided with a valid selected answer",
+        "OQ-3 decided with a valid selected answer",
+        "OQ-4 decided with a valid selected answer",
+        "OQ-6 only for donor copying"
+      ],
+      "done_command": "./scripts/v0-gate V0-M7",
+      "network_mode": "denied",
+      "credential_mode": "none"
+    },
+    {
+      "task_id": "V0-M8",
+      "class": "human trial and verdict",
+      "prerequisites": ["V0-M7"],
+      "human_blockers": ["non-production trial authorization"],
+      "done_command": "./scripts/v0-gate V0-M8",
+      "network_mode": "denied",
+      "credential_mode": "none"
+    }
+  ]
+}

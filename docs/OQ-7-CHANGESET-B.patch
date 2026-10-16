@@ -1,0 +1,40 @@
+schema = "oq7-bootstrap-required-change-set-v1"
+change_set_id = "OQCS-OQ-7-2026-07-27-B-03"
+packet_id = "OQP-OQ-7-2026-07-27-03"
+question_id = "OQ-7"
+answer_id = "B"
+receipt_id = "OQDR-OQ-7-2026-07-27-B-02"
+target_count = 2
+target.1.path = "BUILD.md"
+target.1.base_sha256 = "sha256:5c0d2de321a05c0e26e10c085a96358e059de17639e08dffb530ba482d0a85bd"
+target.1.result_sha256 = "sha256:d336ba874cf051118d67b91c8877cf1f34cf3735cd375dc0bb9e615c07513cea"
+target.2.path = "docs/OPEN-QUESTIONS.md"
+target.2.base_sha256 = "sha256:fc704af74e51a29b29d35c58cc4aa0c295ce11729f12e40b6bf62b4f93986e28"
+target.2.result_sha256 = "sha256:17f96ef108441fa8af83cf6a1defc59b791b179dc2febcd4350b64d3893e07a5"
+--PATCH--
+--- a/BUILD.md
++++ b/BUILD.md
+@@ -89,0 +90,11 @@
++## Governed execution authorization
++
++<!-- governed-execution:v1 -->
++authorization_id = "V0-G0-bootstrap-1"
++task = "V0-G0"
++decision = "authorized"
++scope = "governance-bootstrap-only"
++contract_sha256 = "sha256:5196331349155397bb0f6b4f85a9adda5ed4e1741e75b043341f4a1f0ec0afa1"
++single_use = true
++<!-- /governed-execution -->
++
+--- a/docs/OPEN-QUESTIONS.md
++++ b/docs/OPEN-QUESTIONS.md
+@@ -167 +167 @@
+-**Status:** open
++**Status:** decided
+@@ -172 +172 @@
+-**Selected answer:** none
++**Selected answer:** B
+@@ -174 +174,2 @@
+-**Operator-decision receipt:** none
++**Operator-decision receipt:** `OQDR-OQ-7-2026-07-27-B-02` — external;
++authenticated under `manual-controller-channel-v1`

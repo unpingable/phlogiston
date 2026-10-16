@@ -1,0 +1,9 @@
+{
+  "$type": "app.phlogiston.community.submit",
+  "community": "did:web:community.invalid",
+  "subject": {
+    "uri": "at://did:web:alice.invalid/app.bsky.feed.post/3jzfcijpj2z2a",
+    "cid": "bafyreic7cldbweyx7ta42gvymb5xkglmqauaawvyxsoqmtxfowrudsavli"
+  },
+  "createdAt": "2026-07-10T14:01:00Z"
+}

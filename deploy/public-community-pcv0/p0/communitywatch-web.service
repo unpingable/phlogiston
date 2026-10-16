@@ -1,0 +1,19 @@
+[Unit]
+Description=Read-only community projection API
+After=communitywatch-index.service
+Wants=communitywatch-index.service
+
+[Service]
+User=communitywatch
+Group=communitywatch
+ExecStart=/opt/atproto-community/.venv/bin/communitywatch-web --config /etc/atproto-community/communitywatch.toml
+Restart=on-failure
+UMask=0077
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+ReadOnlyPaths=/var/lib/communitywatch
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

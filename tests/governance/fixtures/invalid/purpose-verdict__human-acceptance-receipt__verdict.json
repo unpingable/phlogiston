@@ -1,0 +1,35 @@
+{
+  "schema": "human-acceptance-receipt-v1",
+  "receipt_id": "HAR-V0-D1-2026-08-14-01",
+  "acceptance_payload": {
+    "purpose": "contract_freeze",
+    "subjects": [
+      {
+        "role": "reviewed_contract",
+        "uri": "file:///evidence/d1/contract.md",
+        "media_type": "text/markdown; charset=utf-8",
+        "bytes": 8,
+        "sha256": "sha256:cc8321d6375c494d043fdd0260f21bc0ec51dacc9f6abb7f909cdcd3041b78bf"
+      }
+    ],
+    "evidence_sha256s": [
+      "sha256:e9be17c854be6cbb45e916009219530226d1aa6af86ed03490a38aebd143164b"
+    ],
+    "verdict": "looks-good",
+    "operator_id": "operator-jbeck",
+    "decided_at": "2026-08-14T07:00:00Z"
+  },
+  "authentication": {
+    "payload_sha256": "sha256:b0e3e943e2df163b4aa5605638a47e872a73200956fe988555416f0317872217",
+    "method": "manual_controller_channel",
+    "trust_policy_id": "manual-controller-channel-v1",
+    "trust_policy_version": 1,
+    "trust_policy_sha256": "sha256:6aeadc519ba9e05e594f3347d7d040a1e37084d4ad50785cafb44c901f417d71",
+    "channel_id": "manual-channel-1",
+    "attested_principal": "operator-jbeck",
+    "evidence_uri": "file:///evidence/HAR-V0-D1.txt",
+    "evidence_media_type": "text/plain; charset=utf-8",
+    "evidence_bytes": 33,
+    "evidence_sha256": "sha256:ab4de2665e77ad466f297856a1441ce16fd69f24e06a165707bcad56933c74ab"
+  }
+}

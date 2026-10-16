@@ -1,0 +1,30 @@
+{
+  "lexicon": 1,
+  "id": "net.sp00ky.juniper-pds.authority.juniperSubmission",
+  "defs": {
+    "main": {
+      "type": "record",
+      "key": "tid",
+      "description": "An author's exact self-submission and bounded public-presentation consent.",
+      "record": {
+        "type": "object",
+        "required": ["subject", "communityActor", "consentProfile", "presentation", "createdAt"],
+        "properties": {
+          "subject": {"type": "ref", "ref": "com.atproto.repo.strongRef"},
+          "communityActor": {"type": "string", "format": "did"},
+          "consentProfile": {"type": "string", "knownValues": ["scv0-exact-public-presentation-consent/1"]},
+          "presentation": {
+            "type": "object",
+            "required": ["title", "body", "authorDisplayReference"],
+            "properties": {
+              "title": {"type": "string", "maxGraphemes": 140, "maxLength": 1400},
+              "body": {"type": "string", "maxGraphemes": 2000, "maxLength": 20000},
+              "authorDisplayReference": {"type": "string", "maxLength": 512}
+            }
+          },
+          "createdAt": {"type": "string", "format": "datetime"}
+        }
+      }
+    }
+  }
+}

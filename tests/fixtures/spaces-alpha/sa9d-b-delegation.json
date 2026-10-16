@@ -1,0 +1,54 @@
+{
+  "format": "spaces-alpha-sa9d-b-delegation-vector-v1",
+  "compatibility": {
+    "proposalCommit": "54c9cf5153d668c4f4fb4438529967412e861775",
+    "qualifierVersion": "sa9d-b-v1",
+    "tokenType": "atproto-space-delegation+jwt",
+    "accountKeyId": "#atproto",
+    "supportedAlgorithms": ["ES256", "ES256K"],
+    "fixtureLifetimeSeconds": 60
+  },
+  "fixture": {
+    "issuerDid": "did:plc:sa9dbfixtureuser",
+    "space": "at://did:plc:sa9dbspaceauthority/space/invalid.test.communityspace/forum",
+    "audience": "did:plc:sa9dbspaceauthority#atproto_space_host",
+    "algorithm": "ES256",
+    "issuedAt": 1787346000,
+    "expiresAt": 1787346060,
+    "jti": "delegation-sa9db-0001",
+    "tokenSha256": "23a9fe47ce63805437300ab1e642ffa6e35dc8d8cc7f5bd785e4664490415dfc",
+    "accountKeyReceiptId": "sha256:29385f1c4bc5887229a2225aaf13ba6a93b9dad28b4224dc9dcde3108f7eacde",
+    "oauthGrantReceiptId": "sha256:ddd9fa314f7f197fa9e6ec18b360bdcde67e8919fd37472cf07d55279cd5cc86",
+    "dpopRequestReceiptId": "sha256:a0b6e0ce5da3737bc649b1bdb2dcc47a1e0dc3400428bf2b8c3f7844b98178f5",
+    "delegationReceiptId": "sha256:deedc3aaeff12130c55568da5635d704fbf0ff0a18d527386511e82c9cdc4b7a"
+  },
+  "positiveWitnesses": [
+    "exact-jwt-and-account-signature",
+    "oauth-read-and-dpop-request-binding",
+    "sa9c-sa9b-account-key-provenance",
+    "bounded-single-use-jti",
+    "secret-free-receipt"
+  ],
+  "hostileWitnesses": [
+    "header-and-lxm-confusion",
+    "issuer-space-audience-substitution",
+    "time-and-jti-mutation",
+    "account-key-and-signature-substitution",
+    "bounded-replay",
+    "read-self-laundering",
+    "non-delegation-request-relabeling",
+    "resolution-oauth-context-substitution",
+    "authority-and-token-relabeling"
+  ],
+  "secretMaterialPresent": false,
+  "explicitNonClaims": [
+    "client_application_identity",
+    "space_authority_admission",
+    "space_credential",
+    "space_access",
+    "space_membership",
+    "community_standing",
+    "governed_authorization",
+    "artifact_validity"
+  ]
+}

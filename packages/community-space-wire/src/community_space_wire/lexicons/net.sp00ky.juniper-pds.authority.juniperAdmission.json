@@ -1,0 +1,22 @@
+{
+  "lexicon": 1,
+  "id": "net.sp00ky.juniper-pds.authority.juniperAdmission",
+  "defs": {
+    "main": {
+      "type": "record",
+      "key": "tid",
+      "description": "A community-actor decision admitting one exact self-submission.",
+      "record": {
+        "type": "object",
+        "required": ["submission", "subject", "authorizationOccurrence", "sourceObservationReceipt", "createdAt"],
+        "properties": {
+          "submission": {"type": "ref", "ref": "com.atproto.repo.strongRef"},
+          "subject": {"type": "ref", "ref": "com.atproto.repo.strongRef"},
+          "authorizationOccurrence": {"type": "string", "maxLength": 71},
+          "sourceObservationReceipt": {"type": "string", "maxLength": 71},
+          "createdAt": {"type": "string", "format": "datetime"}
+        }
+      }
+    }
+  }
+}

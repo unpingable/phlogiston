@@ -1,0 +1,8 @@
+projection_origin = "http://127.0.0.1:8080"
+community_did = "did:plc:exampleparticipantabcdef"
+community_name = "ATProto Community Internal Dogfood"
+public_base_url = "https://phlogiston.app"
+webhook_url = "https://room-webhook.invalid/replace-with-the-room-incoming-webhook"
+webhook_payload_key = "content"
+poll_interval_seconds = 30.0
+cursor_path = "/var/lib/community-notify/cursor.json"

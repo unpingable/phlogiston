@@ -1,0 +1,1602 @@
+{
+  "schema": "atproto-community.pcv2-synthetic-user.v1",
+  "result": "passed",
+  "generatedAt": "2026-09-25T16:29:00.701Z",
+  "sourceCommit": "57cb407c6fb93e49083b644784f14fc3c4cdc2d6",
+  "pdsImage": "ghcr.io/bluesky-social/pds@sha256:d155af1c906d7848e7dea9d59a8a7def065a04b77aa98ae56ea05a8d4eadb63a",
+  "components": {
+    "real": [
+      "PDS x3 (pinned image, dev mode, isolated bridge, loopback-published)",
+      "PDS OAuth authorization server and consent UI (driven by headless Chromium)",
+      "community-live (node --import tsx src/server.ts, loopback OAuth client)",
+      "communityd (serve_cli, Unix socket, PDS writer with app-password credential file)",
+      "communitywatch ObserverStore + VerifyingEventSource (repo proofs against the PDS)",
+      "communitywatch-web projection API (loopback)",
+      "community-notify --once per step (real HTTPS webhook sender, self-signed loopback CA)",
+      "community-policy run-once per step (real worker, own SQLite state, communityd socket peer as UID+1 in a container that mounts the host's /usr read-only)",
+      "Playwright Chromium as three browsers: participant, moderator, signed-out"
+    ],
+    "standIn": [
+      "identity directory: did:plc registry + com.atproto.identity.resolveHandle over the PDS-submitted PLC operations (no signature checks, no history)",
+      "AppView: app.bsky.actor.getProfiles and app.bsky.feed.getPosts answered from the real PDS records via com.atproto.repo.getRecord (real current CIDs); can simulate unavailable, mismatched CID, and handle.invalid",
+      "room webhook receiver: loopback HTTPS endpoint that records payloads and can reject one event",
+      "observer transport: com.atproto.repo.listRecords polling in place of a firehose; every claim is still repo-proof verified"
+    ]
+  },
+  "communityLiveConfigSeams": [
+    "COMMUNITY_PLC_DIRECTORY_URL",
+    "COMMUNITY_HANDLE_RESOLVER_URL"
+  ],
+  "identities": {
+    "community": {
+      "did": "did:plc:gpxoxueevn2vu6au3ikfs44a",
+      "handle": "pcv2-community.test",
+      "pds": "http://localhost:37235"
+    },
+    "participant": {
+      "did": "did:plc:tciakr64yyayncqudgidroor",
+      "handle": "pcv2-participant.test",
+      "pds": "http://localhost:40983"
+    },
+    "moderator": {
+      "did": "did:plc:2zhzeucxhggd7oi2s2piuj7e",
+      "handle": "pcv2-moderator.test",
+      "pds": "http://localhost:54649"
+    },
+    "distinct": true
+  },
+  "steps": [
+    {
+      "id": "H0",
+      "title": "notify first start baselines an empty projection and creates its cursor",
+      "ok": true,
+      "ms": 568,
+      "evidence": {
+        "notify": {
+          "code": 0,
+          "counts": {
+            "baselined": 0,
+            "failed": 0,
+            "observed": 0,
+            "sent": 0
+          },
+          "logs": [
+            "baselined 0 existing events"
+          ]
+        }
+      }
+    },
+    {
+      "id": "H1",
+      "title": "signed-out home renders name, purpose, What is this?, and only the sign-in form",
+      "ok": true,
+      "ms": 109,
+      "evidence": {
+        "status": 200,
+        "text": "Isolated PCV2 Trial Exhaust the plumbing before a human sees it. What is this? Sign in with your Bluesky (ATProto) account. Nothing is created here; you will be asked to allow this site to post and submit on your behalf. ATProto handle Sign in Discussions No discussions yet.",
+        "forms": [
+          "/oauth/login"
+        ]
+      }
+    },
+    {
+      "id": "H2",
+      "title": "participant signs in through the real PDS OAuth flow and lands on /",
+      "ok": true,
+      "ms": 3080,
+      "evidence": {
+        "prefilled": "pcv2-participant.test",
+        "signInPageMentionsPds": true,
+        "finalUrl": "http://127.0.0.1:46275/",
+        "title": "Isolated PCV2 Trial",
+        "text": "Skip to content Isolated PCV2 Trial did:plc:tciakr64yyayncqudgidroor My discussions Sign out Disconnect Isolated PCV2 Trial Exhaust the plumbing before a human sees it. What is this? Start a discussion This publishes a new post on your own Bluesky account, then asks the moderator to add it here. Post to Bluesky and submit Add a post you already made Paste the link to one of your own Bluesky posts. The post is not changed; this asks the moderator to add it here. Ask to add this post Discussions No discussions yet.",
+        "cookies": [
+          {
+            "name": "community_session",
+            "httpOnly": true,
+            "sameSite": "Lax"
+          }
+        ]
+      }
+    },
+    {
+      "id": "H2b",
+      "title": "return path not reflected: an off-site return target is not echoed on the home page",
+      "ok": true,
+      "ms": 6,
+      "evidence": {
+        "status": 200
+      }
+    },
+    {
+      "id": "H3",
+      "title": "the participant's ordinary post exists in their own repository",
+      "ok": true,
+      "ms": 7,
+      "evidence": {
+        "posts": [
+          {
+            "uri": "at://did:plc:tciakr64yyayncqudgidroor/app.bsky.feed.post/3mwe6vitkg22k",
+            "cid": "bafyreidbgspjoph4u5fnyfliexsiftvdenwmwgnbhebbe5ycq7tzid2ipi"
+          },
+          {
+            "uri": "at://did:plc:tciakr64yyayncqudgidroor/app.bsky.feed.post/3mwe6vioxwk2k",
+            "cid": "bafyreico7fedxeffpymtw5ooj6xsz2fdytg2yk2zlcang2h24rdzsb4uga"
+          },
+          {
+            "uri": "at://did:plc:tciakr64yyayncqudgidroor/app.bsky.feed.post/3mwe6vind722k",
+            "cid": "bafyreie4giidwgk63paymr32sxkrzwvy3lcnymycuvwmcjpzavz4e4kcue"
+          },
+          {
+            "uri": "at://did:plc:tciakr64yyayncqudgidroor/app.bsky.feed.post/3mwe6vihpj22k",
+            "cid": "bafyreiaxszhktnzh6mzyp7edahnrinvzjptsuizfpun5ri2rqxrldk6sle"
+          }
+        ]
+      }
+    },
+    {
+      "id": "H4",
+      "title": "submit post1 by at:// URI: ownership by session DID, exact CID, only a submit record created, through the journal",
+      "ok": true,
+      "ms": 735,
+      "evidence": {
+        "before": {
+          "participant": {
+            "posts": 4,
+            "submits": 0
+          },
+          "moderator": {
+            "posts": 1,
+            "submits": 0
+          },
+          "community": {
+            "admissions": 0,
+            "modActions": 0,
+            "replyPolicies": 0,
+            "replyAdmissions": 0,
+            "replyActions": 0
+          }
+        },
+        "formFields": [
+          "csrf",
+          "post"
+        ],
+        "formCopy": "Add a post you already made\n\nPaste the link to one of your own Bluesky posts. The post is not changed; this asks the moderator to add it here.\n\nAsk to add this post",
+        "status": "rendered",
+        "text": "Contribution Submitted. Your post is now waiting for the moderator to add it here. View my discussions",
+        "after": {
+          "participant": {
+            "posts": 4,
+            "submits": 1
+          },
+          "moderator": {
+            "posts": 1,
+            "submits": 0
+          },
+          "community": {
+            "admissions": 0,
+            "modActions": 0,
+            "replyPolicies": 0,
+            "replyAdmissions": 0,
+            "replyActions": 0
+          }
+        },
+        "submitRecord": {
+          "uri": "at://did:plc:tciakr64yyayncqudgidroor/zone.neutral.community.submit/4vmcso5ethmkx",
+          "cid": "bafyreihuqmmbqk3ddormumfbdszakd7x67q4vuazz2gtfjet2dtqerxwuu",
+          "value": {
+            "$type": "zone.neutral.community.submit",
+            "subject": {
+              "cid": "bafyreiaxszhktnzh6mzyp7edahnrinvzjptsuizfpun5ri2rqxrldk6sle",
+              "uri": "at://did:plc:tciakr64yyayncqudgidroor/app.bsky.feed.post/3mwe6vihpj22k"
+            },
+            "community": "did:plc:gpxoxueevn2vu6au3ikfs44a",
+            "createdAt": "2026-09-25T16:29:12.426Z"
+          }
+        },
+        "operationPageText": "Contribution Your last action was interrupted. Nothing was duplicated; you can safely pick up where you left off. Continue",
+        "resumedText": "Contribution Submitted. Your post is now waiting for the moderator to add it here. View my discussions",
+        "afterResume": {
+          "participant": {
+            "posts": 4,
+            "submits": 1
+          },
+          "moderator": {
+            "posts": 1,
+            "submits": 0
+          },
+          "community": {
+            "admissions": 0,
+            "modActions": 0,
+            "replyPolicies": 0,
+            "replyAdmissions": 0,
+            "replyActions": 0
+          }
+        },
+        "journalPhases": {
+          "existing-cdfb48fd7080b5e646b4eafb415841e003ad9bf6:context": "committed"
+        }
+      }
+    },
+    {
+      "id": "H5",
+      "title": "/mine shows the submission as waiting for the moderator",
+      "ok": true,
+      "ms": 354,
+      "evidence": {
+        "ingest": {
+          "subjects": [],
+          "verdicts": [
+            {
+              "cid": "bafyreihuqmmbqk3ddormumfbdszakd7x67q4vuazz2gtfjet2dtqerxwuu",
+              "collection": "zone.neutral.community.submit",
+              "method": "repo-proof-v1",
+              "operation": "create",
+              "outcome": "verified",
+              "repo": "did:plc:tciakr64yyayncqudgidroor",
+              "rkey": "4vmcso5ethmkx"
+            }
+          ]
+        },
+        "text": "My discussions Waiting for the moderator You submitted these posts to the community. The moderator has not admitted them yet, so they are not in the community view. Your public posts are unaffected. First isolated post: a question about repository proofs. (text from Bluesky, unverified) Public post on Bluesky Discussions you are in None yet. Mark as read"
+      }
+    },
+    {
+      "id": "H6",
+      "title": "observer ingests the submission; notify emits exactly one pending event",
+      "ok": true,
+      "ms": 293,
+      "evidence": {
+        "ingest": {
+          "subjects": [],
+          "verdicts": []
+        },
+        "queue": [
+          {
+            "authorDid": "did:plc:tciakr64yyayncqudgidroor",
+            "observerSequence": 1,
+            "subject": {
+              "cid": "bafyreiaxszhktnzh6mzyp7edahnrinvzjptsuizfpun5ri2rqxrldk6sle",
+              "uri": "at://did:plc:tciakr64yyayncqudgidroor/app.bsky.feed.post/3mwe6vihpj22k"
+            },
+            "submission": {
+              "cid": "bafyreihuqmmbqk3ddormumfbdszakd7x67q4vuazz2gtfjet2dtqerxwuu",
+              "uri": "at://did:plc:tciakr64yyayncqudgidroor/zone.neutral.community.submit/4vmcso5ethmkx"
+            }
+          }
+        ],
+        "notify": {
+          "code": 0,
+          "counts": {
+            "baselined": 0,
+            "failed": 0,
+            "observed": 1,
+            "sent": 1
+          },
+          "logs": []
+        },
+        "payload": {
+          "content": "[Isolated PCV2 Trial] pending: A new post is waiting for the moderator.\nhttps://127.0.0.1:46275/\nPublic post: https://bsky.app/profile/did:plc:tciakr64yyayncqudgidroor/post/3mwe6vihpj22k"
+        }
+      }
+    },
+    {
+      "id": "H12",
+      "title": "restart community-live and notify after submit, before admit: no duplicate record, no duplicate notification, session survives",
+      "ok": true,
+      "ms": 1168,
+      "evidence": {
+        "notify": {
+          "code": 0,
+          "counts": {
+            "baselined": 0,
+            "failed": 0,
+            "observed": 1,
+            "sent": 0
+          },
+          "logs": []
+        },
+        "counts": {
+          "participant": {
+            "posts": 4,
+            "submits": 1
+          },
+          "moderator": {
+            "posts": 1,
+            "submits": 0
+          },
+          "community": {
+            "admissions": 0,
+            "modActions": 0,
+            "replyPolicies": 0,
+            "replyAdmissions": 0,
+            "replyActions": 0
+          }
+        },
+        "mine": "Skip to content Isolated PCV2 Trial did:plc:tciakr64yyayncqudgidroor My discussions Sign out Disconnect My discussions Waiting for the moderator You submitted these posts to the community. The moderator has not admitted them yet, so they are not in the community view. Your public posts are unaffected. First isolated post: a question about repository proofs. (text from Bluesky, unverified) Public post on Bluesky Discussions you are in None yet. Mark as read",
+        "resumeAfterRestart": "Contribution Submitted. Your post is now waiting for the moderator to add it here. View my discussions"
+      }
+    },
+    {
+      "id": "H4b",
+      "title": "submit post2 by its bsky.app handle link once the AppView answers",
+      "ok": true,
+      "ms": 1032,
+      "evidence": {
+        "text": "Contribution Submitted. Your post is now waiting for the moderator to add it here. View my discussions"
+      }
+    },
+    {
+      "id": "H7a",
+      "title": "moderator signs in through the real PDS OAuth flow in a separate browser",
+      "ok": true,
+      "ms": 1896,
+      "evidence": {
+        "prefilled": "pcv2-moderator.test",
+        "signInPageMentionsPds": true,
+        "finalUrl": "http://127.0.0.1:46275/",
+        "title": "Isolated PCV2 Trial",
+        "text": "Skip to content Isolated PCV2 Trial did:plc:2zhzeucxhggd7oi2s2piuj7e My discussions Moderate Sign out Disconnect Isolated PCV2 Trial Exhaust the plumbing before a human sees it. What is this? Start a discussion This publishes a new post on your own Bluesky account, then asks the moderator to add it here. Post to Bluesky and submit Add a post you already made Paste the link to one of your own Bluesky posts. The post is not changed; this asks the moderator to add it here. Ask to add this post Discussions No discussions yet."
+      }
+    },
+    {
+      "id": "H7b",
+      "title": "moderator queue shows the submitted posts' text via the AppView stand-in, labelled unverified",
+      "ok": true,
+      "ms": 252,
+      "evidence": {
+        "text": "Moderation @pcv2-participant.test did:plc:tciakr64yyayncqudgidroor · at://did:plc:tciakr64yyayncqudgidroor/zone.neutral.community.submit/4vmcso5ethmkx · Public post on Bluesky First isolated post: a question about repository proofs. (text from Bluesky, unverified) Admit @pcv2-participant.test did:plc:tciakr64yyayncqudgidroor · at://did:plc:tciakr64yyayncqudgidroor/zone.neutral.community.submit/7dr5gkjqsjbk5 · Public post on Bluesky Fourth isolated post, used for the forged-CID form attempt. (text from Bluesky, unverified) Admit @pcv2-participant.test did:plc:tciakr64yyayncqudgidroor · at://did:plc:tciakr64yyayncqudgidroor/zone.neutral.community.submit/4yhluzxd5qeuy · Public post on Bluesky Second isolated post, submitted by its bsky.app handle link. (text from Bluesky, unverified) Admit",
+        "admitForms": [
+          "at://did:plc:tciakr64yyayncqudgidroor/zone.neutral.community.submit/4vmcso5ethmkx",
+          "at://did:plc:tciakr64yyayncqudgidroor/zone.neutral.community.submit/7dr5gkjqsjbk5",
+          "at://did:plc:tciakr64yyayncqudgidroor/zone.neutral.community.submit/4yhluzxd5qeuy"
+        ]
+      }
+    },
+    {
+      "id": "H7c",
+      "title": "moderator admits post1 from the queue",
+      "ok": true,
+      "ms": 932,
+      "evidence": {
+        "text": "Moderation result Recorded. The observer may take a moment to catch up. Back to moderation",
+        "admission": {
+          "uri": "at://did:plc:gpxoxueevn2vu6au3ikfs44a/zone.neutral.community.admission/admit-4a9f33ea89cbdf3b9af4f819cc67a41184761c198b8eda52c8a6071a0800d6ff",
+          "cid": "bafyreie3e5nhp766qxg2fw3vj6lvw3pslxrtmlmfc5ozyku3qxqzb3ecw4",
+          "value": {
+            "$type": "zone.neutral.community.admission",
+            "actor": "did:plc:2zhzeucxhggd7oi2s2piuj7e",
+            "subject": {
+              "cid": "bafyreiaxszhktnzh6mzyp7edahnrinvzjptsuizfpun5ri2rqxrldk6sle",
+              "uri": "at://did:plc:tciakr64yyayncqudgidroor/app.bsky.feed.post/3mwe6vihpj22k"
+            },
+            "createdAt": "2026-09-25T16:29:27.508913Z",
+            "submission": {
+              "cid": "bafyreihuqmmbqk3ddormumfbdszakd7x67q4vuazz2gtfjet2dtqerxwuu",
+              "uri": "at://did:plc:tciakr64yyayncqudgidroor/zone.neutral.community.submit/4vmcso5ethmkx"
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "H8",
+      "title": "observer ingests the admission; notify delivers the admitted event with /d/<rkey> and the pending event for post2, surviving one rejection",
+      "ok": true,
+      "ms": 371,
+      "evidence": {
+        "ingest": {
+          "subjects": [],
+          "verdicts": []
+        },
+        "discussions": [
+          {
+            "uri": "at://did:plc:gpxoxueevn2vu6au3ikfs44a/zone.neutral.community.admission/admit-4a9f33ea89cbdf3b9af4f819cc67a41184761c198b8eda52c8a6071a0800d6ff",
+            "status": "visible",
+            "text": "First isolated post: a question about repository proofs."
+          }
+        ],
+        "first": {
+          "code": 0,
+          "counts": {
+            "baselined": 0,
+            "failed": 1,
+            "observed": 3,
+            "sent": 2
+          },
+          "logs": [
+            "webhook delivery failed: WebhookError: webhook answered HTTP 500; will retry next poll"
+          ]
+        },
+        "rejectedPayload": {
+          "content": "[Isolated PCV2 Trial] pending: A new post is waiting for the moderator.\nhttps://127.0.0.1:46275/\nPublic post: https://bsky.app/profile/did:plc:tciakr64yyayncqudgidroor/post/3mwe6vitkg22k"
+        },
+        "second": {
+          "code": 0,
+          "counts": {
+            "baselined": 0,
+            "failed": 0,
+            "observed": 3,
+            "sent": 1
+          },
+          "logs": []
+        },
+        "third": {
+          "code": 0,
+          "counts": {
+            "baselined": 0,
+            "failed": 0,
+            "observed": 3,
+            "sent": 0
+          },
+          "logs": []
+        },
+        "delivered": [
+          "[Isolated PCV2 Trial] pending: A new post is waiting for the moderator.\nhttps://127.0.0.1:46275/\nPublic post: https://bsky.app/profile/did:plc:tciakr64yyayncqudgidroor/post/3mwe6vind722k",
+          "[Isolated PCV2 Trial] admitted: A new discussion was admitted.\nhttps://127.0.0.1:46275/d/admit-4a9f33ea89cbdf3b9af4f819cc67a41184761c198b8eda52c8a6071a0800d6ff",
+          "[Isolated PCV2 Trial] pending: A new post is waiting for the moderator.\nhttps://127.0.0.1:46275/\nPublic post: https://bsky.app/profile/did:plc:tciakr64yyayncqudgidroor/post/3mwe6vitkg22k"
+        ]
+      }
+    },
+    {
+      "id": "H9",
+      "title": "signed-out /d/<rkey> is readable, has no forms and no CSRF token",
+      "ok": true,
+      "ms": 39,
+      "evidence": {
+        "status": 200,
+        "text": "Discussion COMMUNITY VIEW Started by @pcv2-participant.test · posted 25 Sep 2026, 09:00 UTC First isolated post: a question about repository proofs. Why is this here? Sign in to reply Community view: admission and removal change only this view, never the author’s public post.",
+        "forms": 0,
+        "csrfInputs": 0,
+        "cookies": []
+      }
+    },
+    {
+      "id": "H9b",
+      "title": "callback state: signing in from the permalink returns to it",
+      "ok": true,
+      "ms": 1940,
+      "evidence": {
+        "finalPath": "/d/admit-4a9f33ea89cbdf3b9af4f819cc67a41184761c198b8eda52c8a6071a0800d6ff",
+        "text": "Discussion COMMUNITY VIEW Started by @pcv2-participant.test · posted 25 Sep 2026, 09:00 UTC First isolated post: a question about repository proofs. Why is this here? Reply Your reply is posted publicly on your Bluesky account. Post reply and add to this discussion Community view: admission and removal change only this view, never the author’s public post."
+      }
+    },
+    {
+      "id": "H9c",
+      "title": "not-found and malformed permalinks are truthful and distinct",
+      "ok": true,
+      "ms": 6,
+      "evidence": {
+        "missing": {
+          "status": 404,
+          "text": "Not found Skip to content Isolated PCV2 Trial Not found That discussion isn't in this community. Return to the community"
+        },
+        "malformed": {
+          "status": 400,
+          "text": "That request was not understood Skip to content Isolated PCV2 Trial That request was not understood That discussion link is malformed. Return to the community"
+        }
+      }
+    },
+    {
+      "id": "H15",
+      "title": "participant posts a reply from /d/<rkey>: one post with reply.root/parent, one submit with discussion, truthful completion copy",
+      "ok": true,
+      "ms": 405,
+      "evidence": {
+        "button": "Post reply and add to this discussion",
+        "note": "Your reply is posted publicly on your Bluesky account.",
+        "formFields": [
+          "csrf",
+          "discussionUri",
+          "discussionCid",
+          "rootUri",
+          "rootCid",
+          "parentUri",
+          "parentCid",
+          "text"
+        ],
+        "text": "Contribution Posted. It will appear in the discussion once the community records it. View my discussions",
+        "replyPost": {
+          "uri": "at://did:plc:tciakr64yyayncqudgidroor/app.bsky.feed.post/eozcvdw4d4xzc",
+          "cid": "bafyreib3vphvrwmpas3bajq77ju4huk2dsrovxagzuw5ienwpqwmfek2ze",
+          "reply": {
+            "root": {
+              "cid": "bafyreiaxszhktnzh6mzyp7edahnrinvzjptsuizfpun5ri2rqxrldk6sle",
+              "uri": "at://did:plc:tciakr64yyayncqudgidroor/app.bsky.feed.post/3mwe6vihpj22k"
+            },
+            "parent": {
+              "cid": "bafyreiaxszhktnzh6mzyp7edahnrinvzjptsuizfpun5ri2rqxrldk6sle",
+              "uri": "at://did:plc:tciakr64yyayncqudgidroor/app.bsky.feed.post/3mwe6vihpj22k"
+            }
+          }
+        },
+        "rkeys": {
+          "post": "eozcvdw4d4xzc",
+          "submit": "4p747dlrmhqad"
+        },
+        "rkeysCanonical": {
+          "post": true,
+          "submit": true
+        },
+        "replySubmit": {
+          "uri": "at://did:plc:tciakr64yyayncqudgidroor/zone.neutral.community.submit/4p747dlrmhqad",
+          "cid": "bafyreidnyp5cinhq7fi4gca45h4htheh3faempjxj3jnhyqvv7dafidmny",
+          "value": {
+            "$type": "zone.neutral.community.submit",
+            "subject": {
+              "cid": "bafyreib3vphvrwmpas3bajq77ju4huk2dsrovxagzuw5ienwpqwmfek2ze",
+              "uri": "at://did:plc:tciakr64yyayncqudgidroor/app.bsky.feed.post/eozcvdw4d4xzc"
+            },
+            "community": "did:plc:gpxoxueevn2vu6au3ikfs44a",
+            "createdAt": "2026-09-25T16:29:34.678Z",
+            "discussion": {
+              "cid": "bafyreie3e5nhp766qxg2fw3vj6lvw3pslxrtmlmfc5ozyku3qxqzb3ecw4",
+              "uri": "at://did:plc:gpxoxueevn2vu6au3ikfs44a/zone.neutral.community.admission/admit-4a9f33ea89cbdf3b9af4f819cc67a41184761c198b8eda52c8a6071a0800d6ff"
+            }
+          }
+        },
+        "counts": {
+          "participant": {
+            "posts": 5,
+            "submits": 5
+          },
+          "moderator": {
+            "posts": 1,
+            "submits": 0
+          },
+          "community": {
+            "admissions": 1,
+            "modActions": 0,
+            "replyPolicies": 1,
+            "replyAdmissions": 0,
+            "replyActions": 0
+          }
+        }
+      }
+    },
+    {
+      "id": "H16",
+      "title": "observer offers the reply as a candidate; community-policy (own UID) requests admission through communityd; exactly one replyAdmission, retry idempotent",
+      "ok": true,
+      "ms": 1675,
+      "evidence": {
+        "ingest": {
+          "subjects": [],
+          "verdicts": [
+            {
+              "cid": "bafyreihhdmnqjddnneotut5ijw4xap6igdrwfqlvezzvt774gnzx7g3n2i",
+              "collection": "zone.neutral.community.submit",
+              "method": "repo-proof-v1",
+              "operation": "create",
+              "outcome": "verified",
+              "repo": "did:plc:tciakr64yyayncqudgidroor",
+              "rkey": "bx4lkn7dxqreq"
+            },
+            {
+              "cid": "bafyreidnyp5cinhq7fi4gca45h4htheh3faempjxj3jnhyqvv7dafidmny",
+              "collection": "zone.neutral.community.submit",
+              "method": "repo-proof-v1",
+              "operation": "create",
+              "outcome": "verified",
+              "repo": "did:plc:tciakr64yyayncqudgidroor",
+              "rkey": "4p747dlrmhqad"
+            }
+          ]
+        },
+        "candidates": [
+          {
+            "replyPolicy": {
+              "cid": "bafyreigmrqxxl4ad432bfitle4yu2tj3ceqinl5w6sx5lk2zbzbyx36qma",
+              "uri": "at://did:plc:gpxoxueevn2vu6au3ikfs44a/zone.neutral.community.replyPolicy/reply-policy-782f7c7f143697a6e660d2f6ba420cebfebdd6dab73b23435fd757175d44930b"
+            },
+            "rootAdmission": {
+              "cid": "bafyreie3e5nhp766qxg2fw3vj6lvw3pslxrtmlmfc5ozyku3qxqzb3ecw4",
+              "uri": "at://did:plc:gpxoxueevn2vu6au3ikfs44a/zone.neutral.community.admission/admit-4a9f33ea89cbdf3b9af4f819cc67a41184761c198b8eda52c8a6071a0800d6ff"
+            },
+            "subject": {
+              "cid": "bafyreib3vphvrwmpas3bajq77ju4huk2dsrovxagzuw5ienwpqwmfek2ze",
+              "uri": "at://did:plc:tciakr64yyayncqudgidroor/app.bsky.feed.post/eozcvdw4d4xzc"
+            },
+            "submission": {
+              "cid": "bafyreidnyp5cinhq7fi4gca45h4htheh3faempjxj3jnhyqvv7dafidmny",
+              "uri": "at://did:plc:tciakr64yyayncqudgidroor/zone.neutral.community.submit/4p747dlrmhqad"
+            }
+          }
+        ],
+        "policy": {
+          "code": 0,
+          "counts": {
+            "candidates": 1,
+            "committed": 1,
+            "pending": 0,
+            "refused": 0
+          },
+          "stderr": []
+        },
+        "replyAdmission": {
+          "uri": "at://did:plc:gpxoxueevn2vu6au3ikfs44a/zone.neutral.community.replyAdmission/reply-admit-60ef2dcc7adab0047e701298ff33bfaf8b23bd57e9d86c1cfd045be097f735a1",
+          "cid": "bafyreihtgskijemh5oq6zyxg2o2nnwpkvnncm2exrg6gys65n3t3bjfngq",
+          "value": {
+            "$type": "zone.neutral.community.replyAdmission",
+            "actor": "did:plc:2zhzeucxhggd7oi2s2piuj7e",
+            "policy": {
+              "cid": "bafyreigmrqxxl4ad432bfitle4yu2tj3ceqinl5w6sx5lk2zbzbyx36qma",
+              "uri": "at://did:plc:gpxoxueevn2vu6au3ikfs44a/zone.neutral.community.replyPolicy/reply-policy-782f7c7f143697a6e660d2f6ba420cebfebdd6dab73b23435fd757175d44930b"
+            },
+            "subject": {
+              "cid": "bafyreib3vphvrwmpas3bajq77ju4huk2dsrovxagzuw5ienwpqwmfek2ze",
+              "uri": "at://did:plc:tciakr64yyayncqudgidroor/app.bsky.feed.post/eozcvdw4d4xzc"
+            },
+            "createdAt": "2026-09-25T16:29:35.541474Z",
+            "discussion": {
+              "cid": "bafyreie3e5nhp766qxg2fw3vj6lvw3pslxrtmlmfc5ozyku3qxqzb3ecw4",
+              "uri": "at://did:plc:gpxoxueevn2vu6au3ikfs44a/zone.neutral.community.admission/admit-4a9f33ea89cbdf3b9af4f819cc67a41184761c198b8eda52c8a6071a0800d6ff"
+            },
+            "submission": {
+              "cid": "bafyreidnyp5cinhq7fi4gca45h4htheh3faempjxj3jnhyqvv7dafidmny",
+              "uri": "at://did:plc:tciakr64yyayncqudgidroor/zone.neutral.community.submit/4p747dlrmhqad"
+            }
+          }
+        },
+        "policyAgain": {
+          "code": 0,
+          "counts": {
+            "candidates": 1,
+            "committed": 0,
+            "pending": 0,
+            "refused": 0
+          },
+          "stderr": []
+        },
+        "counts": {
+          "participant": {
+            "posts": 5,
+            "submits": 5
+          },
+          "moderator": {
+            "posts": 1,
+            "submits": 0
+          },
+          "community": {
+            "admissions": 1,
+            "modActions": 0,
+            "replyPolicies": 1,
+            "replyAdmissions": 1,
+            "replyActions": 0
+          }
+        }
+      }
+    },
+    {
+      "id": "H17",
+      "title": "observer ingests the replyAdmission; the reply is shown on /d/<rkey> signed-out and signed-in; the candidate is gone",
+      "ok": true,
+      "ms": 308,
+      "evidence": {
+        "ingest": {
+          "subjects": [
+            {
+              "cid": "bafyreib3vphvrwmpas3bajq77ju4huk2dsrovxagzuw5ienwpqwmfek2ze",
+              "status": "exact",
+              "uri": "at://did:plc:tciakr64yyayncqudgidroor/app.bsky.feed.post/eozcvdw4d4xzc"
+            }
+          ],
+          "verdicts": [
+            {
+              "cid": "bafyreihtgskijemh5oq6zyxg2o2nnwpkvnncm2exrg6gys65n3t3bjfngq",
+              "collection": "zone.neutral.community.replyAdmission",
+              "method": "repo-proof-v1",
+              "operation": "create",
+              "outcome": "verified",
+              "repo": "did:plc:gpxoxueevn2vu6au3ikfs44a",
+              "rkey": "reply-admit-60ef2dcc7adab0047e701298ff33bfaf8b23bd57e9d86c1cfd045be097f735a1"
+            }
+          ]
+        },
+        "replies": [
+          {
+            "subject": {
+              "cid": "bafyreib3vphvrwmpas3bajq77ju4huk2dsrovxagzuw5ienwpqwmfek2ze",
+              "uri": "at://did:plc:tciakr64yyayncqudgidroor/app.bsky.feed.post/eozcvdw4d4xzc"
+            },
+            "status": "visible",
+            "text": "First isolated reply, posted from the discussion page."
+          }
+        ],
+        "anonymous": "Discussion COMMUNITY VIEW Started by @pcv2-participant.test · posted 25 Sep 2026, 09:00 UTC First isolated post: a question about repository proofs. Why is this here? COMMUNITY VIEW @pcv2-participant.test: First isolated reply, posted from the discussion page. posted 25 Sep 2026, 16:29 UTC Why is this here? Sign in to reply Community view: admission and removal change only this view, never the author’s public post.",
+        "anonymousReplyItem": "COMMUNITY VIEW @pcv2-participant.test: First isolated reply, posted from the discussion page.\nposted 25 Sep 2026, 16:29 UTC\nWhy is this here?",
+        "participant": "Discussion COMMUNITY VIEW Started by @pcv2-participant.test · posted 25 Sep 2026, 09:00 UTC First isolated post: a question about repository proofs. Why is this here? COMMUNITY VIEW @pcv2-participant.test: First isolated reply, posted from the discussion page. posted 25 Sep 2026, 16:29 UTC Why is this here? Reply Your reply is posted publicly on your Bluesky account. Post reply and add to this discussion Community view: admission and removal change only this view, never the author’s public post.",
+        "counts": {
+          "participant": {
+            "posts": 5,
+            "submits": 5
+          },
+          "moderator": {
+            "posts": 1,
+            "submits": 0
+          },
+          "community": {
+            "admissions": 1,
+            "modActions": 0,
+            "replyPolicies": 1,
+            "replyAdmissions": 1,
+            "replyActions": 0
+          }
+        }
+      }
+    },
+    {
+      "id": "H18",
+      "title": "moderator removes the reply with a reason: tombstone with reason and public-post link, no text, signed-out and signed-in",
+      "ok": true,
+      "ms": 732,
+      "evidence": {
+        "moderatorItem": "COMMUNITY VIEW @pcv2-participant.test did:plc:tciakr64yyayncqudgidroor: First isolated reply, posted from the discussion page.\nposted 25 Sep 2026, 16:29 UTC\nWhy is this here?\nReason \nRemove from community",
+        "moderatorText": "Moderation result Recorded. The observer may take a moment to catch up. Back to moderation",
+        "replyRemoval": {
+          "uri": "at://did:plc:gpxoxueevn2vu6au3ikfs44a/zone.neutral.community.replyAction/reply-remove-a0c92c6122d42d12b714bef7f5ab209dc957f101f5db53d11b360fc961cf8283",
+          "cid": "bafyreiaw3rwixv34vwipb3y5yhasyqmg6ntscbe73ffrfp2hwxsaz4xbom",
+          "value": {
+            "$type": "zone.neutral.community.replyAction",
+            "actor": "did:plc:2zhzeucxhggd7oi2s2piuj7e",
+            "action": "remove",
+            "reason": "isolated reply removal",
+            "subject": {
+              "cid": "bafyreib3vphvrwmpas3bajq77ju4huk2dsrovxagzuw5ienwpqwmfek2ze",
+              "uri": "at://did:plc:tciakr64yyayncqudgidroor/app.bsky.feed.post/eozcvdw4d4xzc"
+            },
+            "admission": {
+              "cid": "bafyreihtgskijemh5oq6zyxg2o2nnwpkvnncm2exrg6gys65n3t3bjfngq",
+              "uri": "at://did:plc:gpxoxueevn2vu6au3ikfs44a/zone.neutral.community.replyAdmission/reply-admit-60ef2dcc7adab0047e701298ff33bfaf8b23bd57e9d86c1cfd045be097f735a1"
+            },
+            "createdAt": "2026-09-25T16:29:36.998249Z",
+            "moderationKey": "sha256:a1f61349779e599ba5afd93a7229778362c05bb38a8dfb5d26a5ddcd68855412"
+          }
+        },
+        "ingest": {
+          "subjects": [],
+          "verdicts": [
+            {
+              "cid": "bafyreiaw3rwixv34vwipb3y5yhasyqmg6ntscbe73ffrfp2hwxsaz4xbom",
+              "collection": "zone.neutral.community.replyAction",
+              "method": "repo-proof-v1",
+              "operation": "create",
+              "outcome": "verified",
+              "repo": "did:plc:gpxoxueevn2vu6au3ikfs44a",
+              "rkey": "reply-remove-a0c92c6122d42d12b714bef7f5ab209dc957f101f5db53d11b360fc961cf8283"
+            }
+          ]
+        },
+        "anonymous": "Discussion COMMUNITY VIEW Started by @pcv2-participant.test · posted 25 Sep 2026, 09:00 UTC First isolated post: a question about repository proofs. Why is this here? Removed from this community’s view: isolated reply removal. The author’s public post is not deleted or changed: Public post on Bluesky. Sign in to reply Community view: admission and removal change only this view, never the author’s public post.",
+        "participant": "Discussion COMMUNITY VIEW Started by @pcv2-participant.test · posted 25 Sep 2026, 09:00 UTC First isolated post: a question about repository proofs. Why is this here? Removed from this community’s view: isolated reply removal. The author’s public post is not deleted or changed: Public post on Bluesky. Reply Your reply is posted publicly on your Bluesky account. Post reply and add to this discussion Community view: admission and removal change only this view, never the author’s public post.",
+        "moderatorRestoreForms": 1,
+        "counts": {
+          "participant": {
+            "posts": 5,
+            "submits": 5
+          },
+          "moderator": {
+            "posts": 1,
+            "submits": 0
+          },
+          "community": {
+            "admissions": 1,
+            "modActions": 0,
+            "replyPolicies": 1,
+            "replyAdmissions": 1,
+            "replyActions": 1
+          }
+        }
+      }
+    },
+    {
+      "id": "H19",
+      "title": "moderator restores the reply: text visible again signed-out and signed-in",
+      "ok": true,
+      "ms": 694,
+      "evidence": {
+        "moderatorText": "Moderation result Recorded. The observer may take a moment to catch up. Back to moderation",
+        "replyRestore": {
+          "uri": "at://did:plc:gpxoxueevn2vu6au3ikfs44a/zone.neutral.community.replyAction/reply-restore-b3ede1c0f53e48382b52fb6f148077ecccd4170741f369e133ced9e0a7c09b1f",
+          "cid": "bafyreiawe6wa7ffnl5azusdr7jkzt37coo2jzf4xj2mpsptceppspdzjem",
+          "value": {
+            "$type": "zone.neutral.community.replyAction",
+            "actor": "did:plc:2zhzeucxhggd7oi2s2piuj7e",
+            "action": "restore",
+            "reason": "isolated reply restore",
+            "subject": {
+              "cid": "bafyreib3vphvrwmpas3bajq77ju4huk2dsrovxagzuw5ienwpqwmfek2ze",
+              "uri": "at://did:plc:tciakr64yyayncqudgidroor/app.bsky.feed.post/eozcvdw4d4xzc"
+            },
+            "admission": {
+              "cid": "bafyreihtgskijemh5oq6zyxg2o2nnwpkvnncm2exrg6gys65n3t3bjfngq",
+              "uri": "at://did:plc:gpxoxueevn2vu6au3ikfs44a/zone.neutral.community.replyAdmission/reply-admit-60ef2dcc7adab0047e701298ff33bfaf8b23bd57e9d86c1cfd045be097f735a1"
+            },
+            "createdAt": "2026-09-25T16:29:37.708664Z",
+            "moderationKey": "sha256:a1f61349779e599ba5afd93a7229778362c05bb38a8dfb5d26a5ddcd68855412",
+            "previousAction": {
+              "cid": "bafyreiaw3rwixv34vwipb3y5yhasyqmg6ntscbe73ffrfp2hwxsaz4xbom",
+              "uri": "at://did:plc:gpxoxueevn2vu6au3ikfs44a/zone.neutral.community.replyAction/reply-remove-a0c92c6122d42d12b714bef7f5ab209dc957f101f5db53d11b360fc961cf8283"
+            }
+          }
+        },
+        "ingest": {
+          "subjects": [],
+          "verdicts": [
+            {
+              "cid": "bafyreiawe6wa7ffnl5azusdr7jkzt37coo2jzf4xj2mpsptceppspdzjem",
+              "collection": "zone.neutral.community.replyAction",
+              "method": "repo-proof-v1",
+              "operation": "create",
+              "outcome": "verified",
+              "repo": "did:plc:gpxoxueevn2vu6au3ikfs44a",
+              "rkey": "reply-restore-b3ede1c0f53e48382b52fb6f148077ecccd4170741f369e133ced9e0a7c09b1f"
+            }
+          ]
+        },
+        "anonymous": "Discussion COMMUNITY VIEW Started by @pcv2-participant.test · posted 25 Sep 2026, 09:00 UTC First isolated post: a question about repository proofs. Why is this here? COMMUNITY VIEW @pcv2-participant.test: First isolated reply, posted from the discussion page. posted 25 Sep 2026, 16:29 UTC Why is this here? Sign in to reply Community view: admission and removal change only this view, never the author’s public post.",
+        "participant": "Discussion COMMUNITY VIEW Started by @pcv2-participant.test · posted 25 Sep 2026, 09:00 UTC First isolated post: a question about repository proofs. Why is this here? COMMUNITY VIEW @pcv2-participant.test: First isolated reply, posted from the discussion page. posted 25 Sep 2026, 16:29 UTC Why is this here? Reply Your reply is posted publicly on your Bluesky account. Post reply and add to this discussion Community view: admission and removal change only this view, never the author’s public post.",
+        "counts": {
+          "participant": {
+            "posts": 5,
+            "submits": 5
+          },
+          "moderator": {
+            "posts": 1,
+            "submits": 0
+          },
+          "community": {
+            "admissions": 1,
+            "modActions": 0,
+            "replyPolicies": 1,
+            "replyAdmissions": 1,
+            "replyActions": 2
+          }
+        }
+      }
+    },
+    {
+      "id": "H11",
+      "title": "participant /mine lists the admitted discussion with its reply and Mark as read clears the unread badge",
+      "ok": true,
+      "ms": 280,
+      "evidence": {
+        "before": "My discussions Waiting for the moderator You submitted these posts to the community. The moderator has not admitted them yet, so they are not in the community view. Your public posts are unaffected. Fourth isolated post, used for the forged-CID form attempt. (text from Bluesky, unverified) Public post on Bluesky Public post on Bluesky Sixth isolated post, submitted while the AppView reports handle.invalid. (text from Bluesky, unverified) Public post on Bluesky Discussions you are in UNREAD First isolated post: a question about repository proofs. COMMUNITY VIEW · @pcv2-participant.test · posted 25 Sep 2026, 09:00 UTC — 1 replies, 2 moderation changes Mark as read",
+        "unreadBefore": 1,
+        "rowBefore": "UNREAD First isolated post: a question about repository proofs. COMMUNITY VIEW · @pcv2-participant.test · posted 25 Sep 2026, 09:00 UTC — 1 replies, 2 moderation changes",
+        "after": "My discussions Waiting for the moderator You submitted these posts to the community. The moderator has not admitted them yet, so they are not in the community view. Your public posts are unaffected. Fourth isolated post, used for the forged-CID form attempt. (text from Bluesky, unverified) Public post on Bluesky Public post on Bluesky Sixth isolated post, submitted while the AppView reports handle.invalid. (text from Bluesky, unverified) Public post on Bluesky Discussions you are in First isolated post: a question about repository proofs. COMMUNITY VIEW · @pcv2-participant.test · posted 25 Sep 2026, 09:00 UTC — 1 replies, 2 moderation changes Mark as read",
+        "unreadAfter": 0,
+        "rowAfter": "First isolated post: a question about repository proofs. COMMUNITY VIEW · @pcv2-participant.test · posted 25 Sep 2026, 09:00 UTC — 1 replies, 2 moderation changes"
+      }
+    },
+    {
+      "id": "H10",
+      "title": "moderator removes the root; the signed-out permalink shows only the tombstone banner and public-post link",
+      "ok": true,
+      "ms": 518,
+      "evidence": {
+        "moderatorText": "Moderation result Recorded. The observer may take a moment to catch up. Back to moderation",
+        "counts": {
+          "participant": {
+            "posts": 5,
+            "submits": 5
+          },
+          "moderator": {
+            "posts": 1,
+            "submits": 0
+          },
+          "community": {
+            "admissions": 1,
+            "modActions": 1,
+            "replyPolicies": 1,
+            "replyAdmissions": 1,
+            "replyActions": 2
+          }
+        },
+        "ingest": {
+          "subjects": [],
+          "verdicts": [
+            {
+              "cid": "bafyreidyk37h4ynnypm6tb56qb4zdivq3hvoc7o7t6qpfmdharpb2kolzi",
+              "collection": "zone.neutral.community.modAction",
+              "method": "repo-proof-v1",
+              "operation": "create",
+              "outcome": "verified",
+              "repo": "did:plc:gpxoxueevn2vu6au3ikfs44a",
+              "rkey": "remove-782f7c7f143697a6e660d2f6ba420cebfebdd6dab73b23435fd757175d44930b"
+            }
+          ]
+        },
+        "status": 200,
+        "text": "Discussion This discussion was removed from this community’s view; the author’s public post is not deleted or changed. Public post on Bluesky COMMUNITY VIEW Started by @pcv2-participant.test · posted 25 Sep 2026, 09:00 UTC COMMUNITY VIEW @pcv2-participant.test: First isolated reply, posted from the discussion page. posted 25 Sep 2026, 16:29 UTC Why is this here? This discussion is closed to new community replies. Community view: admission and removal change only this view, never the author’s public post.",
+        "whyHere": {
+          "total": 1,
+          "onReplies": 1
+        },
+        "replyStillVisible": true,
+        "links": [
+          [
+            "Public post on Bluesky",
+            "https://bsky.app/profile/did:plc:tciakr64yyayncqudgidroor/post/3mwe6vihpj22k"
+          ],
+          [
+            "Public post on Bluesky",
+            "https://bsky.app/profile/did:plc:tciakr64yyayncqudgidroor/post/eozcvdw4d4xzc"
+          ]
+        ],
+        "homeAfterRemoval": "Isolated PCV2 Trial Skip to content Isolated PCV2 Trial Isolated PCV2 Trial Exhaust the plumbing before a human sees it. What is this? This is a moderated collection of public Bluesky posts. Each post stays in its author's own account; the community only records which exact versions are shown here a"
+      }
+    },
+    {
+      "id": "H10b",
+      "title": "after removal the participant's /mine hides the root's text, shows the fixed removed title and links to the tombstone",
+      "ok": true,
+      "ms": 157,
+      "evidence": {
+        "text": "My discussions Waiting for the moderator You submitted these posts to the community. The moderator has not admitted them yet, so they are not in the community view. Your public posts are unaffected. Fourth isolated post, used for the forged-CID form attempt. (text from Bluesky, unverified) Public post on Bluesky Public post on Bluesky Sixth isolated post, submitted while the AppView reports handle.invalid. (text from Bluesky, unverified) Public post on Bluesky Discussions you are in UNREAD Removed from the community COMMUNITY VIEW · @pcv2-participant.test · posted 25 Sep 2026, 09:00 UTC — 1 replies, 2 moderation changes Mark as read",
+        "links": [
+          [
+            "Public post on Bluesky",
+            "https://bsky.app/profile/did:plc:tciakr64yyayncqudgidroor/post/3mwe6vitkg22k"
+          ],
+          [
+            "Public post on Bluesky",
+            "https://bsky.app/profile/did:plc:tciakr64yyayncqudgidroor/post/3mwe6vind722k"
+          ],
+          [
+            "Public post on Bluesky",
+            "https://bsky.app/profile/did:plc:tciakr64yyayncqudgidroor/post/3mwe6weagxk2k"
+          ],
+          [
+            "Removed from the community",
+            "/d/admit-4a9f33ea89cbdf3b9af4f819cc67a41184761c198b8eda52c8a6071a0800d6ff"
+          ],
+          [
+            "@pcv2-participant.test",
+            "https://bsky.app/profile/did:plc:tciakr64yyayncqudgidroor"
+          ]
+        ]
+      }
+    },
+    {
+      "id": "H13",
+      "title": "interrupted new-post operation (post.once): resume via 'Check exact records and continue' yields exactly one post and one submit",
+      "ok": true,
+      "ms": 1784,
+      "evidence": {
+        "exit": {
+          "code": null,
+          "signal": "SIGKILL"
+        },
+        "browserSaw": "connection dropped: empty browser error document, no link back to the operation",
+        "midway": {
+          "participant": {
+            "posts": 6,
+            "submits": 5
+          },
+          "moderator": {
+            "posts": 1,
+            "submits": 0
+          },
+          "community": {
+            "admissions": 1,
+            "modActions": 1,
+            "replyPolicies": 1,
+            "replyAdmissions": 1,
+            "replyActions": 2
+          }
+        },
+        "mine": "My discussions Unfinished actions These actions were interrupted before they finished. Nothing was duplicated; open one to check the exact records and continue. A new discussion · started 25 Sep 2026, 16:29 UTC Waiting for the moderator You submitted these posts to the community. The moderator has not admitted them yet, so they are not in the community view. Your public posts are unaffected. Fourth isolated post, used for the forged-CID form attempt. (text from Bluesky, unverified) Public post on Bluesky Public post on Bluesky Sixth isolated post, submitted while the AppView reports handle.invalid. (text from Bluesky, unverified) Public post on Bluesky Discussions you are in UNREAD Removed from the community COMMUNITY VIEW · @pcv2-participant.test · posted 25 Sep 2026, 09:00 UTC — 1 replies, 2 moderation changes Mark as read",
+        "unfinishedLinks": [
+          [
+            "A new discussion",
+            "/operation?id=2a20ce30-1597-4994-a59b-46c6e8e33af1"
+          ]
+        ],
+        "operationId": "2a20ce30-1597-4994-a59b-46c6e8e33af1",
+        "rkeys": {
+          "post": "dxgcxwdknrzmy",
+          "submit": "bjdpprghertuu"
+        },
+        "rkeysCanonical": {
+          "post": true,
+          "submit": true
+        },
+        "operationPage": "Contribution Your last action was interrupted. Nothing was duplicated; you can safely pick up where you left off. Continue",
+        "resumed": "Contribution Submitted. Your post is now waiting for the moderator to add it here. View my discussions",
+        "after": {
+          "participant": {
+            "posts": 6,
+            "submits": 6
+          },
+          "moderator": {
+            "posts": 1,
+            "submits": 0
+          },
+          "community": {
+            "admissions": 1,
+            "modActions": 1,
+            "replyPolicies": 1,
+            "replyAdmissions": 1,
+            "replyActions": 2
+          }
+        },
+        "journal": {
+          "source": "committed",
+          "context": "committed"
+        },
+        "ingest": {
+          "subjects": [],
+          "verdicts": [
+            {
+              "cid": "bafyreibos5gzoccer4rq5gkf5x7ipq6euxiay3lpqvlclg7mlmbwqhcgbe",
+              "collection": "zone.neutral.community.submit",
+              "method": "repo-proof-v1",
+              "operation": "create",
+              "outcome": "verified",
+              "repo": "did:plc:tciakr64yyayncqudgidroor",
+              "rkey": "bjdpprghertuu"
+            }
+          ]
+        },
+        "queued": [
+          "at://did:plc:tciakr64yyayncqudgidroor/zone.neutral.community.submit/7dr5gkjqsjbk5",
+          "at://did:plc:tciakr64yyayncqudgidroor/zone.neutral.community.submit/4yhluzxd5qeuy",
+          "at://did:plc:tciakr64yyayncqudgidroor/zone.neutral.community.submit/bx4lkn7dxqreq",
+          "at://did:plc:tciakr64yyayncqudgidroor/zone.neutral.community.submit/bjdpprghertuu"
+        ],
+        "mineAfter": "My discussions Waiting for the moderator You submitted these posts to the community. The moderator has not admitted them yet, so they are not in the community view. Your public posts are unaffected. Fourth isolated post, used for the forged-CID form attempt. (text from Bluesky, unverified) Public post on Bluesky Public post on Bluesky Sixth isolated post, submitted while the AppView reports handle.invalid. (text from Bluesky, unverified) Public post on Bluesky Fifth isolated post, written through the interrupted operation. (text from Bluesky, unverified) Public post on Bluesky Discussions you are in UNREAD Removed from the community COMMUNITY VIEW · @pcv2-participant.test · posted 25 Sep 2026, 09:00 UTC — 1 replies, 2 moderation changes Mark as read"
+      }
+    },
+    {
+      "id": "H14",
+      "title": "sign out clears the session; signed-out home is back to sign-in only",
+      "ok": true,
+      "ms": 125,
+      "evidence": {
+        "text": "Isolated PCV2 Trial Exhaust the plumbing before a human sees it. What is this? Sign in with your Bluesky (ATProto) account. Nothing is created here; you will be asked to allow this site to post and submit on your behalf. ATProto handle Sign in Discussions No discussions yet.",
+        "cookies": []
+      }
+    }
+  ],
+  "negatives": [
+    {
+      "id": "N-malformed-handle",
+      "title": "malformed handle is a 400 page",
+      "ok": true,
+      "ms": 3,
+      "evidence": {
+        "status": 400,
+        "text": "That request was not understood Skip to content Isolated PCV2 Trial That request was not understood That handle could not be found. Check it and try again. Return to the community"
+      }
+    },
+    {
+      "id": "N-unknown-account",
+      "title": "unknown account is a 400 page",
+      "ok": true,
+      "ms": 5,
+      "evidence": {
+        "status": 400,
+        "text": "That request was not understood Skip to content Isolated PCV2 Trial That request was not understood That handle could not be found. Check it and try again. Return to the community"
+      }
+    },
+    {
+      "id": "N-declined-consent",
+      "title": "declining consent on the PDS page yields a 400 page and no session",
+      "ok": true,
+      "ms": 1889,
+      "evidence": {
+        "finalPath": "/oauth/callback",
+        "title": "That request was not understood",
+        "text": "Skip to content Isolated PCV2 Trial That request was not understood Sign-in was not completed. Nothing changed. Return to the community",
+        "status": 400,
+        "cookies": []
+      }
+    },
+    {
+      "id": "N-callback-forged-state",
+      "title": "callback with unknown state is a 400 page",
+      "ok": true,
+      "ms": 2,
+      "evidence": {
+        "status": 400,
+        "text": "That request was not understood Skip to content Isolated PCV2 Trial That request was not understood Sign-in was not completed. Nothing changed. Return to the community"
+      }
+    },
+    {
+      "id": "N-callback-replayed",
+      "title": "replaying the participant's consumed callback is a 400 page",
+      "ok": true,
+      "ms": 1,
+      "evidence": {
+        "params": [
+          "state",
+          "iss",
+          "code"
+        ],
+        "status": 400,
+        "text": "That request was not understood Skip to content Isolated PCV2 Trial That request was not understood Sign-in was not completed. Nothing changed. Return to the community"
+      }
+    },
+    {
+      "id": "N-callback-other-browser",
+      "title": "a callback completed by a browser that did not start the sign-in is a 400 page with no session; the starting browser can still complete it",
+      "ok": true,
+      "ms": 2825,
+      "evidence": {
+        "heldByStoppingApp": true,
+        "params": [
+          "state",
+          "iss",
+          "code"
+        ],
+        "loginCookieInStartingBrowser": true,
+        "stranger": {
+          "status": 400,
+          "text": "That request was not understood Skip to content Isolated PCV2 Trial That request was not understood Sign-in was not completed. Nothing changed. Return to the co",
+          "setCookie": [
+            "community_login"
+          ]
+        },
+        "owner": {
+          "status": 200,
+          "finalUrl": "http://127.0.0.1:46275/",
+          "text": "Isolated PCV2 Trial Exhaust the plumbing before a human sees it. What is this? Start a discussion This publishes a new post on your own Bluesky account, then as"
+        },
+        "ownerCookies": [
+          "community_session"
+        ],
+        "ownerOutcome": "completed normally: the cookie-less attempt was refused before the state was consumed"
+      }
+    },
+    {
+      "id": "N-signed-out-gets",
+      "title": "signed-out GET /mine, /moderation, /operation are refused with a sign-in explanation",
+      "ok": true,
+      "ms": 4,
+      "evidence": {
+        "results": {
+          "/mine": {
+            "status": 401,
+            "text": "Sign in is required Skip to content Isolated PCV2 Trial Sign in is required Sign in is required to view this page. Sign in with your Bluesky (ATProto) account. "
+          },
+          "/moderation": {
+            "status": 401,
+            "text": "Sign in is required Skip to content Isolated PCV2 Trial Sign in is required Sign in is required to view this page. Sign in with your Bluesky (ATProto) account. "
+          },
+          "/operation?id=existing-x": {
+            "status": 401,
+            "text": "Sign in is required Skip to content Isolated PCV2 Trial Sign in is required Sign in is required to view this page. Sign in with your Bluesky (ATProto) account. "
+          }
+        }
+      }
+    },
+    {
+      "id": "N-signed-out-posts",
+      "title": "signed-out POST to every mutation route is refused and changes no record",
+      "ok": true,
+      "ms": 101,
+      "evidence": {
+        "results": {
+          "/contribute": {
+            "status": 401,
+            "text": "Sign in is required Skip to content Isolated PCV2 Trial Sign in is required Sign in is required to view this page. Sign "
+          },
+          "/submit-existing": {
+            "status": 401,
+            "text": "Sign in is required Skip to content Isolated PCV2 Trial Sign in is required Sign in is required to view this page. Sign "
+          },
+          "/operation/resume": {
+            "status": 401,
+            "text": "Sign in is required Skip to content Isolated PCV2 Trial Sign in is required Sign in is required to view this page. Sign "
+          },
+          "/seen": {
+            "status": 401,
+            "text": "Sign in is required Skip to content Isolated PCV2 Trial Sign in is required Sign in is required to view this page. Sign "
+          },
+          "/moderate": {
+            "status": 401,
+            "text": "Sign in is required Skip to content Isolated PCV2 Trial Sign in is required Sign in is required to view this page. Sign "
+          },
+          "/signout": {
+            "status": 401,
+            "text": "Sign in is required Skip to content Isolated PCV2 Trial Sign in is required Sign in is required to view this page. Sign "
+          },
+          "/disconnect": {
+            "status": 401,
+            "text": "Sign in is required Skip to content Isolated PCV2 Trial Sign in is required Sign in is required to view this page. Sign "
+          }
+        },
+        "after": {
+          "participant": {
+            "posts": 4,
+            "submits": 1
+          },
+          "moderator": {
+            "posts": 1,
+            "submits": 0
+          },
+          "community": {
+            "admissions": 0,
+            "modActions": 0,
+            "replyPolicies": 0,
+            "replyAdmissions": 0,
+            "replyActions": 0
+          }
+        }
+      }
+    },
+    {
+      "id": "N-participant-moderation",
+      "title": "the participant cannot open /moderation or admit",
+      "ok": true,
+      "ms": 108,
+      "evidence": {
+        "get": {
+          "status": 403,
+          "text": "That is not permitted Skip to content Isolated PCV2 Trial That is not permitted Moderator permission is required. Return to the community"
+        },
+        "post": {
+          "status": 403,
+          "text": "That is not permitted Skip to content Isolated PCV2 Trial That is not permitted Moderator permission is required. Return to the community"
+        }
+      }
+    },
+    {
+      "id": "N-others-post-by-did",
+      "title": "submitting the moderator's post by AT URI is a plain 403 refusal",
+      "ok": true,
+      "ms": 102,
+      "evidence": {
+        "status": 403,
+        "text": "That is not permitted Skip to content Isolated PCV2 Trial That is not permitted You can only add your own posts here. Return to the community"
+      }
+    },
+    {
+      "id": "N-others-post-by-handle",
+      "title": "submitting the moderator's post by bsky.app handle link is a plain 403 refusal",
+      "ok": true,
+      "ms": 40,
+      "evidence": {
+        "status": 403,
+        "text": "That is not permitted Skip to content Isolated PCV2 Trial That is not permitted You can only add your own posts here. That link names a different account; to add one of yours, paste the link that show"
+      }
+    },
+    {
+      "id": "N-others-post-wrong-did-in-url",
+      "title": "a bsky.app link naming another DID is a plain 403 refusal",
+      "ok": true,
+      "ms": 37,
+      "evidence": {
+        "status": 403,
+        "text": "That is not permitted Skip to content Isolated PCV2 Trial That is not permitted You can only add your own posts here. Return to the community"
+      }
+    },
+    {
+      "id": "N-malformed-reference",
+      "title": "a non-post link is refused with a specific message",
+      "ok": true,
+      "ms": 239,
+      "evidence": {
+        "results": [
+          {
+            "reference": "https://bsky.app/profile/participant.test/lists/abc",
+            "status": 400,
+            "text": "That request was not understood Skip to content Isolated PCV2 Trial That request was not understood That link points at "
+          },
+          {
+            "reference": "https://example.invalid/x",
+            "status": 400,
+            "text": "That request was not understood Skip to content Isolated PCV2 Trial That request was not understood That does not look l"
+          },
+          {
+            "reference": "at://did:plc:x/app.bsky.feed.like/abc",
+            "status": 400,
+            "text": "That request was not understood Skip to content Isolated PCV2 Trial That request was not understood That link points at "
+          }
+        ]
+      }
+    },
+    {
+      "id": "N-deleted-source",
+      "title": "a deleted source post is refused with a message naming the situation",
+      "ok": true,
+      "ms": 151,
+      "evidence": {
+        "status": 404,
+        "text": "Not found Skip to content Isolated PCV2 Trial Not found That post is not in your Bluesky account; it may have been deleted. Return to the community"
+      }
+    },
+    {
+      "id": "N-cid-substitution",
+      "title": "a forged cid form field is ignored; the record carries the CID read back from the PDS",
+      "ok": true,
+      "ms": 126,
+      "evidence": {
+        "status": 200,
+        "text": "Contribution Skip to content Isolated PCV2 Trial did:plc:tciakr64yyayncqudgidroor My discussions Sign out Disconnect Contribution Submitted. Your post is now wa",
+        "subject": {
+          "cid": "bafyreidbgspjoph4u5fnyfliexsiftvdenwmwgnbhebbe5ycq7tzid2ipi",
+          "uri": "at://did:plc:tciakr64yyayncqudgidroor/app.bsky.feed.post/3mwe6vitkg22k"
+        }
+      }
+    },
+    {
+      "id": "N-appview-down-own-handle",
+      "title": "with the AppView unavailable, the participant's own-post-by-handle link is 'couldn't confirm', not 'not yours'",
+      "ok": true,
+      "ms": 902,
+      "evidence": {
+        "status": 503,
+        "text": "That could not be checked right now Skip to content Isolated PCV2 Trial That could not be checked right now We couldn't confirm that link is yours right now. Try again in a moment, or paste the link that shows your account as did:plc:tciakr64yyayncqudgidroor. Return to the community"
+      }
+    },
+    {
+      "id": "N-duplicate-submit-pending",
+      "title": "submitting post1 again while pending creates no second record and the page is truthful",
+      "ok": true,
+      "ms": 118,
+      "evidence": {
+        "status": 200,
+        "text": "Contribution Skip to content Isolated PCV2 Trial did:plc:tciakr64yyayncqudgidroor My discussions Sign out Disconnect Contribution You already asked to add this exact post; nothing new was created. My "
+      }
+    },
+    {
+      "id": "N-appview-down-moderator",
+      "title": "with the AppView unavailable the moderator sees link-only entries",
+      "ok": true,
+      "ms": 836,
+      "evidence": {
+        "text": "Moderation did:plc:tciakr64yyayncqudgidroor · at://did:plc:tciakr64yyayncqudgidroor/zone.neutral.community.submit/4vmcso5ethmkx · Public post on Bluesky Admit did:plc:tciakr64yyayncqudgidroor · at://did:plc:tciakr64yyayncqudgidroor/zone.neutral.community.submit/7dr5gkjqsjbk5 · Public post on Bluesky Admit did:plc:tciakr64yyayncqudgidroor · at://did:plc:tciakr64yyayncqudgidroor/zone.neutral.community.submit/4yhluzxd5qeuy · Public post on Bluesky Admit"
+      }
+    },
+    {
+      "id": "N-appview-mismatch",
+      "title": "when the AppView reports a different CID no text is shown",
+      "ok": true,
+      "ms": 856,
+      "evidence": {
+        "text": "Moderation @pcv2-participant.test did:plc:tciakr64yyayncqudgidroor · at://did:plc:tciakr64yyayncqudgidroor/zone.neutral.community.submit/4vmcso5ethmkx · Public post on Bluesky Admit @pcv2-participant.test did:plc:tciakr64yyayncqudgidroor · at://did:plc:tciakr64yyayncqudgidroor/zone.neutral.community.submit/7dr5gkjqsjbk5 · Public post on Bluesky Admit @pcv2-participant.test did:plc:tciakr64yyayncqudgidroor · at://did:plc:tciakr64yyayncqudgidroor/zone.neutral.community.submit/4yhluzxd5qeuy · Public post on Bluesky Admit"
+      }
+    },
+    {
+      "id": "N-source-replaced",
+      "title": "post2 replaced under the same rkey: queue shows link-only, admission of the stale exact subject is refused",
+      "ok": true,
+      "ms": 1067,
+      "evidence": {
+        "text": "Moderation @pcv2-participant.test did:plc:tciakr64yyayncqudgidroor · at://did:plc:tciakr64yyayncqudgidroor/zone.neutral.community.submit/4vmcso5ethmkx · Public post on Bluesky First isolated post: a question about repository proofs. (text from Bluesky, unverified) Admit @pcv2-participant.test did:plc:tciakr64yyayncqudgidroor · at://did:plc:tciakr64yyayncqudgidroor/zone.neutral.community.submit/7dr5gkjqsjbk5 · Public post on Bluesky Fourth isolated post, used for the forged-CID form attempt. (text from Bluesky, unverified) Admit @pcv2-participant.test did:plc:tciakr64yyayncqudgidroor · at://did:plc:tciakr64yyayncqudgidroor/zone.neutral.community.submit/4yhluzxd5qeuy · Public post on Bluesky Admit",
+        "admit": {
+          "status": 409,
+          "text": "Moderation result Skip to content Isolated PCV2 Trial did:plc:2zhzeucxhggd7oi2s2piuj7e My discussions Moderate Sign out Disconnect Moderation result Not recorded; retry is safe after checking the curr"
+        }
+      }
+    },
+    {
+      "id": "N-admit-retry",
+      "title": "moderator refresh/retry of the same admit yields a single admission record",
+      "ok": true,
+      "ms": 227,
+      "evidence": {
+        "retry": {
+          "status": 200,
+          "text": "Moderation result Skip to content Isolated PCV2 Trial did:plc:2zhzeucxhggd7oi2s2piuj7e My discussions Moderate Sign out Disconnect Moderation result Recorded. T"
+        },
+        "note": "no 'Already recorded' variant exists; the replay page reads exactly as the first recording",
+        "admissions": [
+          "at://did:plc:gpxoxueevn2vu6au3ikfs44a/zone.neutral.community.admission/admit-4a9f33ea89cbdf3b9af4f819cc67a41184761c198b8eda52c8a6071a0800d6ff"
+        ]
+      }
+    },
+    {
+      "id": "N-duplicate-admission-after-ingest",
+      "title": "once the queue no longer lists post1, a duplicate admit is refused or idempotent with no new record",
+      "ok": true,
+      "ms": 446,
+      "evidence": {
+        "queueText": "Moderation @pcv2-participant.test did:plc:tciakr64yyayncqudgidroor · at://did:plc:tciakr64yyayncqudgidroor/zone.neutral.community.submit/7dr5gkjqsjbk5 · Public post on Bluesky Fourth isolated post, used for the forged-CID form attempt. (text from Bluesky, unverified) Admit @pcv2-participant.test did:plc:tciakr64yyayncqudgidroor · at://did:plc:tciakr64yyayncqudgidroor/zone.neutral.community.submit/4yhluzxd5qeuy · Public post on Bluesky Admit",
+        "result": {
+          "status": 200,
+          "text": "Moderation result Skip to content Isolated PCV2 Trial did:plc:2zhzeucxhggd7oi2s2piuj7e My discussions Moderate Sign out Disconnect Moderation result Recorded. T"
+        }
+      }
+    },
+    {
+      "id": "N-handle-invalid-own-handle",
+      "title": "when the AppView reports handle.invalid for the participant, their own-post-by-handle link is 'couldn't confirm' (503), and the DID link is accepted",
+      "ok": true,
+      "ms": 3119,
+      "evidence": {
+        "byHandle": {
+          "status": 503,
+          "text": "That could not be checked right now Skip to content Isolated PCV2 Trial That could not be checked right now We couldn't confirm that link is yours right now. Try again in a moment, or paste the link that shows your account as did:plc:tciakr64yyayncqudgidroor. Return to the community"
+        },
+        "byDid": {
+          "status": 200,
+          "text": "Contribution Skip to content Isolated PCV2 Trial did:plc:tciakr64yyayncqudgidroor My discussions Sign out Disconnect Contribution Submitted. Your post is now waiting for the moderator to add it here. "
+        },
+        "counts": {
+          "participant": {
+            "posts": 4,
+            "submits": 4
+          },
+          "moderator": {
+            "posts": 1,
+            "submits": 0
+          },
+          "community": {
+            "admissions": 1,
+            "modActions": 0,
+            "replyPolicies": 1,
+            "replyAdmissions": 0,
+            "replyActions": 0
+          }
+        }
+      }
+    },
+    {
+      "id": "N-reply-after-root-removal",
+      "title": "a reply attempted from the removed discussion is refused: no form, closed message; a stale form replay is recorded",
+      "ok": true,
+      "ms": 251,
+      "evidence": {
+        "text": "Discussion This discussion was removed from this community’s view; the author’s public post is not deleted or changed. Public post on Bluesky COMMUNITY VIEW Started by @pcv2-participant.test · posted 25 Sep 2026, 09:00 UTC COMMUNITY VIEW @pcv2-participant.test: First isolated reply, posted from the discussion page. posted 25 Sep 2026, 16:29 UTC Why is this here? This discussion is closed to new community replies. Community view: admission and removal change only this view, never the author’s public post.",
+        "replyForms": 0,
+        "stale": {
+          "status": 409,
+          "text": "Nothing was recorded Skip to content Isolated PCV2 Trial Nothing was recorded That discussion is closed or no longer in the community, so replies can't be added. Return to the community"
+        },
+        "staleWrote": {
+          "posts": 0,
+          "submits": 0
+        },
+        "counts": {
+          "participant": {
+            "posts": 5,
+            "submits": 5
+          },
+          "moderator": {
+            "posts": 1,
+            "submits": 0
+          },
+          "community": {
+            "admissions": 1,
+            "modActions": 1,
+            "replyPolicies": 1,
+            "replyAdmissions": 1,
+            "replyActions": 2
+          }
+        }
+      }
+    },
+    {
+      "id": "N-duplicate-submit-after-admission",
+      "title": "submitting post1 again after admission and removal: no new record; page text quoted",
+      "ok": true,
+      "ms": 129,
+      "evidence": {
+        "status": 200,
+        "text": "Contribution Skip to content Isolated PCV2 Trial did:plc:tciakr64yyayncqudgidroor My discussions Sign out Disconnect Contribution You already asked to add this exact post; nothing new was created. My discussions shows whether the moderator "
+      }
+    },
+    {
+      "id": "N-oauth-session-lost-write",
+      "title": "with the stored OAuth session gone, a write is a 401 'expired' page with the sign-in form, the cookie is cleared and the web session ended",
+      "ok": true,
+      "ms": 1982,
+      "evidence": {
+        "signIn": "http://127.0.0.1:46275/",
+        "mineBeforeWrite": {
+          "status": 200,
+          "note": "GET /mine does not restore the OAuth session; it still renders"
+        },
+        "write": {
+          "status": 401,
+          "text": "Sign in is required Skip to content Isolated PCV2 Trial Sign in is required Your sign-in has expired. Sign in again. Sign in with your Bluesky (ATProto) account. Nothing is created here; you will be asked to allow this site to post and subm",
+          "setCookie": [
+            "community_session=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0"
+          ]
+        },
+        "mineAfterWrite": {
+          "status": 401,
+          "text": "Sign in is required Skip to content Isolated PCV2 Trial Sign in is required Sign in is required to view this page. Sign "
+        }
+      }
+    },
+    {
+      "id": "N-oauth-session-lost-disconnect",
+      "title": "with the stored OAuth session gone, Disconnect ends the web session with the 401 'expired' page",
+      "ok": true,
+      "ms": 1899,
+      "evidence": {
+        "signIn": "http://127.0.0.1:46275/",
+        "status": 401,
+        "text": "Sign in is required Your sign-in has expired. Sign in again. Sign in with your Bluesky (ATProto) account. Nothing is created here; you will be asked to allow this site to post and submit on your behalf. ATProto handle Sign in Return to the community",
+        "cookies": [],
+        "home": "Isolated PCV2 Trial Exhaust the plumbing before a human sees it. What is this? Sign in with your Bluesky (ATProto) account. Nothing is created here; you will be asked to allow this site to post and submit on your behalf. ATProto handle Sign in Discussions No discussions yet."
+      }
+    }
+  ],
+  "payloads": {
+    "participantPosts": {
+      "post1": "at://did:plc:tciakr64yyayncqudgidroor/app.bsky.feed.post/3mwe6vihpj22k",
+      "post2": "at://did:plc:tciakr64yyayncqudgidroor/app.bsky.feed.post/3mwe6vind722k",
+      "post3": "at://did:plc:tciakr64yyayncqudgidroor/app.bsky.feed.post/3mwe6vioxwk2k",
+      "post4": "at://did:plc:tciakr64yyayncqudgidroor/app.bsky.feed.post/3mwe6vitkg22k",
+      "moderatorPost": "at://did:plc:2zhzeucxhggd7oi2s2piuj7e/app.bsky.feed.post/3mwe6viyvcs2j",
+      "post6": "at://did:plc:tciakr64yyayncqudgidroor/app.bsky.feed.post/3mwe6weagxk2k"
+    },
+    "notifyPublicBaseNote": "community-notify refuses a non-https public_base_url, so its links use https://127.0.0.1:46275 while community-live actually serves http://127.0.0.1:46275; only the path is asserted.",
+    "pendingEvent": {
+      "content": "[Isolated PCV2 Trial] pending: A new post is waiting for the moderator.\nhttps://127.0.0.1:46275/\nPublic post: https://bsky.app/profile/did:plc:tciakr64yyayncqudgidroor/post/3mwe6vihpj22k"
+    },
+    "admittedEvent": {
+      "content": "[Isolated PCV2 Trial] admitted: A new discussion was admitted.\nhttps://127.0.0.1:46275/d/admit-4a9f33ea89cbdf3b9af4f819cc67a41184761c198b8eda52c8a6071a0800d6ff"
+    },
+    "rejectedThenRetried": {
+      "content": "[Isolated PCV2 Trial] pending: A new post is waiting for the moderator.\nhttps://127.0.0.1:46275/\nPublic post: https://bsky.app/profile/did:plc:tciakr64yyayncqudgidroor/post/3mwe6vitkg22k"
+    },
+    "webhookDeliveries": [
+      "[Isolated PCV2 Trial] pending: A new post is waiting for the moderator.\nhttps://127.0.0.1:46275/\nPublic post: https://bsky.app/profile/did:plc:tciakr64yyayncqudgidroor/post/3mwe6vihpj22k",
+      "[Isolated PCV2 Trial] pending: A new post is waiting for the moderator.\nhttps://127.0.0.1:46275/\nPublic post: https://bsky.app/profile/did:plc:tciakr64yyayncqudgidroor/post/3mwe6vind722k",
+      "[Isolated PCV2 Trial] admitted: A new discussion was admitted.\nhttps://127.0.0.1:46275/d/admit-4a9f33ea89cbdf3b9af4f819cc67a41184761c198b8eda52c8a6071a0800d6ff",
+      "[Isolated PCV2 Trial] pending: A new post is waiting for the moderator.\nhttps://127.0.0.1:46275/\nPublic post: https://bsky.app/profile/did:plc:tciakr64yyayncqudgidroor/post/3mwe6vitkg22k"
+    ],
+    "webhookRejections": [
+      "[Isolated PCV2 Trial] pending: A new post is waiting for the moderator.\nhttps://127.0.0.1:46275/\nPublic post: https://bsky.app/profile/did:plc:tciakr64yyayncqudgidroor/post/3mwe6vitkg22k"
+    ],
+    "appViewRequestCount": 18
+  },
+  "recordCounts": {
+    "afterBringUp": {
+      "participant": {
+        "posts": 4,
+        "submits": 0
+      },
+      "moderator": {
+        "posts": 1,
+        "submits": 0
+      },
+      "community": {
+        "admissions": 0,
+        "modActions": 0,
+        "replyPolicies": 0,
+        "replyAdmissions": 0,
+        "replyActions": 0
+      }
+    },
+    "final": {
+      "participant": {
+        "posts": 6,
+        "submits": 6
+      },
+      "moderator": {
+        "posts": 1,
+        "submits": 0
+      },
+      "community": {
+        "admissions": 1,
+        "modActions": 1,
+        "replyPolicies": 1,
+        "replyAdmissions": 1,
+        "replyActions": 2
+      }
+    }
+  },
+  "defects": [],
+  "timings": {
+    "bringUpMs": 7694,
+    "totalMs": 44809
+  },
+  "summary": {
+    "steps": {
+      "total": 27,
+      "passed": 27
+    },
+    "negatives": {
+      "total": 27,
+      "passed": 27
+    },
+    "defects": 0
+  }
+}

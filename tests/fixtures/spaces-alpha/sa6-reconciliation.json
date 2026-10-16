@@ -1,0 +1,14 @@
+{
+  "format": "spaces-alpha-sa6-reconciliation-vector-v1",
+  "compatibility": {
+    "referenceCommit": "89deb9faca20e56fa2a262fe9746ed52bc1095ba",
+    "reconcilerVersion": "sa6-v1"
+  },
+  "cases": [
+    {"name": "equal", "known": "n1", "observed": "n1", "transition": null, "expected": "equal_state"},
+    {"name": "qualified", "known": "n1", "observed": "n2", "transition": "n1-to-n2", "expected": "qualified_transition"},
+    {"name": "notification-gap", "known": "n", "observed": "n2", "transition": null, "expected": "snapshot_only"},
+    {"name": "stale", "known": "n2", "observed": "n1", "transition": null, "expected": "insufficient_evidence"},
+    {"name": "missing-intermediate", "known": "n", "observed": "n2", "transition": "n1-to-n2", "expected": "insufficient_evidence"}
+  ]
+}

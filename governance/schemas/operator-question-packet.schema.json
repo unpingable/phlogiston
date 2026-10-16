@@ -1,0 +1,186 @@
+{
+  "schema": "gstrict-v1",
+  "id": "operator-question-packet",
+  "version": "1",
+  "root": {
+    "type": "object",
+    "fields": {
+      "schema": {"type": "string", "enum": ["operator-question-packet-v1"]},
+      "packet_id": {"type": "string", "format": "id"},
+      "question_id": {"type": "string", "format": "id", "pattern": "^OQ-\\d+$"},
+      "prepared_at": {"type": "string", "format": "timestamp"},
+      "preparer": {"type": "string", "min_length": 1},
+      "question": {"type": "string", "min_length": 1},
+      "why_now": {"type": "string", "min_length": 1},
+      "blocks": {"type": "string", "min_length": 1},
+      "bounded_by": {
+        "type": "array",
+        "min_items": 1,
+        "items": {"type": "string", "min_length": 1},
+        "unique_items": true
+      },
+      "base_commit": {"type": "string", "format": "commit"},
+      "governing_inputs": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "fields": {
+            "role": {"type": "string", "min_length": 1},
+            "path": {"type": "string", "format": "path"},
+            "bytes": {"type": "integer", "minimum": 0},
+            "sha256": {"type": "string", "format": "digest"}
+          },
+          "required": ["role", "path", "bytes", "sha256"]
+        }
+      },
+      "forcing_case": {
+        "type": "object",
+        "fields": {
+          "predicate": {"type": "string", "min_length": 1},
+          "evidence": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "fields": {
+                "role": {"type": "string", "min_length": 1},
+                "uri": {"type": "string", "format": "uri"},
+                "media_type": {"type": "string", "min_length": 1},
+                "bytes": {"type": "integer", "minimum": 0},
+                "sha256": {"type": "string", "format": "digest"}
+              },
+              "required": ["role", "uri", "media_type", "bytes", "sha256"]
+            }
+          }
+        },
+        "required": ["predicate", "evidence"]
+      },
+      "answers": {
+        "type": "array",
+        "min_items": 1,
+        "items": {
+          "type": "object",
+          "fields": {
+            "answer_id": {"type": "string", "format": "id"},
+            "fit": {"type": "string", "min_length": 1},
+            "basis": {"type": "string", "min_length": 1},
+            "supporting": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "fields": {
+                  "role": {"type": "string", "min_length": 1},
+                  "uri": {"type": "string", "format": "uri"},
+                  "media_type": {"type": "string", "min_length": 1},
+                  "bytes": {"type": "integer", "minimum": 0},
+                  "sha256": {"type": "string", "format": "digest"}
+                },
+                "required": ["role", "uri", "media_type", "bytes", "sha256"]
+              }
+            },
+            "opposing": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "fields": {
+                  "role": {"type": "string", "min_length": 1},
+                  "uri": {"type": "string", "format": "uri"},
+                  "media_type": {"type": "string", "min_length": 1},
+                  "bytes": {"type": "integer", "minimum": 0},
+                  "sha256": {"type": "string", "format": "digest"}
+                },
+                "required": ["role", "uri", "media_type", "bytes", "sha256"]
+              }
+            },
+            "uncertainty": {"type": "string", "min_length": 1},
+            "consequences": {
+              "type": "object",
+              "fields": {
+                "authority_deltas": {"type": "string", "min_length": 1},
+                "guarantee_deltas": {"type": "string", "min_length": 1},
+                "blockers_satisfied": {
+                  "type": "array",
+                  "items": {"type": "string", "min_length": 1},
+                  "unique_items": true
+                },
+                "blockers_remaining": {
+                  "type": "array",
+                  "items": {"type": "string", "min_length": 1},
+                  "unique_items": true
+                },
+                "tasks_eligible": {
+                  "type": "array",
+                  "items": {"type": "string", "min_length": 1},
+                  "unique_items": true
+                },
+                "amendments": {
+                  "type": "array",
+                  "items": {"type": "string", "min_length": 1},
+                  "unique_items": true
+                },
+                "replay_fork": {"type": "string", "min_length": 1},
+                "abuse_ts": {"type": "string", "min_length": 1}
+              },
+              "required": [
+                "authority_deltas",
+                "guarantee_deltas",
+                "blockers_satisfied",
+                "blockers_remaining",
+                "tasks_eligible",
+                "amendments",
+                "replay_fork",
+                "abuse_ts"
+              ]
+            }
+          },
+          "required": [
+            "answer_id",
+            "fit",
+            "basis",
+            "supporting",
+            "opposing",
+            "uncertainty",
+            "consequences"
+          ]
+        }
+      },
+      "recommendation": {
+        "type": "object",
+        "fields": {
+          "answer_id": {"type": "string", "min_length": 1},
+          "rationale": {"type": "string", "min_length": 1}
+        },
+        "required": ["answer_id", "rationale"]
+      },
+      "novelty_condition": {"type": "string", "min_length": 1},
+      "excluded_answers": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "fields": {
+            "answer_id": {"type": "string", "format": "id"},
+            "conflict": {"type": "string", "min_length": 1},
+            "required_amendment": {"type": "string", "min_length": 1}
+          },
+          "required": ["answer_id", "conflict", "required_amendment"]
+        }
+      }
+    },
+    "required": [
+      "schema",
+      "packet_id",
+      "question_id",
+      "prepared_at",
+      "preparer",
+      "question",
+      "why_now",
+      "blocks",
+      "bounded_by",
+      "base_commit",
+      "governing_inputs",
+      "forcing_case",
+      "answers",
+      "recommendation",
+      "novelty_condition"
+    ]
+  }
+}

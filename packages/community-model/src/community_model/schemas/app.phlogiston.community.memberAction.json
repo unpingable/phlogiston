@@ -1,0 +1,39 @@
+{
+  "lexicon": 1,
+  "id": "app.phlogiston.community.memberAction",
+  "defs": {
+    "main": {
+      "type": "record",
+      "key": "any",
+      "description": "An append-only community membership transition written by the community authority.",
+      "record": {
+        "type": "object",
+        "required": ["action", "subject", "actor", "createdAt"],
+        "properties": {
+          "action": {
+            "type": "string",
+            "knownValues": ["add", "remove"]
+          },
+          "subject": {
+            "type": "string",
+            "format": "did"
+          },
+          "actor": {
+            "type": "string",
+            "format": "did"
+          },
+          "reason": {
+            "type": "string",
+            "maxGraphemes": 300,
+            "maxLength": 3000,
+            "description": "Optional explanatory text; it does not establish authority."
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "datetime"
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "schema": "operator-trust-policy-v1",
+  "policy_id": "manual-controller-channel-v1",
+  "version": 1,
+  "statement": "The controller accepts rulings only from the single non-service human principal attested by the protected manual controller channel.",
+  "accepted_identities": [
+    {
+      "identity": "operator-jbeck",
+      "kind": "human_non_service"
+    }
+  ],
+  "accepted_methods": [
+    "manual_controller_channel"
+  ]
+}

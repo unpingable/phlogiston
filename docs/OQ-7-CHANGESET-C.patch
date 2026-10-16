@@ -1,0 +1,23 @@
+schema = "oq7-bootstrap-required-change-set-v1"
+change_set_id = "OQCS-OQ-7-2026-07-27-C-03"
+packet_id = "OQP-OQ-7-2026-07-27-03"
+question_id = "OQ-7"
+answer_id = "C"
+receipt_id = "OQDR-OQ-7-2026-07-27-C-02"
+target_count = 1
+target.1.path = "docs/OPEN-QUESTIONS.md"
+target.1.base_sha256 = "sha256:fc704af74e51a29b29d35c58cc4aa0c295ce11729f12e40b6bf62b4f93986e28"
+target.1.result_sha256 = "sha256:f83d0f4f832a16e71288171e3dcc373539a7488429bb04174a2f554c42ae3520"
+--PATCH--
+--- a/docs/OPEN-QUESTIONS.md
++++ b/docs/OPEN-QUESTIONS.md
+@@ -167 +167 @@
+-**Status:** open
++**Status:** decided
+@@ -172 +172 @@
+-**Selected answer:** none
++**Selected answer:** C
+@@ -174 +174,2 @@
+-**Operator-decision receipt:** none
++**Operator-decision receipt:** `OQDR-OQ-7-2026-07-27-C-02` — external;
++authenticated under `manual-controller-channel-v1`

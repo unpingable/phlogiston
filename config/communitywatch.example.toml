@@ -1,0 +1,13 @@
+# Example communitywatch observer configuration (detect-only, no credentials).
+community_did = "did:web:community.invalid"
+community_slug = "homelab"
+administrator_did = "did:web:admin.invalid"
+sqlite_path = "observer.sqlite3"
+event_source_url = "wss://jetstream.us-west.bsky.network"
+resolver_url = "https://plc.directory"
+subject_refresh_seconds = 60
+bind = "127.0.0.1"
+port = 8080
+page_size = 50
+max_page_size = 100
+stale_threshold_seconds = 180

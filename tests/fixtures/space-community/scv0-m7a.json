@@ -1,0 +1,18 @@
+{
+  "profile": "scv0-static-public-demo/1",
+  "expectedBundleId": "sha256:9bc2a8935f1f239fbcd311287fcf3602fa4a7f1ebfd9bcada0d413dc26455b5e",
+  "expectedFileCount": 20,
+  "lifecycleCases": [
+    "added",
+    "changed_at_source",
+    "source_unavailable",
+    "removed"
+  ],
+  "synthetic": true,
+  "activeScriptPresent": false,
+  "analyticsPresent": false,
+  "humanParticipants": 0,
+  "networkUsedDuringBuild": false,
+  "readerIdentityUsed": false,
+  "secretMaterialPresent": false
+}

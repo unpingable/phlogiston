@@ -1,0 +1,19 @@
+[Unit]
+Description=Unprivileged community reply policy worker
+After=communitywatch-web.service communityd.service
+Wants=communitywatch-web.service communityd.service
+
+[Service]
+User=community-policy
+Group=community-authority
+ExecStart=/opt/atproto-community/.venv/bin/community-policy --config /etc/atproto-community/community-policy.toml
+Restart=on-failure
+UMask=0077
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/community-policy /run/community-authority
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

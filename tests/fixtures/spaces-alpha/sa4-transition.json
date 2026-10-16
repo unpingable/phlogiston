@@ -1,0 +1,228 @@
+{
+  "format": "spaces-alpha-sa4-reference-transition-vector-v1",
+  "generator": {
+    "implementation": "@atproto/space.RepoCommit.applyOps+serializeRepo",
+    "packageVersion": "0.0.1",
+    "repository": "https://github.com/bluesky-social/atproto",
+    "commit": "89deb9faca20e56fa2a262fe9746ed52bc1095ba",
+    "nodeVersion": "v24.13.0",
+    "pnpmVersion": "11.11.0",
+    "driver": "tests/fixtures/spaces-alpha/reference/sa4-generate.mjs",
+    "driverSha256": "fc0132528f7f880b33cced1401c25c1862a7c22c3f1ed5452169d02b9056aeef",
+    "source": "tests/fixtures/spaces-alpha/sa4-source.json",
+    "sourceSha256": "554e2b6bdda9258235c8dab5f2371aea505d4e1ed1593ed90a189d13324041a9",
+    "command": "node tests/fixtures/spaces-alpha/reference/sa4-generate.mjs <pinned-atproto-worktree> tests/fixtures/spaces-alpha/sa4-source.json tests/fixtures/spaces-alpha/reference tests/fixtures/spaces-alpha/sa4-transition.json"
+  },
+  "localExpectation": {
+    "carAdapterVersion": "sa2-car-v1",
+    "qualifierVersion": "sa1-v1",
+    "transitionQualifierVersion": "sa4-v1"
+  },
+  "states": {
+    "n": {
+      "sourceVectorIdentifier": "sa4:reference-n:89deb9f",
+      "rev": "3mtaaaabbbbbf",
+      "artifact": "sa4-n.car",
+      "byteLength": 764,
+      "rawSha256": "c564c3ff8a4663014e6100d26a78ce4ba5f60da01799c2b09a307e8febd1ac9e",
+      "regeneration": {
+        "runs": 2,
+        "stability": "byte-identical",
+        "firstSha256": "c564c3ff8a4663014e6100d26a78ce4ba5f60da01799c2b09a307e8febd1ac9e",
+        "secondSha256": "c564c3ff8a4663014e6100d26a78ce4ba5f60da01799c2b09a307e8febd1ac9e"
+      },
+      "roots": [
+        "bafyreice73h6wjj5t3uiuvd25erbhsjqpbx2r6nbfem7jgvfezaudqyqmy",
+        "bafyreibgmxqakz6gioaqrpvw4bftjqlow5prlklvysrqpsq33fjnyoy4ca"
+      ],
+      "blocks": [
+        {
+          "ordinal": 0,
+          "cid": "bafyreice73h6wjj5t3uiuvd25erbhsjqpbx2r6nbfem7jgvfezaudqyqmy",
+          "codec": 113,
+          "multihashCode": 18,
+          "bytesB64": "pmNpa21YIPP3A+h5MjHkeOCppRAQ9YPORpM7mzDjZNiRRSQja/4xY21hY1ggTbSqKp7X9CAE1UWPCsaxqJPFf9/9INsyF/DLOErVdGhjcmV2bTNtdGFhYWFiYmJiYmZjc2lnWEAHxAG29VmgIS1SC7Rz3cWz+0w0XLib80MGzAwzMnkpoUV0Jv+Lwj2E5nqAZ24Yolbb1bQflMXF0QUuUMVQhEYzY3ZlcgFkaGFzaFggZ6VPINl9JzvRZ8a7WV0ZLB8toaeGAtkZ2z4PnpZng+Q="
+        },
+        {
+          "ordinal": 1,
+          "cid": "bafyreibgmxqakz6gioaqrpvw4bftjqlow5prlklvysrqpsq33fjnyoy4ca",
+          "codec": 113,
+          "multihashCode": 18,
+          "bytesB64": "ongbaW52YWxpZC50ZXN0LnNwYWNlcG9zdC9iZXRh2CpYJQABcRIgo5F9R4+cBTcsaneZGjtrpbmo591nzXggXYWNUF036cF4HGludmFsaWQudGVzdC5zcGFjZXBvc3QvYWxwaGHYKlglAAFxEiBrGVienDw4WAXFaJvmKBFOXBYJmWeS3hKjqzZlHzP8sg=="
+        },
+        {
+          "ordinal": 2,
+          "cid": "bafyreifdsf6upd44au3sy2txtendw25fxguopxlhzv4caxmfrvif2n7jye",
+          "codec": 113,
+          "multihashCode": 18,
+          "bytesB64": "o2R0ZXh0bmJldGEgcmVjb3JkIHYxZSR0eXBldmludmFsaWQudGVzdC5zcGFjZXBvc3RpY3JlYXRlZEF0dDIwMjYtMDgtMjBUMTU6MDA6MDFa"
+        },
+        {
+          "ordinal": 3,
+          "cid": "bafyreidldfmj5hb4hbmalrlitptcqekolqlatglhslpbfi5lgzsr6m74wi",
+          "codec": 113,
+          "multihashCode": 18,
+          "bytesB64": "o2R0ZXh0b2FscGhhIHJlY29yZCB2MWUkdHlwZXZpbnZhbGlkLnRlc3Quc3BhY2Vwb3N0aWNyZWF0ZWRBdHQyMDI2LTA4LTIwVDE1OjAwOjAwWg=="
+        }
+      ]
+    },
+    "n1": {
+      "sourceVectorIdentifier": "sa4:reference-n1:89deb9f",
+      "rev": "3mtaaaabbbbbg",
+      "artifact": "sa4-n1.car",
+      "byteLength": 954,
+      "rawSha256": "aec612cf702f6cd39cf84b635017772d57cbca08ad132107664d40b92d9711dd",
+      "regeneration": {
+        "runs": 2,
+        "stability": "byte-identical",
+        "firstSha256": "aec612cf702f6cd39cf84b635017772d57cbca08ad132107664d40b92d9711dd",
+        "secondSha256": "aec612cf702f6cd39cf84b635017772d57cbca08ad132107664d40b92d9711dd"
+      },
+      "roots": [
+        "bafyreihdhavuxes5ge7d6aoyrgi52l72remhyuki3zou5fubyybeq5gslm",
+        "bafyreieggkjd33ild3cbuexedenk6vg7bkabnls6ppqg3hqndc47w7j66e"
+      ],
+      "blocks": [
+        {
+          "ordinal": 0,
+          "cid": "bafyreihdhavuxes5ge7d6aoyrgi52l72remhyuki3zou5fubyybeq5gslm",
+          "codec": 113,
+          "multihashCode": 18,
+          "bytesB64": "pmNpa21YIIaITkZj/rzC40zx5TFZZcEycHsGWlxidjB5kDO5hom3Y21hY1gg+PsumOmq/Z+b0naNLk4aUhTQ3VXrNjLTnnUuZdbRREZjcmV2bTNtdGFhYWFiYmJiYmdjc2lnWEDD/oCPsGksBHaEg/gVAemU5pgnDsWQ8ADSYuJULPDIJWkBFuoDMvk+OAmZeYb5jWXZFcQmSNVRJh/GLff4R3EPY3ZlcgFkaGFzaFgg2pgTW6JY28mHu8YVuOULzxQuAwH/48JTn8vLY4nZ4RM="
+        },
+        {
+          "ordinal": 1,
+          "cid": "bafyreieggkjd33ild3cbuexedenk6vg7bkabnls6ppqg3hqndc47w7j66e",
+          "codec": 113,
+          "multihashCode": 18,
+          "bytesB64": "o3gbaW52YWxpZC50ZXN0LnNwYWNlcG9zdC9iZXRh2CpYJQABcRIgo5F9R4+cBTcsaneZGjtrpbmo591nzXggXYWNUF036cF4HGludmFsaWQudGVzdC5zcGFjZXBvc3QvYWxwaGHYKlglAAFxEiBrGVienDw4WAXFaJvmKBFOXBYJmWeS3hKjqzZlHzP8sngcaW52YWxpZC50ZXN0LnNwYWNlcG9zdC9nYW1tYdgqWCUAAXESINhiq99MbKV9/88bU8coocnkv2qKwIxJVVLn5Jsq/Z++"
+        },
+        {
+          "ordinal": 2,
+          "cid": "bafyreifdsf6upd44au3sy2txtendw25fxguopxlhzv4caxmfrvif2n7jye",
+          "codec": 113,
+          "multihashCode": 18,
+          "bytesB64": "o2R0ZXh0bmJldGEgcmVjb3JkIHYxZSR0eXBldmludmFsaWQudGVzdC5zcGFjZXBvc3RpY3JlYXRlZEF0dDIwMjYtMDgtMjBUMTU6MDA6MDFa"
+        },
+        {
+          "ordinal": 3,
+          "cid": "bafyreidldfmj5hb4hbmalrlitptcqekolqlatglhslpbfi5lgzsr6m74wi",
+          "codec": 113,
+          "multihashCode": 18,
+          "bytesB64": "o2R0ZXh0b2FscGhhIHJlY29yZCB2MWUkdHlwZXZpbnZhbGlkLnRlc3Quc3BhY2Vwb3N0aWNyZWF0ZWRBdHQyMDI2LTA4LTIwVDE1OjAwOjAwWg=="
+        },
+        {
+          "ordinal": 4,
+          "cid": "bafyreigymkv56tdmuv677ty3kpdsrioj4s7wvcwarrevkuxh4snsv7m7xy",
+          "codec": 113,
+          "multihashCode": 18,
+          "bytesB64": "o2R0ZXh0b2dhbW1hIHJlY29yZCB2MWUkdHlwZXZpbnZhbGlkLnRlc3Quc3BhY2Vwb3N0aWNyZWF0ZWRBdHQyMDI2LTA4LTIwVDE1OjAxOjAwWg=="
+        }
+      ]
+    },
+    "n2": {
+      "sourceVectorIdentifier": "sa4:reference-n2:89deb9f",
+      "rev": "3mtaaaabbbbbh",
+      "artifact": "sa4-n2.car",
+      "byteLength": 954,
+      "rawSha256": "28b912b64e1b9c98b78d06ac04c60517cc28c9de0d44a9f64214632a78a4fb73",
+      "regeneration": {
+        "runs": 2,
+        "stability": "byte-identical",
+        "firstSha256": "28b912b64e1b9c98b78d06ac04c60517cc28c9de0d44a9f64214632a78a4fb73",
+        "secondSha256": "28b912b64e1b9c98b78d06ac04c60517cc28c9de0d44a9f64214632a78a4fb73"
+      },
+      "roots": [
+        "bafyreihpxqzhfmeykndennuaw5g2eub3gpf3rjvbnok4bph5owfmxw6maa",
+        "bafyreigt4urwhiazbeysghotwzxmjraouklbtg2hlz3rjogwcxfteoddtu"
+      ],
+      "blocks": [
+        {
+          "ordinal": 0,
+          "cid": "bafyreihpxqzhfmeykndennuaw5g2eub3gpf3rjvbnok4bph5owfmxw6maa",
+          "codec": 113,
+          "multihashCode": 18,
+          "bytesB64": "pmNpa21YIANAsGM/k+wYxMttePSlcpy3G3zvwD/tIYKxZ977YVgjY21hY1gg79f3qRBA3Km95mA8GYVEwSvwtwBU4s96gfgHKld2v59jcmV2bTNtdGFhYWFiYmJiYmhjc2lnWEAiWVA8uTpsgxTuus9JlOoYWjik1EY7B1C/WSxQdif4FQwrn6XBqswyum+L4ViOrsj0rr/hfCZSNnBqSFkoKmMGY3ZlcgFkaGFzaFgg0fOBX4meOfHh6NwJAvw3vxLdjCj2Dbrsm9CQ9IyK2xw="
+        },
+        {
+          "ordinal": 1,
+          "cid": "bafyreigt4urwhiazbeysghotwzxmjraouklbtg2hlz3rjogwcxfteoddtu",
+          "codec": 113,
+          "multihashCode": 18,
+          "bytesB64": "o3gbaW52YWxpZC50ZXN0LnNwYWNlcG9zdC9iZXRh2CpYJQABcRIgNNev/ljMuLFP9WNrxTGKBCmTdv4M831dTVAN+NJmQUp4HGludmFsaWQudGVzdC5zcGFjZXBvc3QvYWxwaGHYKlglAAFxEiBrGVienDw4WAXFaJvmKBFOXBYJmWeS3hKjqzZlHzP8sngcaW52YWxpZC50ZXN0LnNwYWNlcG9zdC9kZWx0YdgqWCUAAXESIFlSFygfRBQap3QWN5mTitRtYNtGQAKpsa7hqzhC7N5w"
+        },
+        {
+          "ordinal": 2,
+          "cid": "bafyreibu26x74wgmxcyu75ldnpctdcqefgjxn7qm6n6v2tkqbx4nezsbji",
+          "codec": 113,
+          "multihashCode": 18,
+          "bytesB64": "o2R0ZXh0bmJldGEgcmVjb3JkIHYyZSR0eXBldmludmFsaWQudGVzdC5zcGFjZXBvc3RpY3JlYXRlZEF0dDIwMjYtMDgtMjBUMTU6MDI6MDBa"
+        },
+        {
+          "ordinal": 3,
+          "cid": "bafyreidldfmj5hb4hbmalrlitptcqekolqlatglhslpbfi5lgzsr6m74wi",
+          "codec": 113,
+          "multihashCode": 18,
+          "bytesB64": "o2R0ZXh0b2FscGhhIHJlY29yZCB2MWUkdHlwZXZpbnZhbGlkLnRlc3Quc3BhY2Vwb3N0aWNyZWF0ZWRBdHQyMDI2LTA4LTIwVDE1OjAwOjAwWg=="
+        },
+        {
+          "ordinal": 4,
+          "cid": "bafyreiczkilsqh2ecqnko5awg6mzhcwunvqnwrsaaku3dlxbvm4ef3g6oa",
+          "codec": 113,
+          "multihashCode": 18,
+          "bytesB64": "o2R0ZXh0b2RlbHRhIHJlY29yZCB2MWUkdHlwZXZpbnZhbGlkLnRlc3Quc3BhY2Vwb3N0aWNyZWF0ZWRBdHQyMDI2LTA4LTIwVDE1OjAyOjAxWg=="
+        }
+      ]
+    }
+  },
+  "transitions": [
+    {
+      "name": "n-to-n1",
+      "source": "n",
+      "target": "n1",
+      "operations": [
+        {
+          "rev": "3mtaaaabbbbbg",
+          "collection": "invalid.test.spacepost",
+          "rkey": "gamma",
+          "cid": "bafyreigymkv56tdmuv677ty3kpdsrioj4s7wvcwarrevkuxh4snsv7m7xy",
+          "prev": null
+        }
+      ],
+      "orderedOperationSha256": "a027289630c37737eacb3b81b83b2806d5a83d410032a571ef070f1fd96f43c9",
+      "referenceReplayMatchesTarget": true,
+      "expectedTransitionReceiptId": "sha256:55a0adf0522c47333b174c0071f8dc7a99f5239182c5ccbdc810760a7c92337f"
+    },
+    {
+      "name": "n1-to-n2",
+      "source": "n1",
+      "target": "n2",
+      "operations": [
+        {
+          "rev": "3mtaaaabbbbbh",
+          "collection": "invalid.test.spacepost",
+          "rkey": "delta",
+          "cid": "bafyreiczkilsqh2ecqnko5awg6mzhcwunvqnwrsaaku3dlxbvm4ef3g6oa",
+          "prev": null
+        },
+        {
+          "rev": "3mtaaaabbbbbh",
+          "collection": "invalid.test.spacepost",
+          "rkey": "beta",
+          "cid": "bafyreibu26x74wgmxcyu75ldnpctdcqefgjxn7qm6n6v2tkqbx4nezsbji",
+          "prev": "bafyreifdsf6upd44au3sy2txtendw25fxguopxlhzv4caxmfrvif2n7jye"
+        },
+        {
+          "rev": "3mtaaaabbbbbh",
+          "collection": "invalid.test.spacepost",
+          "rkey": "gamma",
+          "cid": null,
+          "prev": "bafyreigymkv56tdmuv677ty3kpdsrioj4s7wvcwarrevkuxh4snsv7m7xy"
+        }
+      ],
+      "orderedOperationSha256": "9b128157d538a6103b04ac3304b5772d2cefce13c89b5086ce325807cc928fc7",
+      "referenceReplayMatchesTarget": true,
+      "expectedTransitionReceiptId": "sha256:6bd6827ac83a780f0ea852ba08da80e5a293a381366a56d362eca8d1f952e526"
+    }
+  ]
+}

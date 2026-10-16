@@ -1,0 +1,66 @@
+{
+  "profile": "scv0-m1+spaces-alpha-2026-08-20",
+  "namespaceStatus": "synthetic-noncanonical-invalid.test",
+  "space": {
+    "authorityDid": "did:web:space-authority.invalid.test",
+    "spaceType": "test.invalid.community",
+    "skey": "community-lab"
+  },
+  "actors": {
+    "author": "did:web:author.invalid.test",
+    "community": "did:web:community.invalid.test",
+    "moderator": "did:web:moderator.invalid.test"
+  },
+  "collections": {
+    "post": "test.invalid.community.post",
+    "submission": "test.invalid.community.submit",
+    "admission": "test.invalid.community.admission",
+    "removal": "test.invalid.community.removal"
+  },
+  "records": {
+    "post": {
+      "rkey": "post-1",
+      "cid": "bafyreicl6ujc6ncfktctxxroxognfn7d2fqavvrryoc2lv6m4i6hpbkfti"
+    },
+    "submission": {
+      "rkey": "submission-1",
+      "cid": "bafyreig3yg2msah74sgvow25uxddqbabex3f3mh6hysess3w5kmgiv6zqy"
+    },
+    "admission": {
+      "rkey": "admission-1",
+      "cid": "bafyreiaij7wqrolyv5gx2glkordkq22yacpgg23bdwyweenwlknk37zjyu"
+    },
+    "removal": {
+      "rkey": "removal-1",
+      "cid": "bafyreihffwofbdcqendtitmma6wzds6wa2fpy5p7mkjpayvatsrydse6oe"
+    },
+    "alternateSubmission": {
+      "rkey": "submission-2",
+      "cid": "bafyreihhponjv2pdbmg33nxvccrgj34546avahl3nojk5cplawofvn2d3m"
+    },
+    "conflictingAdmission": {
+      "rkey": "admission-2",
+      "cid": "bafyreidhlbxjr6wspwqltfulya42d3zuze43tohfeoul56e5i6darrpm6y"
+    }
+  },
+  "receipts": {
+    "postQualification": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+    "submissionEvidence": "sha256:2222222222222222222222222222222222222222222222222222222222222222",
+    "authorizationBasis": "sha256:3333333333333333333333333333333333333333333333333333333333333333",
+    "authorizationProvenance": "sha256:4444444444444444444444444444444444444444444444444444444444444444",
+    "currentSourceQualification": "sha256:5555555555555555555555555555555555555555555555555555555555555555",
+    "removalBasis": "sha256:6666666666666666666666666666666666666666666666666666666666666666",
+    "removalProvenance": "sha256:7777777777777777777777777777777777777777777777777777777777777777"
+  },
+  "times": {
+    "submittedAt": "2026-08-21T12:00:00Z",
+    "admitAuthorizedAt": "2026-08-21T12:01:00Z",
+    "admitExpiresAt": "2026-08-21T12:06:00Z",
+    "admittedAt": "2026-08-21T12:02:00Z",
+    "checkedAt": "2026-08-21T12:03:00Z",
+    "removeAuthorizedAt": "2026-08-21T12:04:00Z",
+    "removeExpiresAt": "2026-08-21T12:09:00Z",
+    "removedAt": "2026-08-21T12:05:00Z"
+  },
+  "secretMaterialPresent": false
+}

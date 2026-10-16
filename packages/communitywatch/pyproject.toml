@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "communitywatch"
+version = "0.1.0"
+license = "MIT OR Apache-2.0"
+description = "Detect-only observer and AppView for ATProto communities."
+requires-python = ">=3.12,<3.13"
+dependencies = ["community-model==0.1.0"]
+
+[project.scripts]
+communitywatch-index = "communitywatch.cli:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+include-package-data = false
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["communitywatch", "communitywatch.*"]
+namespaces = false
+
+[tool.setuptools.package-data]
+communitywatch = ["py.typed"]
+
+[tool.pytest.ini_options]
+addopts = ["--strict-config", "--strict-markers", "-ra"]
+testpaths = ["tests"]
+pythonpath = ["src", "../community-model/src"]

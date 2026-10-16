@@ -1,0 +1,27 @@
+{
+  "format": "spaces-alpha-sa9d-d-authenticated-acquisition-v1",
+  "compatibility": {
+    "spacesProposalCommit": "54c9cf5153d668c4f4fb4438529967412e861775",
+    "method": "credential-dpop-get+explicit-nonce-attempt+bounded-stdlib-http",
+    "version": "sa9d-d-v1"
+  },
+  "witnesses": {
+    "car": "sa4 state n golden CAR",
+    "operations": "sa5 o1CompleteBatch response",
+    "nonceChallenge": ["sa9dd-nonce-0001", "sa9dd-nonce-0002"]
+  },
+  "secretMaterialPresent": false,
+  "claims": [
+    "exact credential DPoP request binding",
+    "one visible HTTP acquisition per attempt",
+    "unchanged SA7 handoff"
+  ],
+  "nonClaims": [
+    "artifact validity",
+    "source authority",
+    "currentness",
+    "membership",
+    "standing",
+    "governance authority"
+  ]
+}

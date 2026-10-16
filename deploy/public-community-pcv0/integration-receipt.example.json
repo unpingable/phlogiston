@@ -1,0 +1,43 @@
+{
+  "schema": "pcv0-integration-receipt-v1",
+  "campaignId": "PCV0-INTERNAL-REPLACE-WITH-DATE-01",
+  "status": "pending",
+  "completedAt": null,
+  "communityDid": "did:plc:exampleparticipantabcdef",
+  "schemaAuthorityDid": "did:plc:replacewithschemaauthority",
+  "participants": [
+    {
+      "role": "moderator",
+      "did": "did:plc:replacewithtestmoderator",
+      "pdsOrigin": "https://participant-one-pds.invalid"
+    },
+    {
+      "role": "participant",
+      "did": "did:plc:replacewithtestparticipant",
+      "pdsOrigin": "https://participant-two-pds.invalid"
+    }
+  ],
+  "serviceVersions": {},
+  "checks": [
+    {"id": "publication", "status": "pending", "evidence": []},
+    {"id": "oauth-cross-pds", "status": "pending", "evidence": []},
+    {"id": "root-post-and-admission", "status": "pending", "evidence": []},
+    {"id": "automatic-reply-admission", "status": "pending", "evidence": []},
+    {"id": "fresh-session-unread", "status": "pending", "evidence": []},
+    {"id": "reply-remove-source-unchanged", "status": "pending", "evidence": []},
+    {"id": "reply-restore", "status": "pending", "evidence": []},
+    {"id": "participant-unknown-write-recovery", "status": "pending", "evidence": []},
+    {"id": "authority-unknown-write-recovery", "status": "pending", "evidence": []},
+    {"id": "full-service-restart", "status": "pending", "evidence": []}
+  ],
+  "publicRecords": [],
+  "humanDogfood": {
+    "status": "BLOCKED_MISSING_PARTICIPANTS",
+    "receipt": null
+  },
+  "nonClaims": [
+    "This internal campaign does not establish an external pilot.",
+    "This internal campaign does not establish production readiness.",
+    "Test identities controlled by one person do not satisfy the two-maintainer dogfood requirement."
+  ]
+}

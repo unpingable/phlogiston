@@ -1,0 +1,41 @@
+{
+  "schema": "gstrict-v1",
+  "id": "operator-trust-policy",
+  "version": "1",
+  "root": {
+    "type": "object",
+    "fields": {
+      "schema": {"type": "string", "enum": ["operator-trust-policy-v1"]},
+      "policy_id": {"type": "string", "format": "id"},
+      "version": {"type": "integer", "minimum": 1},
+      "statement": {"type": "string", "min_length": 1},
+      "accepted_identities": {
+        "type": "array",
+        "min_items": 1,
+        "unique_items": true,
+        "items": {
+          "type": "object",
+          "fields": {
+            "identity": {"type": "string", "format": "id"},
+            "kind": {"type": "string", "enum": ["human_non_service"]}
+          },
+          "required": ["identity", "kind"]
+        }
+      },
+      "accepted_methods": {
+        "type": "array",
+        "min_items": 1,
+        "items": {"type": "string", "format": "id"},
+        "unique_items": true
+      }
+    },
+    "required": [
+      "schema",
+      "policy_id",
+      "version",
+      "statement",
+      "accepted_identities",
+      "accepted_methods"
+    ]
+  }
+}

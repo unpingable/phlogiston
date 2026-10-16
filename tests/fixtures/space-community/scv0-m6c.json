@@ -1,0 +1,24 @@
+{
+  "profile": "scv0-synthetic-comprehension/1",
+  "ordinaryPublishedAt": "2026-08-22T16:00:00Z",
+  "auditPublishedAt": "2026-08-22T16:00:01Z",
+  "lifecycleCases": [
+    "added",
+    "changed_at_source",
+    "source_unavailable",
+    "removed"
+  ],
+  "fixedQuestions": [
+    "lifecycle",
+    "community-inclusion",
+    "source-ownership",
+    "auditability",
+    "disclosure-separation",
+    "state-distinction"
+  ],
+  "humanParticipants": 0,
+  "modelInferenceUsed": false,
+  "networkUsed": false,
+  "readerIdentityUsed": false,
+  "secretMaterialPresent": false
+}

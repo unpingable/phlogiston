@@ -1,0 +1,49 @@
+{
+  "schema": "phlogiston-p0-campaign-v1",
+  "campaignId": "P0-REPLACE-WITH-DATE-01",
+  "publicOrigin": "https://phlogiston.app",
+  "communityActor": {
+    "did": "did:plc:yrdhg6whfezek67fchtrmqgu",
+    "handle": "curator-20261011.phlogiston.social",
+    "pdsOrigin": "https://phlogiston.social"
+  },
+  "schemaAuthority": {
+    "did": "did:plc:replacewithschemaauthority",
+    "handle": "lexicon.phlogiston.app",
+    "dnsName": "_lexicon.community.phlogiston.app",
+    "expectedTxt": "did=did:plc:replacewithschemaauthority",
+    "pdsOrigin": "https://phlogiston.social"
+  },
+  "servicePrincipals": {
+    "communityWebUid": 42001,
+    "communitydUid": 42003,
+    "communitywatchUid": 42004
+  },
+  "integrationIdentities": [
+    {
+      "role": "moderator",
+      "did": "did:plc:yrdhg6whfezek67fchtrmqgu",
+      "handle": "curator-20261011.phlogiston.social",
+      "pdsOrigin": "https://phlogiston.social",
+      "controller": "REPLACE_WITH_ACCOUNT_CONTROLLER"
+    },
+    {
+      "role": "participant",
+      "did": "did:plc:exampleparticipantabcdef",
+      "handle": "participant.example.com",
+      "pdsOrigin": "https://phellinus.us-west.host.bsky.network",
+      "controller": "REPLACE_WITH_ACCOUNT_CONTROLLER"
+    }
+  ],
+  "publicationEvidence": {
+    "manifestPath": "/etc/atproto-community/lexicon-publication-manifest.json",
+    "acceptancePath": "/etc/atproto-community/lexicon-publication-acceptance.json",
+    "receiptPath": "/var/lib/community-lexicon-publisher/publication-receipt.json"
+  },
+  "humanDogfood": {
+    "status": "BLOCKED_MISSING_PARTICIPANTS",
+    "maintainers": [],
+    "topic": null,
+    "activity": null
+  }
+}
