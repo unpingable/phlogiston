@@ -66,3 +66,9 @@ test("the published retention matches what the sweep enforces", () => {
   assert.match(privacy, /<td>30 days, or until you use Delete my Phlogiston data<\/td>/);
   assert.match(privacy, /no backups/);
 });
+
+test("Terms and Privacy state the 18+ eligibility", () => {
+  assert.match(publicPage("/terms").body, /You must be 18 or older to sign in\./);
+  assert.match(publicPage("/privacy").body, /you must be 18 or older to sign in\./);
+  assert.doesNotMatch(publicPage("/privacy").body, /under 16/);
+});

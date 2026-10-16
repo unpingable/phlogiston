@@ -122,7 +122,7 @@ function privacy(): string {
 <li><strong>See, correct or delete moderation records, or anything else:</strong> open an issue at <a href="${ISSUES_URL}">${escapeHtml(ISSUES_URL.replace("https://", ""))}</a> saying what you want, without personal details. You’ll be asked to prove the account is yours by posting a short code from it.</li>
 </ul>
 <p>Phlogiston isn’t aimed at any particular country. The operator honours these requests from anyone, whether or not a particular privacy law applies. Where the EU or UK GDPR does apply, the basis for processing is providing the service you asked for, plus a legitimate interest in moderating the community and keeping the service secure. You can complain to your data protection authority.</p>
-<p>Phlogiston is not intended for anyone under 16.</p>
+<p>Phlogiston is for adults: you must be 18 or older to sign in.</p>
 
 <h2>Changes and incidents</h2>
 <p>Changes to this page change its effective date and are recorded in the public source history. If a security incident exposes your data, the operator will say so on the About page.</p>
@@ -135,6 +135,7 @@ function terms(): string {
 
 <h2>The service</h2>
 <ul>
+<li>You must be 18 or older to sign in. Reading the public Cabinet signed out needs no account.</li>
 <li>Phlogiston is provided as is, free, by one person (<a href="${OPERATOR_URL}">unpingable</a>). It may break, change, pause or shut down at any time without notice. No uptime, support or data-durability promise is made, and no warranty of any kind is given.</li>
 <li>It is a client for Bluesky. Bluesky’s terms and community guidelines still apply to your account and posts.</li>
 <li>To the extent the law allows, the operator is not liable for losses arising from using Phlogiston.</li>
