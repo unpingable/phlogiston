@@ -1,16 +1,25 @@
 import {
   buildAtprotoLoopbackClientMetadata,
   NodeOAuthClient,
+  TokenRefreshError,
   type NodeSavedSession,
   type NodeSavedState,
   type OAuthClientMetadataInput,
+  type OAuthServerAgent,
 } from "@atproto/oauth-client-node";
 import { join } from "node:path";
 
-import { isP0, P0_SCOPE, CURATION_QUIET_SCOPE, supportedPds, supportedIssuer } from "./p0.js";
+import { isP0, P0_SCOPE, CURATION_QUIET_INTERACTION_SCOPE, supportedPds, supportedIssuer } from "./p0.js";
 import type { AppConfig } from "./config.js";
 import { isLoopbackOrigin } from "./config.js";
 import { SecretJsonFileStore } from "./storage.js";
+
+const oauthLocks = new Map<string,Promise<void>>();
+async function requestLock<T>(name: string, action: () => T | PromiseLike<T>): Promise<T> {
+  const previous=oauthLocks.get(name)??Promise.resolve();let release!:()=>void;
+  const turn=new Promise<void>(resolve=>{release=resolve;});const tail=previous.then(()=>turn);oauthLocks.set(name,tail);
+  await previous;try{return await action();}finally{release();if(oauthLocks.get(name)===tail)oauthLocks.delete(name);}
+}
 
 export const OAUTH_SCOPE = [
   "atproto",
@@ -19,7 +28,7 @@ export const OAUTH_SCOPE = [
 ].join(" ");
 
 export function clientMetadata(config: AppConfig): OAuthClientMetadataInput {
-  const scope = isP0(config) ? config.readerEnabled === true ? CURATION_QUIET_SCOPE : P0_SCOPE : OAUTH_SCOPE;
+  const scope = isP0(config) ? config.readerEnabled === true ? CURATION_QUIET_INTERACTION_SCOPE : P0_SCOPE : OAUTH_SCOPE;
   const redirect = `${config.publicUrl}/oauth/callback`;
   if (isLoopbackOrigin(config.publicUrl)) {
     const metadata = buildAtprotoLoopbackClientMetadata({ redirect_uris: [redirect], scope });
@@ -41,14 +50,29 @@ export function clientMetadata(config: AppConfig): OAuthClientMetadataInput {
 
 export function createOAuthClient(config: AppConfig): NodeOAuthClient {
   const directory = join(config.runtimeDirectory, "oauth");
+  const sessionStore = new SecretJsonFileStore<NodeSavedSession>(join(directory, "session"));
   const client = new NodeOAuthClient({
     clientMetadata: clientMetadata(config),
     allowHttp: isLoopbackOrigin(config.publicUrl),
     ...(config.plcDirectoryUrl === undefined ? {} : { plcDirectoryUrl: config.plcDirectoryUrl }),
     ...(config.handleResolverUrl === undefined ? {} : { handleResolver: config.handleResolverUrl }),
     stateStore: new SecretJsonFileStore<NodeSavedState>(join(directory, "state")),
-    sessionStore: new SecretJsonFileStore<NodeSavedSession>(join(directory, "session")),
+    sessionStore,
+    requestLock,
   });
+  // The pinned SDK's OAuthServerAgent.revoke swallows HTTP/network failures.
+  // Keep its DPoP/authentication implementation, but require its public request
+  // method to acknowledge revocation before reporting provider confirmation.
+  const fromIssuer = client.serverFactory.fromIssuer.bind(client.serverFactory);
+  client.serverFactory.fromIssuer = async (...args) => {
+    const server = await fromIssuer(...args);
+    guardProviderSession(server);
+    return server;
+  };
+  const revoke = client.revoke.bind(client);
+  client.revoke = async did => {
+    try { await revoke(did); } finally { await sessionStore.del(did); }
+  };
   if (isP0(config)) {
     const resource = client.oauthResolver.getResourceServerMetadata.bind(client.oauthResolver);
     client.oauthResolver.getResourceServerMetadata = (url, options) => {
@@ -69,4 +93,19 @@ export function createOAuthClient(config: AppConfig): NodeOAuthClient {
     };
   }
   return client;
+}
+
+/** Keep refresh permissions unchanged and preserve revocation failures from the pinned SDK. */
+export function guardProviderSession(server: OAuthServerAgent): void {
+    server.revoke = async token => { await server.request("revocation", {token}); };
+    const refresh = server.refresh.bind(server);
+    server.refresh = async previous => {
+      const refreshed = await refresh(previous);
+      const scope = (value: string) => value.split(/\s+/).filter(Boolean).sort().join(" ");
+      if (scope(previous.scope) !== scope(refreshed.scope)) {
+        await server.revoke(refreshed.refresh_token ?? refreshed.access_token).catch(() => undefined);
+        throw new TokenRefreshError(previous.sub,"Provider changed permissions during refresh; explicit consent is required");
+      }
+      return refreshed;
+    };
 }

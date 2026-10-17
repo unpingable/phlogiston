@@ -63,7 +63,7 @@ test("the published retention matches what the sweep enforces", () => {
   const privacy = publicPage("/privacy").body;
   assert.match(privacy, /8 hours after your last session ends/);
   assert.match(privacy, /<td>Unfinished sign-ins<\/td><td>Complete the sign-in<\/td><td>1 hour<\/td>/);
-  assert.match(privacy, /<td>30 days, or until you use Delete my Phlogiston data<\/td>/);
+  assert.match(privacy, /Each finished journal operation, including its post text, is kept until it finishes plus 30 days/);
   assert.match(privacy, /no backups/);
 });
 
@@ -71,4 +71,12 @@ test("Terms and Privacy state the 18+ eligibility", () => {
   assert.match(publicPage("/terms").body, /You must be 18 or older to sign in\./);
   assert.match(publicPage("/privacy").body, /you must be 18 or older to sign in\./);
   assert.doesNotMatch(publicPage("/privacy").body, /under 16/);
+});
+
+test("public copy distinguishes optional repository interactions from community removal",()=>{
+ const about=publicPage("/about").body,privacy=publicPage("/privacy").body;
+ assert.match(about,/Optional content interaction/);assert.match(about,/off until you enable it in Settings/);assert.match(about,/text-only/);
+ assert.match(privacy,/likes, reposts and submission records live in public Bluesky repositories/);
+ assert.match(privacy,/Removing a post from the Cabinet only changes that assembled view/);
+ assert.match(privacy,/write journals.*created or deleted/s);
 });

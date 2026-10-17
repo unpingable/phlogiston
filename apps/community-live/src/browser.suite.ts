@@ -4,7 +4,7 @@ import { mkdir, mkdtemp, readFile, writeFile } from "node:fs/promises";
 import type { BskyPreferences } from "@atproto/api";
 import { Reader, type ReaderTransport } from "./reader.js";
 import { LocalQuietStore } from "./local-quiet.js";
-import { FEED_SCOPE } from "./p0.js";
+import { FEED_SCOPE, READER_INTERACTION_SCOPE } from "./p0.js";
 import { createServer, type Server } from "node:http";
 import type { AddressInfo } from "node:net";
 import { homedir, tmpdir } from "node:os";
@@ -60,6 +60,7 @@ async function startApp(
   overrides: Partial<AppConfig> = {},
   appViewReply: (path: string) => StubReply = () => ({ status: 500, body: {} }),
   labels?: LabelDirectory,
+  oauthScope?: string,
 ): Promise<Harness> {
   const root = await mkdtemp(join(tmpdir(), "community-browser-"));
   const observer = createServer((request, response) => {
@@ -110,7 +111,7 @@ async function startApp(
       callback: async () => ({ session: { did: MEMBER } as unknown as OAuthSession }),
       restore: async (did: string) => ({
         did,
-        getTokenInfo: async () => ({ sub: did, iss: "https://bsky.social", aud: "https://fixture.host.bsky.network", scope: "atproto repo:app.phlogiston.community.submit?action=create" }),
+        getTokenInfo: async () => ({ sub: did, iss: "https://bsky.social", aud: "https://fixture.host.bsky.network", scope: oauthScope ?? "atproto repo:app.phlogiston.community.submit?action=create" }),
         signOut: async () => {
           signOutCalls.push(did);
         },
@@ -602,7 +603,7 @@ test("sign out and Disconnect round trips clear the cookie and never say logout"
     await signIn(session, harness);
     await page.goto(`${harness.origin}/`);
     await page.getByRole("button", { name: "Disconnect" }).click();
-    await assert.doesNotReject(page.getByText("revoked this app’s access").waitFor());
+    await assert.doesNotReject(page.getByText(/provider accepted its revocation request/).waitFor());
     const disconnectText = await page.locator("body").textContent();
     assert.match(disconnectText ?? "", /public posts remain public on your PDS/);
     assert.match(disconnectText ?? "", /admission history is unchanged/);
@@ -729,6 +730,21 @@ test("FD2: signed-out reader front door and centralized sign-in reflow at three 
       } finally { await session.close(); }
     }
   } finally { await harness.close(); }
+});
+
+test("interaction: Settings shows the effective provider grant and explicit disconnect",async()=>{
+ const harness=await startApp(()=>({body:{discussions:[],cursor:null}}),{profile:"p0",readerEnabled:true,communityName:"The Cabinet"},undefined,undefined,READER_INTERACTION_SCOPE);
+ const session=await context({width:390,height:844});
+ try{
+  await signIn(session,harness);const page=await session.newPage();await page.goto(`${harness.origin}/settings`);
+  await page.getByRole("heading",{name:"Content interaction"}).waitFor();await page.getByText("Enabled.",{exact:true}).waitFor();
+  await page.getByText("Disable content interaction",{exact:true}).click();
+  const form=page.locator('form[action="/interaction/disable"]');
+  assert.ok(await form.locator('input[name="csrf"]').getAttribute("value"));
+  await form.getByRole("button",{name:"Disable interaction and disconnect"}).waitFor();
+  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
+  await page.screenshot({path:join(SHOTS,"interaction-settings-enabled.png"),fullPage:true});
+ }finally{await session.close();await harness.close();}
 });
 
 test("AG1: quieting in the page replaces the page counts instead of leaving them wrong", async () => {

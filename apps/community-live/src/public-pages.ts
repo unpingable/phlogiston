@@ -43,11 +43,12 @@ function about(revision: string | undefined): string {
 <li><strong>Signed out:</strong> read the Cabinet, a community collection of public posts chosen by its moderator, and its public conversations.</li>
 <li><strong>Signed in:</strong> your Following timeline, conversations, saved custom feeds, side-by-side and pinned reading panes, private personal feeds, and hiding conversations from your view here.</li>
 <li><strong>Optional:</strong> muting or unmuting a conversation’s notifications in Bluesky, and submitting one of your own posts to the Cabinet for the moderator to admit or decline.</li>
+<li><strong>Optional content interaction:</strong> after separate provider consent, create and undo public likes and reposts, and publish text posts and replies from your existing Bluesky account.</li>
 <li><strong>Context:</strong> labels on accounts, from <a href="https://labelwatch.neutral.zone">Labelwatch</a> (run by the same operator). When it can’t be reached, coverage is shown as unknown, not as clean.</li>
 </ul>
 <h2>What doesn’t</h2>
 <ul>
-<li>No posting, replying, liking, reposting, following or notifications. Use Bluesky for those.</li>
+<li>No following, notifications, direct messages or media upload. Composition is text-only; this is not a full Bluesky client.</li>
 <li>Only accounts hosted by Bluesky can sign in. Accounts on self-hosted or other providers are refused, not downgraded.</li>
 <li>There is no Phlogiston account signup. Signing in uses your existing Bluesky account, and nothing is created for you elsewhere. <code>phlogiston.social</code> is the operator’s test server and does not offer accounts.</li>
 <li>You can’t create your own community. The Cabinet is the only one, and the operator moderates it.</li>
@@ -65,11 +66,13 @@ function about(revision: string | undefined): string {
 <li><strong>Saved feeds:</strong> read the custom feeds you have saved.</li>
 <li><strong>Personal feeds:</strong> read the profile and public block list of the account a personal feed is built from.</li>
 <li><strong>Conversation controls:</strong> mute and unmute a conversation’s notifications in Bluesky. This changes your Bluesky account.</li>
+<li><strong>Content interaction:</strong> create and delete likes, reposts and text posts in your public Bluesky repository. It is off until you enable it in Settings through your provider’s consent screen. Disabling interaction disconnects this account in every browser and deletes Phlogiston’s stored tokens. Sign in again normally for reader permissions; public records remain until explicitly undone.</li>
 </ul>
-<p>Phlogiston cannot post, reply, like, follow, delete or edit anything in your account, change your profile, read your DMs or see your email.</p>
+<p>Without Content interaction, Phlogiston cannot post, reply, like or repost. The provider permission covers deleting any post, but Phlogiston itself limits deletion to an explicit undo for posts created through this app. Even with it enabled, Phlogiston cannot follow accounts, edit posts, change your profile, read your DMs or see your email. Text posts have no facets, so mentions and links are not linked.</p>
 
 <h2>Leaving</h2>
 <ul>
+<li><strong>Disable Content interaction</strong> (Settings) disconnects this account rather than silently narrowing a live grant. Reconnect normally for reader permissions. Interrupted operations can be checked in Settings before any explicit retry.</li>
 <li><strong>Sign out</strong> (Settings) ends Phlogiston’s sessions in every browser and asks Bluesky to revoke its access.</li>
 <li><strong>Delete my Phlogiston data</strong> (Settings) also erases everything Phlogiston keeps for your account. See <a href="/privacy">Privacy</a>.</li>
 <li>You can also revoke access from Bluesky’s side at any time, in Bluesky’s settings under app authorizations.</li>
@@ -95,7 +98,7 @@ function privacy(): string {
 <tr><td>Bluesky sign-in tokens</td><td>Read your timeline and act when you ask</td><td>Until you sign out, or 8 hours after your last session ends. Then Phlogiston asks Bluesky to revoke them and deletes them</td></tr>
 <tr><td>Unfinished sign-ins</td><td>Complete the sign-in</td><td>1 hour</td></tr>
 <tr><td>Personal feeds, conversations you hid here, your conversation-control history, which community conversations you have read</td><td>Features you use</td><td>Until you delete them or use Delete my Phlogiston data</td></tr>
-<tr><td>Submission drafts and write journals (the record being written for you, so an interrupted write can resume safely)</td><td>Submitting to the Cabinet</td><td>30 days, or until you use Delete my Phlogiston data</td></tr>
+<tr><td>Submission drafts and write journals (the exact record being created or deleted, including post text, so an interrupted write can be reconciled without duplication)</td><td>Submitting to the Cabinet and optional content interaction</td><td>Submission drafts expire after 30 days. Each finished journal operation, including its post text, is kept until it finishes plus 30 days. Unfinished operations remain until they finish or you use Delete my Phlogiston data</td></tr>
 <tr><td>Cabinet submissions and the moderator’s decisions, including any private reason for a decline or removal</td><td>Running the community and accounting for moderation</td><td>As long as the Cabinet runs. Ask to have a private reason deleted</td></tr>
 <tr><td>A mirror of public Bluesky records relevant to the Cabinet</td><td>Showing the collection and conversations</td><td>As long as the Cabinet runs; it is public data and can be rebuilt</td></tr>
 <tr><td>Your display theme</td><td>Light or dark mode</td><td>A cookie in your browser, 1 year</td></tr>
@@ -106,7 +109,7 @@ function privacy(): string {
 
 <h2>Who else sees what</h2>
 <ul>
-<li><strong>Bluesky</strong> (your account provider and its app view): your sign-in, the reads you ask for, mutes you set, and submission records Phlogiston writes for you.</li>
+<li><strong>Bluesky</strong> (your account provider and its app view): your sign-in, the reads you ask for, mutes you set, submission records, and any likes, reposts, posts or replies you explicitly ask Phlogiston to write or undo.</li>
 <li><strong>Bluesky’s image and video servers:</strong> your browser loads post images and videos directly from them, so they see your IP address. Phlogiston sends no referrer.</li>
 <li><strong>Bluesky’s public API and the PLC directory:</strong> Phlogiston’s server looks up public profiles, posts and account identities. These lookups don’t carry your identity.</li>
 <li><strong>Labelwatch</strong> (same operator): Phlogiston’s server asks it for labels on account identifiers, including yours when you view your labels. Labelwatch does not log these lookups.</li>
@@ -114,7 +117,7 @@ function privacy(): string {
 <p>Nothing is sold or shared for advertising. Nothing is decided about you automatically, apart from the fixed limits described in the Terms.</p>
 
 <h2>Public by nature</h2>
-<p>Posts and submission records live in public Bluesky repositories, and the Cabinet shows public posts. Removing a post from the Cabinet doesn’t delete it from Bluesky, and deleting your Phlogiston data doesn’t delete your posts or submission records. Delete those in Bluesky. Copies of public records may remain with other services on the network.</p>
+<p>Posts, likes, reposts and submission records live in public Bluesky repositories. Undoing a social interaction removes its repository record, but copies may remain with other services. Removing a post from the Cabinet only changes that assembled view; it doesn’t delete the post from Bluesky. Delete my Phlogiston data erases app-local journals, not public records—delete those explicitly here when offered or in Bluesky.</p>
 
 <h2>Your choices and requests</h2>
 <ul>

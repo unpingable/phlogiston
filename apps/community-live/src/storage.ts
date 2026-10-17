@@ -183,6 +183,16 @@ export class ContributionPlanStore {
   public async byAuthor(did: string): Promise<ContributionPlan[]> {
     return (await this.store.values()).filter((plan) => typeof plan === "object" && plan !== null && plan.authorDid === did);
   }
+  /** Operation identities still needed to resume retained plans. */
+  public async retainedOperationIds(): Promise<Set<string>> {
+    const ids = new Set<string>();
+    for (const plan of await this.store.values()) {
+      if (typeof plan !== "object" || plan === null) continue;
+      if (typeof plan.sourceOperationId === "string") ids.add(plan.sourceOperationId);
+      if (typeof plan.contextOperationId === "string") ids.add(plan.contextOperationId);
+    }
+    return ids;
+  }
 }
 
 function sha256(value: string): string {

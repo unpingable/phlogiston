@@ -36,9 +36,29 @@ export const FEED_QUIET_SCOPE = [
 ].join(" ");
 export const CURATION_SCOPE = [FEED_SCOPE, appviewScope("app.bsky.actor.getProfile")].join(" ");
 export const CURATION_QUIET_SCOPE = [CURATION_SCOPE, appviewScope("app.bsky.graph.muteThread"), appviewScope("app.bsky.graph.unmuteThread")].join(" ");
+export const INTERACTION_REPO_SCOPES = [
+  "repo:app.bsky.feed.like?action=create&action=delete",
+  "repo:app.bsky.feed.repost?action=create&action=delete",
+  "repo:app.bsky.feed.post?action=create&action=delete",
+].join(" ");
+export const interactionScope = (scope: string): string => `${scope} ${INTERACTION_REPO_SCOPES}`;
+export const READER_INTERACTION_SCOPE = interactionScope(READER_SCOPE);
+export const QUIET_INTERACTION_SCOPE = interactionScope(QUIET_SCOPE);
+export const FEED_INTERACTION_SCOPE = interactionScope(FEED_SCOPE);
+export const FEED_QUIET_INTERACTION_SCOPE = interactionScope(FEED_QUIET_SCOPE);
+export const CURATION_INTERACTION_SCOPE = interactionScope(CURATION_SCOPE);
+export const CURATION_QUIET_INTERACTION_SCOPE = interactionScope(CURATION_QUIET_SCOPE);
+const INTERACTION_SCOPES = [READER_INTERACTION_SCOPE, QUIET_INTERACTION_SCOPE,
+  FEED_INTERACTION_SCOPE, FEED_QUIET_INTERACTION_SCOPE, CURATION_INTERACTION_SCOPE,
+  CURATION_QUIET_INTERACTION_SCOPE];
+export function hasInteractionScope(scope: string, config?: AppConfig): boolean {
+  return config !== undefined && isP0(config) && config.readerEnabled === true &&
+    INTERACTION_SCOPES.some(expected => exactScope(scope, expected));
+}
 export function hasCurationScope(scope: string, config?: AppConfig): boolean {
   return config !== undefined && isP0(config) && config.readerEnabled === true &&
-    (exactScope(scope, CURATION_SCOPE) || exactScope(scope, CURATION_QUIET_SCOPE));
+    (exactScope(scope, CURATION_SCOPE) || exactScope(scope, CURATION_QUIET_SCOPE) ||
+      exactScope(scope, CURATION_INTERACTION_SCOPE) || exactScope(scope, CURATION_QUIET_INTERACTION_SCOPE));
 }
 export const isP0 = (config: AppConfig): boolean => config.profile === "p0";
 
@@ -52,17 +72,26 @@ function exactScope(actual: string, expected: string): boolean {
 export function hasReaderScope(scope: string, config?: AppConfig): boolean {
   return config !== undefined && isP0(config) && config.readerEnabled === true &&
     (exactScope(scope, READER_SCOPE) || exactScope(scope, QUIET_SCOPE) ||
-      exactScope(scope, FEED_SCOPE) || exactScope(scope, FEED_QUIET_SCOPE) || exactScope(scope, CURATION_SCOPE) || exactScope(scope, CURATION_QUIET_SCOPE));
+      exactScope(scope, FEED_SCOPE) || exactScope(scope, FEED_QUIET_SCOPE) || exactScope(scope, CURATION_SCOPE) || exactScope(scope, CURATION_QUIET_SCOPE) ||
+      INTERACTION_SCOPES.some(expected => exactScope(scope, expected)));
 }
 
 export function hasQuietScope(scope: string, config?: AppConfig): boolean {
   return config !== undefined && isP0(config) && config.readerEnabled === true &&
-    (exactScope(scope, QUIET_SCOPE) || exactScope(scope, FEED_QUIET_SCOPE) || exactScope(scope, CURATION_QUIET_SCOPE));
+    (exactScope(scope, QUIET_SCOPE) || exactScope(scope, FEED_QUIET_SCOPE) || exactScope(scope, CURATION_QUIET_SCOPE) ||
+      exactScope(scope, QUIET_INTERACTION_SCOPE) || exactScope(scope, FEED_QUIET_INTERACTION_SCOPE) || exactScope(scope, CURATION_QUIET_INTERACTION_SCOPE));
 }
 
 export function hasFeedScope(scope: string, config?: AppConfig): boolean {
   return config !== undefined && isP0(config) && config.readerEnabled === true &&
-    (exactScope(scope, FEED_SCOPE) || exactScope(scope, FEED_QUIET_SCOPE) || exactScope(scope, CURATION_SCOPE) || exactScope(scope, CURATION_QUIET_SCOPE));
+    (exactScope(scope, FEED_SCOPE) || exactScope(scope, FEED_QUIET_SCOPE) || exactScope(scope, CURATION_SCOPE) || exactScope(scope, CURATION_QUIET_SCOPE) ||
+      exactScope(scope, FEED_INTERACTION_SCOPE) || exactScope(scope, FEED_QUIET_INTERACTION_SCOPE) || exactScope(scope, CURATION_INTERACTION_SCOPE) || exactScope(scope, CURATION_QUIET_INTERACTION_SCOPE));
+}
+
+/** Remove interaction permission while retaining the exact reader tier. */
+export function readerScopeWithoutInteraction(scope: string): string {
+  const match = INTERACTION_SCOPES.findIndex(expected => exactScope(scope, expected));
+  return match < 0 ? READER_SCOPE : [READER_SCOPE, QUIET_SCOPE, FEED_SCOPE, FEED_QUIET_SCOPE, CURATION_SCOPE, CURATION_QUIET_SCOPE][match]!;
 }
 
 /** Inspect the opened control object rather than following a replaced pathname. */
@@ -128,6 +157,9 @@ export async function requireBlueskySession(
   session: OAuthSession, did: string, config?: AppConfig,
 ): Promise<string> {
   const info = await session.getTokenInfo();
+  if (info.expired === true || (info.expiresAt !== undefined && !(info.expiresAt.valueOf() > Date.now()))) {
+    throw new HttpError(403, "Your provider authorization has expired. Reconnect before continuing.");
+  }
   if (!did.startsWith("did:plc:") || session.did !== did || info.sub !== did ||
       !supportedSessionProvider(config, info.iss, info.aud)) {
     throw new HttpError(403, config?.p0AllowBluesky

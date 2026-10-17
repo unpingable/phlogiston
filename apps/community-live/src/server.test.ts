@@ -664,7 +664,7 @@ test("disconnect revokes OAuth access, ends the web session, and explains what r
     assert.deepEqual(harness.signOutCalls, [MEMBER]);
     assert.equal(await harness.sessions.resolve(token), null);
     assert.match(page.headers.get("set-cookie") ?? "", /Max-Age=0/);
-    assert.match(page.body, /revoked this app’s access/);
+    assert.match(page.body, /provider accepted its revocation request/);
     assert.match(page.body, /public posts remain public on your PDS/);
     assert.match(page.body, /admission history is unchanged/);
     assert.match(page.body, /sign back in at any time/);
@@ -1756,7 +1756,7 @@ test("sign-in explains itself and failed sign-in steps are plain 400 pages", asy
     assert.match(login.body, /That handle could not be found\./);
     const callback = await get(harness.origin, "/oauth/callback?error=access_denied");
     assert.equal(callback.status, 400);
-    assert.match(callback.body, /Sign-in was not completed\. Nothing changed\./);
+    assert.match(callback.body, /Sign-in was not completed\. Reconnect to continue\./);
     for (const body of [login.body, callback.body]) {
       assert.doesNotMatch(body, /exploded|internal|\.ts:|access_denied|Error/);
     }
@@ -1828,14 +1828,14 @@ test("the OAuth callback is bound to the browser that started the sign-in", asyn
     // Without the cookie: the callback is not accepted and no session exists.
     const noCookie = await get(harness.origin, "/oauth/callback?code=x");
     assert.equal(noCookie.status, 400);
-    assert.match(noCookie.body, /Sign-in was not completed\. Nothing changed\./);
+    assert.match(noCookie.body, /Sign-in was not completed\. Reconnect to continue\./);
     assert.doesNotMatch(noCookie.headers.get("set-cookie") ?? "", /community_session=/);
     assert.match(noCookie.headers.get("set-cookie") ?? "", /community_login=;.*Max-Age=0/);
 
     // With a cookie from a different browser: the same refusal and the OAuth session is dropped.
     const wrong = await get(harness.origin, "/oauth/callback?code=x", "community_login=someone-elses-nonce-0000");
     assert.equal(wrong.status, 400);
-    assert.match(wrong.body, /Sign-in was not completed\. Nothing changed\./);
+    assert.match(wrong.body, /Sign-in was not completed\. Reconnect to continue\./);
     assert.doesNotMatch(wrong.headers.get("set-cookie") ?? "", /community_session=/);
     assert.deepEqual(harness.signedOut, [MEMBER]);
     const sessions = await readdir(join(harness.config.runtimeDirectory, "web-sessions")).catch(() => []);

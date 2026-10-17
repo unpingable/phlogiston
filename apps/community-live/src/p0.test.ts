@@ -10,7 +10,7 @@ import type { AddressInfo } from "node:net";
 import type { OAuthSession } from "@atproto/oauth-client-node";
 import { loadConfig } from "./config.js";
 import { clientMetadata, createOAuthClient } from "./oauth.js";
-import { P0Reservations, P0_SCOPE, READER_SCOPE, QUIET_SCOPE, FEED_SCOPE, FEED_QUIET_SCOPE, CURATION_SCOPE, CURATION_QUIET_SCOPE, hasCurationScope, blueskyOrigin, hasReaderScope, hasQuietScope, hasFeedScope, requireBlueskySession, requireSiteWrites } from "./p0.js";
+import { P0Reservations, P0_SCOPE, READER_SCOPE, QUIET_SCOPE, FEED_SCOPE, FEED_QUIET_SCOPE, CURATION_SCOPE, CURATION_QUIET_SCOPE, CURATION_QUIET_INTERACTION_SCOPE, READER_INTERACTION_SCOPE, INTERACTION_REPO_SCOPES, hasInteractionScope, readerScopeWithoutInteraction, hasCurationScope, blueskyOrigin, hasReaderScope, hasQuietScope, hasFeedScope, requireBlueskySession, requireSiteWrites } from "./p0.js";
 import { DurableWriteJournal } from "./operations.js";
 import { ContributionPlanStore, WebSessionStore } from "./storage.js";
 import { createHandler, type Dependencies } from "./server.js";
@@ -44,7 +44,12 @@ test("reader grant is opt-in P0 only and exact scoped grants preserve submission
  assert.throws(()=>config(root,{COMMUNITY_READER_ENABLED:"1"}));
  assert.throws(()=>config(root,{COMMUNITY_PROFILE:"legacy",COMMUNITY_READER_ENABLED:"true"}));
  const enabled=config(root,{COMMUNITY_READER_ENABLED:"true"});
- assert.equal(enabled.readerEnabled,true);assert.equal(clientMetadata(enabled).scope,CURATION_QUIET_SCOPE);
+ assert.equal(enabled.readerEnabled,true);assert.equal(clientMetadata(enabled).scope,CURATION_QUIET_INTERACTION_SCOPE);
+ assert.equal(INTERACTION_REPO_SCOPES.split(" ").length,3);assert.match(INTERACTION_REPO_SCOPES,/like\?action=create&action=delete/);
+ assert.equal(hasInteractionScope(READER_SCOPE,enabled),false);assert.equal(hasInteractionScope(READER_INTERACTION_SCOPE,enabled),true);
+ assert.equal(hasReaderScope(READER_INTERACTION_SCOPE,enabled),true);assert.equal(readerScopeWithoutInteraction(READER_INTERACTION_SCOPE),READER_SCOPE);
+ assert.equal(await requireBlueskySession(session(DID,undefined,undefined,READER_INTERACTION_SCOPE),DID,enabled),READER_INTERACTION_SCOPE);
+ for(const altered of [READER_INTERACTION_SCOPE+" repo:app.bsky.feed.follow?action=create",READER_INTERACTION_SCOPE.replace("action=create&action=delete","action=create")]) { assert.equal(hasInteractionScope(altered,enabled),false);await assert.rejects(requireBlueskySession(session(DID,undefined,undefined,altered),DID,enabled)); }
  assert.match(READER_SCOPE,/rpc:app\.bsky\.feed\.getTimeline\?aud=did:web:api\.bsky\.app%23bsky_appview/);
  assert.equal(READER_SCOPE.split(" ").length,6);assert.equal(QUIET_SCOPE.split(" ").length,8);
  for(const scope of [P0_SCOPE,READER_SCOPE,QUIET_SCOPE]) assert.equal(await requireBlueskySession(session(DID,undefined,undefined,scope),DID,enabled),scope);

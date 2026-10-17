@@ -2,8 +2,8 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { loadConfig } from "./config.js";
-import { OAUTH_SCOPE, clientMetadata } from "./oauth.js";
-import { CURATION_QUIET_SCOPE } from "./p0.js";
+import { OAUTH_SCOPE, clientMetadata, guardProviderSession } from "./oauth.js";
+import { CURATION_QUIET_INTERACTION_SCOPE } from "./p0.js";
 
 function config(publicUrl: string) {
   return loadConfig({
@@ -49,7 +49,23 @@ test("reader-enabled P0 metadata advertises the maximum grant under Phlogiston i
       admissionPausePath: "/tmp/reader-admission-control",
     });
     assert.equal(metadata.client_name, "Phlogiston");
-    assert.equal(metadata.scope, CURATION_QUIET_SCOPE);
-    assert.equal(String(metadata.scope).split(" ").length, 11);
+    assert.equal(metadata.scope, CURATION_QUIET_INTERACTION_SCOPE);
+    assert.equal(String(metadata.scope).split(" ").length, 14);
+    assert.match(String(metadata.scope),/repo:app\.bsky\.feed\.post\?action=create&action=delete/);
   }
+});
+
+
+test("provider revocation failures are not swallowed by the SDK boundary",async()=>{
+ const server={request:async()=>{throw new Error("revocation unavailable")},refresh:async()=>({scope:"atproto"})};
+ guardProviderSession(server as never);
+ await assert.rejects((server as unknown as {revoke:(token:string)=>Promise<void>}).revoke("disposable-test-token"),/revocation unavailable/);
+});
+
+test("provider refresh cannot introduce interaction authority without a consent callback",async()=>{
+ const revoked:string[]=[];
+ const server={request:async(_endpoint:string,body:{token:string})=>{revoked.push(body.token);},refresh:async()=>({scope:"atproto repo:app.bsky.feed.post?action=create&action=delete",refresh_token:"fixture-new-token"})};
+ guardProviderSession(server as never);
+ await assert.rejects((server.refresh as unknown as (previous:unknown)=>Promise<unknown>)({sub:"did:plc:fixture",scope:"atproto"}),/changed permissions during refresh/);
+ assert.deepEqual(revoked,["fixture-new-token"]);
 });
