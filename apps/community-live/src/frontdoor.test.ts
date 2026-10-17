@@ -75,6 +75,8 @@ test("anonymous reader documents redirect while JSON and mutations remain unauth
  const f = await fixture(false); try {
   assert.match(await (await f.request("/")).text(), /name="handle"/);
   assert.equal((await f.request("/mine")).status, 401);
+  const issued=await f.sessions.issue(DID,new Date(),"atproto repo:app.phlogiston.community.submit?action=create");
+  const settings=await f.request("/settings",undefined,`community_session=${issued.token}`);const body=await settings.text();assert.doesNotMatch(body,/Content interaction/);assert.match(body,/It cannot edit or delete your original posts/);
  } finally { await f.close(); }
 });
  test("expired reader document session redirects without turning JSON into HTML", async () => {

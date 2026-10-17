@@ -1,7 +1,8 @@
-import { readdir, rm, stat } from "node:fs/promises";
+import { readdir } from "node:fs/promises";
 import { join } from "node:path";
 
 import { SecretJsonFileStore, type ContributionPlanStore, type WebSessionStore } from "./storage.js";
+import { DurableWriteJournal } from "./operations.js";
 
 export const HOUR_MS = 60 * 60 * 1000;
 export const DAY_MS = 24 * HOUR_MS;
@@ -13,17 +14,26 @@ export const RETENTION = {
 } as const;
 
 export interface SweepResult { sessions: number; signIns: number; tokens: number; drafts: number; journals: number }
+export interface RetentionFences {
+  interactions<T>(did: string, action: () => Promise<T>): Promise<T>;
+  operations<T>(did: string, action: () => Promise<T>): Promise<T>;
+}
+const directFences: RetentionFences = {
+  interactions: (_did,action) => action(),
+  operations: (_did,action) => action(),
+};
 
 /**
  * Enforce the published retention: expired browser sessions, abandoned sign-ins, provider tokens no
- * browser can use any more (revoked at the provider first) and submission drafts and write journals
- * untouched for 30 days.
+ * browser can use any more (revoked at the provider first), submission drafts, and each terminal
+ * write-journal operation 30 days after that operation finished.
  */
 export async function retentionSweep(
   runtimeDirectory: string,
   stores: { webSessions: WebSessionStore; plans: ContributionPlanStore },
   revoke: (did: string) => Promise<void>,
   now = Date.now(),
+  fences: RetentionFences = directFences,
 ): Promise<SweepResult> {
   const before = await countFiles(join(runtimeDirectory, "web-sessions"));
   const live = await stores.webSessions.sweep(new Date(now));
@@ -41,13 +51,18 @@ export async function retentionSweep(
     }, now);
   for (const did of idle) await revoke(did).catch(() => undefined);
   const drafts = await stores.plans.expire(RETENTION.draftsMs, now);
+  const retainedOperations = await stores.plans.retainedOperationIds();
   let journals = 0;
-  const directory = join(runtimeDirectory, "operations");
-  for (const name of await list(directory)) {
-    if (!name.endsWith(".json")) continue;
-    const file = join(directory, name);
-    const info = await stat(file).catch(() => undefined);
-    if (info && now - info.mtimeMs > RETENTION.draftsMs) { await rm(file, { force: true }); journals += 1; }
+  for (const directoryName of ["operations","interactions"]) {
+    const directory = join(runtimeDirectory, directoryName);
+    for (const name of await list(directory)) {
+      if (!name.endsWith(".json")) continue;
+      const did = decodeURIComponent(name.slice(0,-5));
+      const prune = () => new DurableWriteJournal(join(directory,name)).pruneFinished(
+        now - RETENTION.draftsMs, directoryName === "operations" ? retainedOperations : undefined,
+      );
+      journals += await (directoryName === "operations" ? fences.operations(did,prune) : fences.interactions(did,prune));
+    }
   }
   return { sessions, signIns, tokens: unreadable + idle.length, drafts, journals };
 }

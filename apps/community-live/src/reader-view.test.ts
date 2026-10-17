@@ -14,6 +14,12 @@ test("noOverride and filtered content cannot be revealed; warnings require discl
  for(const state of [{filter:true},{noOverride:true}]) {const body=renderPost(reader(state),post());assert.doesNotMatch(body,/private-looking|alice.test/);assert.match(body,/hidden/);}
  const body=renderPost(reader({blur:true}),post());assert.match(body,/<details class="content-warning">/);assert.match(body,/Show post/);
 });
+test("interaction controls render only for eligible non-quoted post cards",()=>{
+ const control=(value:AppBskyFeedDefs.PostView)=>`<form data-interact="${value.uri}"><button>Like</button></form>`;
+ assert.match(renderPost(reader(),post(),"contentList",false,0,"reader",control),/data-interact/);
+ assert.doesNotMatch(renderPost(reader({filter:true}),post(),"contentList",false,0,"reader",control),/data-interact|<button>Like/);
+ assert.doesNotMatch(renderPost(reader(),post(),"contentList",false,1,"reader",control),/data-interact|<button>Like/);
+});
 test("thread moderates parent, selected post and each reply independently",()=>{
  const root=post(),child={...post(),uri:uri+"child",record:{...post().record,text:"HIDDEN_REPLY"}};
  const r={decision:(p:AppBskyFeedDefs.PostView)=>({filter:p.uri.endsWith("child"),blur:false,noOverride:false})} as unknown as Reader;

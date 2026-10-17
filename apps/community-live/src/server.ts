@@ -10,7 +10,7 @@ import { join } from "node:path";
 
 import { LabelwatchDirectory, renderLabels, type LabelDirectory } from "./labels.js";
 
-import { intakeOpen, supportedPds, isP0, P0_SCOPE, READER_SCOPE, QUIET_SCOPE, FEED_SCOPE, FEED_QUIET_SCOPE, CURATION_SCOPE, CURATION_QUIET_SCOPE, hasCurationScope, hasFeedScope, hasReaderScope, hasQuietScope, P0Reservations, requireBlueskySession, requireSiteWrites } from "./p0.js";
+import { intakeOpen, supportedPds, isP0, P0_SCOPE, READER_SCOPE, QUIET_SCOPE, FEED_SCOPE, FEED_QUIET_SCOPE, CURATION_SCOPE, CURATION_QUIET_SCOPE, READER_INTERACTION_SCOPE, QUIET_INTERACTION_SCOPE, FEED_INTERACTION_SCOPE, FEED_QUIET_INTERACTION_SCOPE, CURATION_INTERACTION_SCOPE, CURATION_QUIET_INTERACTION_SCOPE, hasInteractionScope, readerScopeWithoutInteraction, hasCurationScope, hasFeedScope, hasReaderScope, hasQuietScope, P0Reservations, requireBlueskySession, requireSiteWrites } from "./p0.js";
 import { ActivitySnapshots, FileSeenStore, type DiscussionActivity } from "./activity.js";
 import { loadConfig, type AppConfig } from "./config.js";
 import {
@@ -46,6 +46,8 @@ import { PublicThreadReader, SignedOutViewer } from "./public-thread.js";
 import { LocalQuietStore } from "./local-quiet.js";
 import { PersonalFeedStore, type PersonalFeedInput } from "./personal-feeds.js";
 import { personalFeedForm, personalFeedList, curationDetails, READER_HELP } from "./personal-feed-view.js";
+import { InteractionService, type InteractionKind } from "./interaction.js";
+import { withInteractionLock } from "./interaction-lock.js";
 
 const displayContext = new AsyncLocalStorage<{ theme: DisplayPreference; path: string }>();
 
@@ -60,7 +62,6 @@ const REMOVED_ROOT_TITLE = "Removed from the community";
 const UNFINISHED_ACTIONS_LIMIT = 25;
 // Same record-key character class as the post AT URI pattern in html.ts.
 const RKEY_PATTERN = /^[a-zA-Z0-9._:-]{1,512}$/;
-
 interface OAuthFacade {
   authorize(input: string, options: { scope: string; state?: string }): Promise<URL>;
   callback(params: URLSearchParams): Promise<{ session: OAuthSession; state?: string | null }>;
@@ -168,9 +169,17 @@ async function route(deps: Dependencies, request: IncomingMessage, response: Ser
     const handle = required(form, "handle").replace(/^@/, "");
     const returnTo = returnPath(form.get("return"), deps.config.readerEnabled);
     const nonce = randomBytes(16).toString("base64url");
+    const loginSession = await deps.webSessions.resolve(cookieValue(request.headers.cookie, COOKIE));
+    let requestedScope = isP0(deps.config) ? (deps.config.readerEnabled ? requestedReaderScope(form.get("access")) : P0_SCOPE) : OAUTH_SCOPE;
+    if (loginSession && hasInteractionScope(requestedScope,deps.config) && !sameToken(form.get("csrf") ?? "",loginSession.csrf)) throw new HttpError(403,"Reload Settings before enabling Content interaction.");
+    if (loginSession && isP0(deps.config)) {
+      const current = await deps.oauth.restore(loginSession.did);
+      const effective = await requireBlueskySession(current,loginSession.did,deps.config);
+      if (hasInteractionScope(effective,deps.config) && !hasInteractionScope(requestedScope,deps.config)) requestedScope = interactionScopeFor(requestedScope);
+    }
     let target: URL;
     try {
-      target = await deps.oauth.authorize(handle, { scope: isP0(deps.config) ? (deps.config.readerEnabled ? (form.get("access") === "curation-quiet" ? CURATION_QUIET_SCOPE : form.get("access") === "curation" ? CURATION_SCOPE : form.get("access") === "quiet" ? FEED_QUIET_SCOPE : form.get("access") === "feeds" ? FEED_SCOPE : READER_SCOPE) : P0_SCOPE) : OAUTH_SCOPE, state: loginState(nonce, returnTo) });
+      target = await deps.oauth.authorize(handle, { scope: requestedScope, state: loginState(nonce, returnTo, loginSession?.did, requestedScope) });
     } catch {
       throw new HttpError(400, "That handle could not be found. Check it and try again.");
     }
@@ -178,12 +187,15 @@ async function route(deps: Dependencies, request: IncomingMessage, response: Ser
     return redirect(response, target.toString(), deps.config);
   }
   if (method === "GET" && url.pathname === "/oauth/callback") {
+    const initiatingSession = await deps.webSessions.resolve(cookieValue(request.headers.cookie, COOKIE));
+    const complete = async (): Promise<void> => {
     const incomplete = (): HttpError => {
       response.setHeader("Set-Cookie", clearedLoginCookie(deps.config.publicUrl));
-      return new HttpError(400, "Sign-in was not completed. Nothing changed.");
+      return new HttpError(400, "Sign-in was not completed. Reconnect to continue.");
     };
     const expected = cookieValue(request.headers.cookie, LOGIN_COOKIE);
     if (expected === undefined) throw incomplete();
+    if (initiatingSession && await deps.webSessions.resolve(cookieValue(request.headers.cookie, COOKIE)) === null) throw incomplete();
     let result: { session: OAuthSession; state?: string | null };
     try {
       result = await deps.oauth.callback(url.searchParams);
@@ -201,14 +213,26 @@ async function route(deps: Dependencies, request: IncomingMessage, response: Ser
       }
       throw incomplete();
     }
+    if (state.expectedDid !== undefined && (result.session.did !== state.expectedDid || initiatingSession?.did !== state.expectedDid)) {
+      await result.session.signOut().catch(() => undefined);
+      await endAccountAccess(deps,state.expectedDid);
+      throw incomplete();
+    }
     let grantedScopes: string | undefined;
     if (isP0(deps.config)) {
       try { grantedScopes = await requireBlueskySession(result.session, result.session.did, deps.config); } catch (error) { await result.session.signOut().catch(() => undefined); throw error; }
+    }
+    if (state.scope !== undefined && normalizedScope(grantedScopes ?? OAUTH_SCOPE) !== normalizedScope(state.scope)) {
+      await result.session.signOut().catch(() => undefined);
+      await endAccountAccess(deps,result.session.did);
+      throw new HttpError(403,"The provider returned permissions different from those requested. Reconnect with the exact grant.");
     }
     const issued = await deps.webSessions.issue(result.session.did, new Date(), grantedScopes);
     response.setHeader("Set-Cookie", [cookie(issued.token, deps.config.publicUrl), clearedLoginCookie(deps.config.publicUrl)]);
     noStore(response);
     return redirect(response, state.returnTo ?? (isP0(deps.config) ? "/home" : "/"), deps.config);
+    };
+    return initiatingSession ? withAccountMutation(deps,initiatingSession.did,complete) : complete();
   }
 
   const token = cookieValue(request.headers.cookie, COOKIE);
@@ -268,13 +292,79 @@ async function route(deps: Dependencies, request: IncomingMessage, response: Ser
     throw new HttpError(401, "Sign in is required to view this page.");
   }
 
-  if (isP0(deps.config) && deps.config.readerEnabled && ["/home", "/feed", "/feeds", "/thread", "/context", "/sources", "/local-quiet", "/attention", "/quiet"].includes(url.pathname)) {
-    if (method !== "GET" && !(method === "POST" && ["/quiet", "/local-quiet", "/feeds"].includes(url.pathname))) throw new HttpError(404, "Not found.");
+  if (isP0(deps.config) && deps.config.readerEnabled && ["/home", "/feed", "/feeds", "/thread", "/context", "/sources", "/local-quiet", "/attention", "/quiet", "/interact"].includes(url.pathname)) {
+    if (method !== "GET" && !(method === "POST" && ["/quiet", "/local-quiet", "/feeds", "/interact"].includes(url.pathname))) throw new HttpError(404, "Not found.");
     const oauthSession = await restoredSession(deps, response, token, webSession);
     const scope = await requireBlueskySession(oauthSession, webSession.did, deps.config);
     if (!hasReaderScope(scope, deps.config)) return html(response, 200, page(deps.config, webSession, "Your Following feed", `<p>Connect your Bluesky feed to read the people you follow here. Your existing community access still works.</p>${readerConnect(webSession, "/home", false)}`), deps.config);
     const reader = deps.reader?.(oauthSession) ?? new Reader(oauthSession);
     try {
+    if (url.pathname === "/interact") {
+      if (method !== "POST") throw new HttpError(404, "Not found.");
+      return withAccountMutation(deps,webSession.did, async () => {
+      if (await deps.webSessions.resolve(token) === null) throw new HttpError(401,"Your sign-in has expired. Sign in again.");
+      const form = await checkedForm(deps, request, webSession);
+      const action = required(form,"action");
+      const operationId = required(form,"operationId");
+      const service = interactionService(deps,oauthSession,webSession.did,token);
+      let outcome;
+      try {
+      if (action === "resume") outcome = await service.resume(operationId);
+      else if (action === "retry") {
+        if (!hasInteractionScope(scope, deps.config)) throw new HttpError(403, "Enable Content interaction in Settings before taking this action.");
+        await requireSiteWrites(deps.config);
+        const planned = await service.planned(operationId);
+        const value = record(planned.record);
+        if (planned.action !== "delete" && (planned.collection === "app.bsky.feed.like" || planned.collection === "app.bsky.feed.repost")) {
+          const subject = strongRef(value.subject);
+          const post = await requireEligiblePost(reader,subject);
+          if (planned.collection === "app.bsky.feed.like" ? post.viewer?.like : post.viewer?.repost) throw new HttpError(409,"This post already has your interaction. Nothing was written.");
+        } else if (planned.action !== "delete" && planned.collection === POST_COLLECTION && value.reply !== undefined) {
+          const reply = record(value.reply), parent = strongRef(reply.parent), root = strongRef(reply.root);
+          const post = await requireEligiblePost(reader,parent);
+          if (post.viewer?.replyDisabled) throw new HttpError(403,"Replies are disabled for this post.");
+          await requireEligiblePost(reader,root);
+        }
+        outcome = await service.retry(operationId);
+      }
+      else {
+      if (!hasInteractionScope(scope, deps.config)) throw new HttpError(403, "Enable Content interaction in Settings before taking this action.");
+      await requireSiteWrites(deps.config);
+      if (["like","repost"].includes(action)) {
+        const subject = {uri:required(form,"uri"),cid:required(form,"cid")};
+        const post = await requireEligiblePost(reader,subject);
+        if (action === "like" ? post.viewer?.like : post.viewer?.repost) throw new HttpError(409,`This post already has your ${action}. Nothing was written.`);
+        outcome = await service.create(action as InteractionKind,operationId,{subject});
+      } else if (["unlike","unrepost"].includes(action)) {
+        const subject = {uri:required(form,"uri"),cid:required(form,"cid")};
+        const record = required(form,"record");
+        if (!record.startsWith(`at://${webSession.did}/app.bsky.feed.`)) throw new HttpError(403,"Undo may affect only your own interaction record.");
+        outcome = await service.remove(action as "unlike"|"unrepost",operationId,record,undefined,subject);
+      } else if (action === "post") {
+        outcome = await service.create("post",operationId,{text:required(form,"text")});
+      } else if (action === "reply") {
+        const parent = {uri:required(form,"uri"),cid:required(form,"cid")};
+        const post = await requireEligiblePost(reader,parent);
+        if (post.viewer?.replyDisabled) throw new HttpError(403,"Replies are disabled for this post.");
+        const record = post.record as {reply?:{root?:StrongRef}};
+        const root = record.reply?.root ?? parent;
+        await requireEligiblePost(reader,root);
+        outcome = await service.create("reply",operationId,{text:required(form,"text"),root,parent});
+      } else if (action === "delete-post") {
+        const record = required(form,"record");
+        if (!record.startsWith(`at://${webSession.did}/app.bsky.feed.post/`)) throw new HttpError(403,"Delete may affect only your own post.");
+        outcome = await service.remove("delete-post",operationId,record,required(form,"recordCid"));
+      } else throw new HttpError(400,"Choose a content interaction.");
+      }
+      } catch (error) {
+        if (error instanceof HttpError) throw error;
+        const message = error instanceof Error ? error.message : "content interaction was refused";
+        const status = /daily .* limit/.test(message) ? 429 : /reused|different intent|already committed|awaiting confirmation|unresolved/.test(message) ? 409 : /invalid|text|required/.test(message) ? 400 : /own |another account|outside|only a post/.test(message) ? 403 : 409;
+        throw new HttpError(status,`${message}. Nothing else was written.`);
+      }
+      return interactionOutcome(response,deps,webSession,outcome);
+      });
+    }
     if (url.pathname === "/feeds") {
       if (!deps.personalFeeds || !deps.publicBlocks) throw new HttpError(503, "Personal feeds are unavailable.");
       if (!hasCurationScope(scope, deps.config)) return html(response, 200, page(deps.config, webSession, "Create a personal feed", curationConnect(webSession, hasQuietScope(scope, deps.config))), deps.config);
@@ -394,7 +484,8 @@ async function route(deps: Dependencies, request: IncomingMessage, response: Ser
         const unresolved = deps.quiet?.list(webSession.did).some(item => item.root === root && item.status === "unknown") === true;
         controls = unresolved ? '<p class="notice">An earlier request did not confirm completion. Further conversation changes are paused for this thread while its outcome is checked. A current setting alone cannot settle an interrupted request.</p>' : hasQuietScope(scope, deps.config) ? `<form method="post" action="/quiet" class="quiet-control"><input type="hidden" name="csrf" value="${escapeHtml(webSession.csrf)}"><input type="hidden" name="uri" value="${escapeHtml(uri)}"><input type="hidden" name="root" value="${escapeHtml(root)}"><input type="hidden" name="action" value="${quiet ? "restore" : "quiet"}"><p>${quiet ? "This conversation is quieted in Following." : "Had enough of this conversation?"}</p><button>${quiet ? "Unmute Bluesky notifications" : "Mute Bluesky notifications"}</button><p class="muted">${quiet ? "Restoring also unmutes" : "Quieting also mutes"} this thread’s notifications in Bluesky. It does not mute the person or change community decisions.</p></form>` : `<details class="quiet-control"><summary>Bluesky notification controls</summary><p>Hide this conversation from Following here. This also mutes its thread notifications in Bluesky. You can undo it here.</p>${readerConnect(webSession, threadHref(uri), true)}</details>`;
       } catch { /* Unknown lineage or readback never becomes a guessed action. */ }
-      return html(response, 200, page(deps.config, webSession, "Conversation", `<p class="reader-back"><a href="/home">Back to Following</a></p>${community}${renderThread(reader, thread, controls)}<p><a href="/attention">Manage conversation controls</a></p>`), deps.config);
+      const interactionOpen = hasInteractionScope(scope,deps.config) && await siteWritesOpen(deps.config);
+      return html(response, 200, page(deps.config, webSession, "Conversation", `<p class="reader-back"><a href="/home">Back to Following</a></p>${community}${renderThread(reader, thread, controls, interactionOpen ? post => interactionControls(webSession,reader,post,true) : undefined)}<p><a href="/attention">Manage conversation controls</a></p>`), deps.config);
     }
     const feedUri = url.searchParams.get("feed");
     const personalId = url.searchParams.get("personal");
@@ -425,7 +516,8 @@ async function route(deps: Dependencies, request: IncomingMessage, response: Ser
     const next = new URLSearchParams(); if(personal){next.set("personal",personal.id);next.set("revision",revision!);} if (feedUri) next.set("feed", feedUri); if (feed.cursor) next.set("cursor", feed.cursor);
     const title = personal?.name ?? (feedUri ? "Custom feed" : "Following");
     const personalInfo = personal && blocks ? `<p class="personal-feed-summary">Your Following, with exclusions from @${escapeHtml(personal.policies.publicBlocks.curatorHandle)} · <a href="/feeds?edit=${personal.id}">Edit feed</a></p>${curationDetails(personal.policies.publicBlocks,blocks.checkedAt,blocks.recordCount,feed.omitted["curator-blocks"] ?? 0)}` : "";
-    return html(response, 200, page(deps.config, webSession, title, `<div class="feed-surface" data-feed-key="${escapeHtml(feedKey)}">${personalInfo}${attention}${renderFeed(activeReader, items)}${items.length === 0 ? '<p class="feed-empty">No posts to show on this page.</p>' : ""}${feed.cursor ? `<p class="feed-next"><a href="/home?${escapeHtml(next.toString())}">Continue reading</a></p>` : ""}<details class="reader-details"><summary>About this feed</summary><p>${order} Viewing preferences apply. Up to 90 posts are checked per page. Local quiet applies only to this selected feed; it does not change Bluesky notifications.</p><p><a href="/attention">Conversation controls</a> · <a href="/labels">Labels observed on your account</a></p></details></div>`), deps.config);
+    const interactions = hasInteractionScope(scope,deps.config) && await siteWritesOpen(deps.config);
+    return html(response, 200, page(deps.config, webSession, title, `${interactions ? composeForm(webSession) : ""}<div class="feed-surface" data-feed-key="${escapeHtml(feedKey)}">${personalInfo}${attention}${renderFeed(activeReader, items, interactions ? post => interactionControls(webSession,activeReader,post,false) : undefined)}${items.length === 0 ? '<p class="feed-empty">No posts to show on this page.</p>' : ""}${feed.cursor ? `<p class="feed-next"><a href="/home?${escapeHtml(next.toString())}">Continue reading</a></p>` : ""}<details class="reader-details"><summary>About this feed</summary><p>${order} Viewing preferences apply. Up to 90 posts are checked per page. Local quiet applies only to this selected feed; it does not change Bluesky notifications.</p><p><a href="/attention">Conversation controls</a> · <a href="/labels">Labels observed on your account</a></p></details></div>`), deps.config);
     } catch (error) {
       if (error instanceof HttpError) throw error;
       throw new HttpError(503, "Your feed or conversation could not be checked right now. No unverified content or conversation setting is being shown. Try again, or visit Community.");
@@ -433,24 +525,26 @@ async function route(deps: Dependencies, request: IncomingMessage, response: Ser
   }
 
   if (isP0(deps.config) && method === "GET" && ["/home", "/labels", "/settings"].includes(url.pathname)) {
-    await restoredSession(deps, response, token, webSession);
+    const oauthSession = await restoredSession(deps, response, token, webSession);
     if (url.pathname === "/home") return participantHome(deps, response, webSession);
     if (url.pathname === "/labels") return participantLabels(deps, response, webSession);
-    return participantSettings(deps, response, webSession);
+    const scope = await requireBlueskySession(oauthSession,webSession.did,deps.config);
+    return participantSettings(deps, response, {...webSession,grantedScopes:scope},await oauthSession.getTokenInfo());
   }
 
   if (method === "POST" && url.pathname === "/signout") {
     await checkedForm(deps, request, webSession);
-    await endAccountAccess(deps, webSession.did);
+    await withAccountMutation(deps,webSession.did,() => endAccountAccess(deps, webSession.did));
     response.setHeader("Set-Cookie", clearedCookie(deps.config.publicUrl));
     return redirect(response, "/", deps.config);
   }
-  if (method === "POST" && url.pathname === "/disconnect") {
+  if (method === "POST" && ["/disconnect","/interaction/disable"].includes(url.pathname)) {
     await checkedForm(deps, request, webSession);
-    await endAccountAccess(deps, webSession.did);
+    const revoked = await withAccountMutation(deps,webSession.did,() => endAccountAccess(deps, webSession.did));
     response.setHeader("Set-Cookie", clearedCookie(deps.config.publicUrl));
     return html(response, 200, page(deps.config, null, "Disconnected", [
-      "<p>Disconnect revoked this app’s access to your account and ended its sessions in every browser.</p>",
+      revoked ? "<p>Phlogiston ended its sessions in every browser, removed its stored tokens, and the provider accepted its revocation request.</p>"
+        : "<p>Phlogiston ended its sessions in every browser. Provider revocation could not be confirmed. Remove this app in your provider’s app authorizations before reconnecting if you need provider-side confirmation.</p>",
       "<ul>",
       "<li>Your public posts remain public on your PDS.</li>",
       "<li>Community admission history is unchanged.</li>",
@@ -711,10 +805,10 @@ function requirePersonalFeed(deps: Dependencies, did: string, key: string): void
   if (key.startsWith("personal:") && !deps.personalFeeds?.get(did,key.slice(9))) throw new HttpError(404,"Personal feed not found.");
 }
 function curationConnect(session: WebSession, retainQuiet: boolean): string {
-  return `<p>Connect public account context to build private views of your Following feed. This adds read access to account profiles and saved custom feeds; public block records need no curator login. It does not allow copying blocks or publishing feeds. Your existing community-submission permission remains${retainQuiet ? ", along with your existing Bluesky notification controls" : ""}.</p><form method="post" action="/oauth/login"><input type="hidden" name="handle" value="${escapeHtml(session.did)}"><input type="hidden" name="return" value="/feeds"><input type="hidden" name="access" value="${retainQuiet ? "curation-quiet" : "curation"}"><button>Connect personal feeds</button></form>`;
+  return `<p>Connect public account context to build private views of your Following feed. This adds read access to account profiles and saved custom feeds; public block records need no curator login. It does not allow copying blocks or publishing feeds. Your existing community-submission permission remains${retainQuiet ? ", along with your existing Bluesky notification controls" : ""}.</p><form method="post" action="/oauth/login"><input type="hidden" name="csrf" value="${escapeHtml(session.csrf)}"><input type="hidden" name="handle" value="${escapeHtml(session.did)}"><input type="hidden" name="return" value="/feeds"><input type="hidden" name="access" value="${retainQuiet ? "curation-quiet" : "curation"}"><button>Connect personal feeds</button></form>`;
 }
 function readerConnect(session: WebSession, returnTo: string, quiet: boolean, feeds = false): string {
-  return `<form method="post" action="/oauth/login"><input type="hidden" name="handle" value="${escapeHtml(session.did)}"><input type="hidden" name="return" value="${escapeHtml(returnTo)}"><input type="hidden" name="access" value="${quiet ? "quiet" : feeds ? "feeds" : "reader"}"><p>${quiet ? "Allow Bluesky thread notification mute and unmute, in addition to feed reading and community submissions. Local quiet does not need this permission." : "Allow Phlogiston to read feeds, conversations and viewing preferences, alongside community submissions."}</p><button>${quiet ? "Connect Bluesky notification controls" : feeds ? "Connect saved feeds" : "Connect my feed"}</button></form>`;
+  return `<form method="post" action="/oauth/login"><input type="hidden" name="csrf" value="${escapeHtml(session.csrf)}"><input type="hidden" name="handle" value="${escapeHtml(session.did)}"><input type="hidden" name="return" value="${escapeHtml(returnTo)}"><input type="hidden" name="access" value="${quiet ? "quiet" : feeds ? "feeds" : "reader"}"><p>${quiet ? "Allow Bluesky thread notification mute and unmute, in addition to feed reading and community submissions. Local quiet does not need this permission." : "Allow Phlogiston to read feeds, conversations and viewing preferences, alongside community submissions."}</p><button>${quiet ? "Connect Bluesky notification controls" : feeds ? "Connect saved feeds" : "Connect my feed"}</button></form>`;
 }
 
 function signInForm(config: AppConfig, returnTo?: string): string {
@@ -778,19 +872,25 @@ function returnPath(value: string | null | undefined, reader = false): string | 
   return value;
 }
 
-function loginState(nonce: string, returnTo: string | undefined): string {
+function loginState(nonce: string, returnTo: string | undefined, expectedDid?: string, scope?: string): string {
   const state = new URLSearchParams({ nonce });
   if (returnTo !== undefined) state.set("return", returnTo);
+  if (expectedDid !== undefined) state.set("did", expectedDid);
+  if (scope !== undefined) state.set("scope",scope);
   return state.toString();
 }
 
-function parseLoginState(value: string | null | undefined, reader = false): { nonce: string; returnTo: string | undefined } | undefined {
-  if (typeof value !== "string" || value.length > 1024) return undefined;
+function parseLoginState(value: string | null | undefined, reader = false): { nonce: string; returnTo: string | undefined; expectedDid?: string; scope?: string } | undefined {
+  if (typeof value !== "string" || value.length > 4096) return undefined;
   const state = new URLSearchParams(value);
   const nonce = state.get("nonce");
   if (nonce === null || !/^[A-Za-z0-9_-]{16,64}$/.test(nonce)) return undefined;
-  return { nonce, returnTo: returnPath(state.get("return"), reader) };
+  const expectedDid = state.get("did");
+  if (expectedDid !== null && !/^did:(?:plc|web):[^\s/]{1,512}$/.test(expectedDid)) return undefined;
+  return { nonce, returnTo: returnPath(state.get("return"), reader), ...(expectedDid === null ? {} : {expectedDid}), ...(state.get("scope") === null ? {} : {scope:state.get("scope")!}) };
 }
+
+function normalizedScope(scope: string): string { return scope.split(/\s+/).filter(Boolean).sort().join(" "); }
 
 function sameToken(expected: string, actual: string): boolean {
   const a = Buffer.from(expected);
@@ -1007,8 +1107,29 @@ function displayForm(session: WebSession | null, returnTo = "/display"): string 
   return `<form method="post" action="/display" class="display-form">${session ? `<input type="hidden" name="csrf" value="${escapeHtml(session.csrf)}">` : ""}<input type="hidden" name="return" value="${returnTo}"><fieldset><legend>Appearance</legend><div class="display-options">${(["system", "light", "dark"] as const).map(value => `<label><input type="radio" name="display" value="${value}"${choice === value ? " checked" : ""}>${value === "system" ? "System" : value === "light" ? "Light" : "Dark"}</label>`).join("")}</div></fieldset><p class="muted">System follows your device’s appearance. Your choice is saved in this browser and also applies when signed out.</p><button>Save display preference</button></form>`;
 }
 
-function participantSettings(deps: Dependencies, response: ServerResponse, session: WebSession): void {
-  return html(response, 200, page(deps.config, session, "Settings", `${displayForm(session, "/settings")}<h2>Your identity</h2><p class="identity">${escapeHtml(session.did)}</p><p>Your account and original posts stay with your account provider. Phlogiston stores your application session and submission progress.</p><h2>Permissions</h2>${deps.config.readerEnabled ? '<p>Connected feeds read your Following timeline, conversations, viewing preferences and labeler settings. Optional conversation controls mute or unmute thread notifications in Bluesky and filter quieted conversations from Following here.</p>' : ""}<p>Phlogiston can create public community submission requests when you choose to submit. It cannot edit or delete your original posts, and sign-in does not grant moderator access.</p><details><summary>Granted permissions</summary><code>${escapeHtml(session.grantedScopes ?? P0_SCOPE)}</code></details><h2>Leaving</h2><p>Sign out and Disconnect both revoke Phlogiston’s access to your account and end its sessions in every browser. Neither deletes your posts or public submission records.</p>${sessionActions(session)}<h2>Delete my Phlogiston data</h2><p>Deletes everything Phlogiston keeps for your account (personal feeds, hidden conversations, conversation-control history, read positions, submission drafts and sign-in tokens) and signs you out. It cannot be undone. See <a href="/privacy">Privacy</a> for what remains.</p><form method="post" action="/erase"><input type="hidden" name="csrf" value="${escapeHtml(session.csrf)}"><button>Delete my Phlogiston data</button></form>`), deps.config);
+async function participantSettings(deps: Dependencies, response: ServerResponse, session: WebSession, provider: {iss:string;aud:string}): Promise<void> {
+  const interaction = hasInteractionScope(session.grantedScopes ?? "",deps.config);
+  const access = accessName(interactionScopeFor(session.grantedScopes ?? READER_SCOPE));
+  const contentInteraction = interaction
+    ? `<p><strong>Enabled.</strong> Phlogiston can create and undo likes and reposts, and create text posts and replies. These are public records in your Bluesky account.</p><details><summary>Disable content interaction</summary><p>Disabling disconnects this account and ends Phlogiston sessions in every browser. We remove the stored tokens and ask your provider to revoke access. Selective permission downgrade is not available here. After disconnecting, sign in normally to reconnect with reader permissions. Public records remain unless you explicitly undo them.</p><form method="post" action="/interaction/disable"><input type="hidden" name="csrf" value="${escapeHtml(session.csrf)}"><button>Disable interaction and disconnect</button></form></details>`
+    : `<p><strong>Off.</strong> Reading and Cabinet submissions do not grant social write access.</p><details><summary>Enable content interaction</summary><p>This asks your account provider to let Phlogiston create and delete public likes, reposts and posts in your existing Bluesky account. The provider’s delete permission covers any post; Phlogiston itself limits post deletion to posts it created through this app. If your current grant is submit-only, enabling also adds the reader permissions. Text mentions and links are not linked.</p><form method="post" action="/oauth/login"><input type="hidden" name="csrf" value="${escapeHtml(session.csrf)}"><input type="hidden" name="handle" value="${escapeHtml(session.did)}"><input type="hidden" name="return" value="/settings"><input type="hidden" name="access" value="${escapeHtml(access)}"><button>Continue to provider consent</button></form></details>`;
+  const interactionSettings = deps.config.readerEnabled ? `<h2>Content interaction</h2>${contentInteraction}` : "";
+  return html(response, 200, page(deps.config, session, "Settings", `${displayForm(session, "/settings")}<h2>Your identity</h2><p class="identity">${escapeHtml(session.did)}</p><p>Authorization provider: <code>${escapeHtml(provider.iss)}</code><br>Repository provider: <code>${escapeHtml(provider.aud)}</code></p><p>Your account and original posts stay with your account provider. Phlogiston stores your application session and submission progress.</p>${interactionSettings}${await interactionHistory(deps,session)}<h2>Permissions</h2>${deps.config.readerEnabled ? '<p>Connected feeds read your Following timeline, conversations, viewing preferences and labeler settings. Optional conversation controls mute or unmute thread notifications in Bluesky and filter quieted conversations from Following here.</p>' : ""}<p>Phlogiston can create public community submission requests when you choose to submit. ${deps.config.readerEnabled ? "Ordinary sign-in cannot edit or delete your posts; Content interaction adds the public record permissions described above." : "It cannot edit or delete your original posts."} Sign-in does not grant moderator access.</p><details><summary>Effective granted permissions</summary><code>${escapeHtml(session.grantedScopes ?? P0_SCOPE)}</code></details><h2>Leaving</h2><p>Sign out and Disconnect both ask your provider to revoke Phlogiston’s access (best effort) and end its sessions in every browser. Neither deletes your posts or public submission records.</p>${sessionActions(session)}<h2>Delete my Phlogiston data</h2><p>Deletes everything Phlogiston keeps for your account (personal feeds, hidden conversations, conversation-control history, read positions, write journals, submission drafts and sign-in tokens) and signs you out. It cannot be undone. See <a href="/privacy">Privacy</a> for what remains.</p><form method="post" action="/erase"><input type="hidden" name="csrf" value="${escapeHtml(session.csrf)}"><button>Delete my Phlogiston data</button></form>`), deps.config);
+}
+
+function requestedReaderScope(access: string | null): string {
+  const scopes: Record<string,string> = {reader:READER_SCOPE,"reader-quiet":QUIET_SCOPE,quiet:FEED_QUIET_SCOPE,feeds:FEED_SCOPE,"feeds-quiet":FEED_QUIET_SCOPE,curation:CURATION_SCOPE,"curation-quiet":CURATION_QUIET_SCOPE,
+    "reader-interaction":READER_INTERACTION_SCOPE,"quiet-interaction":QUIET_INTERACTION_SCOPE,"feeds-interaction":FEED_INTERACTION_SCOPE,
+    "feeds-quiet-interaction":FEED_QUIET_INTERACTION_SCOPE,"curation-interaction":CURATION_INTERACTION_SCOPE,"curation-quiet-interaction":CURATION_QUIET_INTERACTION_SCOPE};
+  return scopes[access ?? "reader"] ?? READER_SCOPE;
+}
+function accessName(scope: string): string {
+  const entries: Array<[string,string]> = [[READER_SCOPE,"reader"],[QUIET_SCOPE,"reader-quiet"],[FEED_SCOPE,"feeds"],[FEED_QUIET_SCOPE,"feeds-quiet"],[CURATION_SCOPE,"curation"],[CURATION_QUIET_SCOPE,"curation-quiet"],
+    [READER_INTERACTION_SCOPE,"reader-interaction"],[QUIET_INTERACTION_SCOPE,"quiet-interaction"],[FEED_INTERACTION_SCOPE,"feeds-interaction"],[FEED_QUIET_INTERACTION_SCOPE,"feeds-quiet-interaction"],[CURATION_INTERACTION_SCOPE,"curation-interaction"],[CURATION_QUIET_INTERACTION_SCOPE,"curation-quiet-interaction"]];
+  return entries.find(([candidate]) => new Set(candidate.split(" ")).size === new Set([...candidate.split(" "),...scope.split(" ")]).size)?.[1] ?? "reader";
+}
+function interactionScopeFor(scope: string): string {
+  return ({reader:READER_INTERACTION_SCOPE,"reader-quiet":QUIET_INTERACTION_SCOPE,feeds:FEED_INTERACTION_SCOPE,"feeds-quiet":FEED_QUIET_INTERACTION_SCOPE,curation:CURATION_INTERACTION_SCOPE,"curation-quiet":CURATION_QUIET_INTERACTION_SCOPE})[accessName(scope)] ?? READER_INTERACTION_SCOPE;
 }
 
 async function mine(deps: Dependencies, response: ServerResponse, session: WebSession, params = new URLSearchParams()): Promise<void> {
@@ -1162,15 +1283,23 @@ async function operationPage(deps: Dependencies, response: ServerResponse, sessi
  * shown a failure that repeats on every attempt.
  */
 /** Revoke the account's provider tokens (best effort) and end every web session of the account. */
-async function endAccountAccess(deps: Dependencies, did: string): Promise<void> {
-  await deps.oauth?.revoke?.(did).catch(() => undefined);
+async function withAccountMutation<T>(deps: Dependencies, did: string, action: () => Promise<T>): Promise<T> {
+  return withInteractionLock(did,() => isP0(deps.config) ? reservations(deps).execute(did,action) : action());
+}
+
+async function endAccountAccess(deps: Dependencies, did: string): Promise<boolean> {
   await deps.webSessions.revokeAccount(did);
+  if (!deps.oauth?.revoke) return false;
+  try { await deps.oauth.revoke(did); return true; } catch { return false; }
 }
 
 /** Delete everything Phlogiston keeps for one account; the community's moderation records are out of scope. */
 async function eraseAccount(deps: Dependencies, did: string): Promise<{feeds: number; localQuiet: number; quietHistory: number; seen: number; plans: number; journals: number}> {
-  const journal = join(deps.config.runtimeDirectory, "operations", `${encodeURIComponent(did)}.json`);
-  const journals = await rm(journal).then(() => 1, (error: NodeJS.ErrnoException) => { if (error.code === "ENOENT") return 0; throw error; });
+  return withInteractionLock(did, async () => {
+  const erase = async () => {
+  const paths = ["operations","interactions"].map(directory => join(deps.config.runtimeDirectory, directory, `${encodeURIComponent(did)}.json`));
+  let journals = 0;
+  for (const journal of paths) journals += await rm(journal).then(() => 1, (error: NodeJS.ErrnoException) => { if (error.code === "ENOENT") return 0; throw error; });
   const erased = {
     feeds: deps.personalFeeds?.eraseAccount(did) ?? 0,
     localQuiet: deps.localQuiet?.eraseAccount(did) ?? 0,
@@ -1181,6 +1310,9 @@ async function eraseAccount(deps: Dependencies, did: string): Promise<{feeds: nu
   };
   await endAccountAccess(deps, did);
   return erased;
+  };
+  return isP0(deps.config) ? reservations(deps).execute(did,erase) : erase();
+  });
 }
 
 async function restoredSession(deps: Dependencies, response: ServerResponse, token: string | undefined, session: WebSession): Promise<OAuthSession> {
@@ -1213,6 +1345,82 @@ function contributionService(deps: Dependencies, session: OAuthSession, did: str
       ? writer
       : new PostCommitFaultWriter(writer, deps.config.integrationFaultDirectory),
   );
+}
+
+function interactionService(deps: Dependencies, session: OAuthSession, did: string, token?: string): InteractionService {
+  const original = deps.repoWriter === undefined ? new OAuthPublicRepoWriter(session,did) : deps.repoWriter(session,did);
+  const verify = async (address: RecordAddress): Promise<void> => {
+    if (address.repo !== did || !["app.bsky.feed.like","app.bsky.feed.repost","app.bsky.feed.post"].includes(address.collection)) throw new HttpError(403,"That record is outside Content interaction.");
+    const active = await deps.webSessions.resolve(token);
+    if (active?.did !== did) throw new HttpError(401,"Your sign-in has ended. Nothing was dispatched.");
+    const scope = await requireBlueskySession(session,did,deps.config);
+    if (!hasInteractionScope(scope,deps.config)) throw new HttpError(403,"Content interaction permission is not active.");
+    await requireSiteWrites(deps.config);
+  };
+  const writer: PublicRepoWriter = {
+    get: address => original.get(address),
+    create: async (address,record) => { await verify(address); return original.create(address,record); },
+    delete: async (address,swapRecord) => { await verify(address); if (!original.delete) throw new Error("writer cannot delete records"); await original.delete(address,swapRecord); },
+  };
+  return new InteractionService(new DurableWriteJournal(join(deps.config.runtimeDirectory,"interactions",`${encodeURIComponent(did)}.json`), operation => verify(operation)),writer,did);
+}
+
+async function requireEligiblePost(reader: Reader, subject: StrongRef): Promise<AppBskyFeedDefs.PostView> {
+  if (!isValidPostUri(subject.uri) || !subject.cid || subject.cid.length > 256) throw new HttpError(400,"An exact post reference is required.");
+  let thread: ThreadResult;
+  try { thread = await reader.thread(subject.uri); } catch { throw new HttpError(503,"The post could not be checked. Nothing was written."); }
+  if (!AppBskyFeedDefs.isThreadViewPost(thread) || thread.post.uri !== subject.uri || thread.post.cid !== subject.cid) throw new HttpError(409,"The exact post version is unavailable. Nothing was written.");
+  const decision = reader.decision(thread.post,"contentView");
+  if (decision.filter || decision.noOverride || decision.blur || thread.post.author.viewer?.blockedBy || thread.post.author.viewer?.blocking) throw new HttpError(403,"This post is not eligible for interaction under your viewing settings.");
+  return thread.post;
+}
+
+function interactionControls(session: WebSession, reader: Reader, post: AppBskyFeedDefs.PostView, reply: boolean): string {
+  const decision = reader.decision(post,"contentView");
+  if (decision.filter || decision.noOverride || decision.blur || post.author.viewer?.blockedBy || post.author.viewer?.blocking) return "";
+  const hidden = () => `<input type="hidden" name="csrf" value="${escapeHtml(session.csrf)}"><input type="hidden" name="operationId" value="${randomUUID()}"><input type="hidden" name="uri" value="${escapeHtml(post.uri)}"><input type="hidden" name="cid" value="${escapeHtml(post.cid)}">`;
+  const like = post.viewer?.like
+    ? `<form method="post" action="/interact"><input type="hidden" name="record" value="${escapeHtml(post.viewer.like)}">${hidden()}<button name="action" value="unlike">Unlike</button></form>`
+    : `<form method="post" action="/interact">${hidden()}<button name="action" value="like">Like</button></form>`;
+  const repost = post.viewer?.repost
+    ? `<form method="post" action="/interact"><input type="hidden" name="record" value="${escapeHtml(post.viewer.repost)}">${hidden()}<button name="action" value="unrepost">Undo repost</button></form>`
+    : `<form method="post" action="/interact">${hidden()}<button name="action" value="repost">Repost</button></form>`;
+  const replyForm = reply && !post.viewer?.replyDisabled ? `<details class="reply-compose"><summary>Reply</summary><form method="post" action="/interact">${hidden()}<label>Public reply<textarea name="text" required maxlength="300"></textarea></label><button name="action" value="reply">Post reply</button></form></details>` : "";
+  return `<div class="interaction-controls" aria-label="Public interactions">${like}${repost}${replyForm}</div>`;
+}
+
+function composeForm(session: WebSession): string {
+  return `<details class="compose"><summary>Write a public post</summary><p>Text only. Check interrupted publications in <a href="/settings">Settings</a> before composing again. Mentions and links are published as plain text, not linked. This publishes to your Bluesky account; it does not submit the post to the Cabinet.</p><form method="post" action="/interact"><input type="hidden" name="csrf" value="${escapeHtml(session.csrf)}"><input type="hidden" name="operationId" value="${randomUUID()}"><label>Post text<textarea name="text" required maxlength="300"></textarea></label><button name="action" value="post">Publish post</button></form></details>`;
+}
+
+async function siteWritesOpen(config: AppConfig): Promise<boolean> {
+  try { await requireSiteWrites(config); return true; } catch { return false; }
+}
+
+async function interactionHistory(deps: Dependencies, session: WebSession): Promise<string> {
+  const journal = new DurableWriteJournal(join(deps.config.runtimeDirectory,"interactions",`${encodeURIComponent(session.did)}.json`));
+  const entries = await journal.entries(session.did);
+  if (!entries.length) return "";
+  const pending = entries.filter(item => ["prepared","attempted_unknown"].includes(item.phase) || (item.phase === "refused" && ["confirmed_absent","confirmed_present"].includes(item.reason ?? "")));
+  const recent = entries.filter(item => !pending.includes(item)).slice(0,25);
+  return `<h2>Recent content interactions</h2><p>Check an interrupted publication here before composing again. Confirmed means your repository provider acknowledged it; feed state can take time to update.</p><ul>${[...pending,...recent].map(item => `<li>${escapeHtml(item.collection.split(".").at(-1) ?? "record")} · ${escapeHtml(item.phase)} · ${escapeHtml(item.createdAt)}<form method="post" action="/interact"><input type="hidden" name="csrf" value="${escapeHtml(session.csrf)}"><input type="hidden" name="action" value="resume"><input type="hidden" name="operationId" value="${escapeHtml(item.operationId)}"><button>Check outcome</button></form></li>`).join("")}</ul>`;
+}
+
+function interactionOutcome(response: ServerResponse, deps: Dependencies, session: WebSession, outcome: Awaited<ReturnType<InteractionService["create"]>>): void {
+  const result = outcome.result;
+  const uncertain = result.phase === "attempted_unknown";
+  const message = result.phase === "committed" ? (result.operation.action === "delete" ? "The public record was removed." : "Your account provider confirmed the public record was written.")
+    : uncertain ? "The provider response was interrupted. The outcome is unknown; Phlogiston will check this exact record before any retry."
+    : result.phase === "conflict" ? "The exact record differs from this operation. Nothing was overwritten or deleted."
+    : result.phase === "prepared" ? "This operation was prepared but has not been sent. You may retry it after checking permissions."
+    : result.reason?.startsWith("provider_refused:") ? "Your account provider refused this change. No success was reported."
+    : "The provider confirmed that the requested change did not complete.";
+  const resume = uncertain ? `<form method="post" action="/interact"><input type="hidden" name="csrf" value="${escapeHtml(session.csrf)}"><input type="hidden" name="action" value="resume"><input type="hidden" name="operationId" value="${escapeHtml(outcome.operationId)}"><button>Check outcome</button></form>` : "";
+  const retry = result.phase === "prepared" || (result.phase === "refused" && ["confirmed_absent","confirmed_present"].includes(result.reason ?? ""))
+    ? `<form method="post" action="/interact"><input type="hidden" name="csrf" value="${escapeHtml(session.csrf)}"><input type="hidden" name="action" value="retry"><input type="hidden" name="operationId" value="${escapeHtml(outcome.operationId)}"><button>Retry</button></form>` : "";
+  const undoPost = result.phase === "committed" && result.operation.action !== "delete" && result.operation.collection === POST_COLLECTION && result.cid
+    ? `<details><summary>Delete this post</summary><p>This removes the post from your Bluesky repository. Phlogiston can do this only for posts created through this app.</p><form method="post" action="/interact"><input type="hidden" name="csrf" value="${escapeHtml(session.csrf)}"><input type="hidden" name="action" value="delete-post"><input type="hidden" name="operationId" value="${randomUUID()}"><input type="hidden" name="record" value="${escapeHtml(outcome.uri)}"><input type="hidden" name="recordCid" value="${escapeHtml(result.cid)}"><button>Delete post</button></form></details>` : "";
+  return html(response,200,page(deps.config,session,"Content interaction",`<p role="status">${escapeHtml(message)}</p>${resume}${retry}${undoPost}<p><a href="/home">Return to Following</a></p>`),deps.config);
 }
 
 async function ownedPlan(deps: Dependencies, id: string, did: string): Promise<ContributionPlan> {
@@ -1452,7 +1660,10 @@ export async function main(): Promise<void> {
     ),
   };
   createServer(createHandler(deps)).listen(config.port, "127.0.0.1");
-  const sweep = () => retentionSweep(config.runtimeDirectory, deps, (did) => oauth.revoke(did))
+  const sweep = () => retentionSweep(config.runtimeDirectory, deps, (did) => oauth.revoke(did), Date.now(), {
+    interactions: (did, action) => withAccountMutation(deps,did,action),
+    operations: (did, action) => isP0(config) ? reservations(deps).execute(did,action) : action(),
+  })
     .catch((error: unknown) => { console.error(`retention sweep failed: ${error instanceof Error ? error.message : String(error)}`); });
   void sweep();
   setInterval(() => void sweep(), HOUR_MS).unref();

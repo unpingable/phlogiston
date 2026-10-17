@@ -9,6 +9,7 @@ const MAX_REPLIES = 30;
 type Viewer = Pick<Reader, "decision">;
 /** Reader links go to signed-in routes; public pages link only to Bluesky. */
 type Links = "reader" | "public";
+export type InteractionControls = (post: AppBskyFeedDefs.PostView) => string;
 
 export function threadHref(uri: string): string { return `/thread?uri=${encodeURIComponent(uri)}`; }
 function safeLink(value: string): string | undefined { try { return externalHttpsUrl(value); } catch { return undefined; } }
@@ -136,7 +137,7 @@ function embed(reader: Viewer, value: unknown, depth: number, parentUri: string,
   }
   return "";
 }
-export function renderPost(reader: Viewer, post: AppBskyFeedDefs.PostView, context: "contentList" | "contentView" = "contentList", focus = false, quoteDepth = 0, links: Links = "reader"): string {
+export function renderPost(reader: Viewer, post: AppBskyFeedDefs.PostView, context: "contentList" | "contentView" = "contentList", focus = false, quoteDepth = 0, links: Links = "reader", interactions?: InteractionControls): string {
   const decision = reader.decision(post, context);
   const attributes = postAttributes(post, quoteDepth > 0);
   if (decision.filter || decision.noOverride) return `<article class="feed-post withheld" ${attributes}>${hiddenMarker(decision)}</article>`;
@@ -160,7 +161,7 @@ export function renderPost(reader: Viewer, post: AppBskyFeedDefs.PostView, conte
   const author = `<div class="feed-author"><strong title="${esc(name)}">${esc(name)}</strong>${showHandle ? `<span class="feed-handle" title="@${esc(post.author.handle)}">@${esc(post.author.handle)}</span>` : ""}<time class="feed-date" datetime="${esc(record.createdAt)}" title="${esc(fullDate)}">${esc(focus ? fullDate : date(record.createdAt))}</time></div>`;
   const contextLine = contextDisclosure(decision,post.uri);
   const conversationLink = focus || links === "public" ? "" : `<a href="${esc(threadHref(post.uri))}">${post.replyCount ? `${post.replyCount} replies` : "Conversation"}</a>`;
-  const content = `<div class="feed-row">${avatarHtml}<div class="feed-body">${author}<div class="feed-text">${rich(record,quoteDepth ? 600 : Infinity)}</div>${mediaHtml}${contextLine}<div class="feed-actions">${conversationLink}${links === "public" ? "" : `<a href="/context?uri=${esc(encodeURIComponent(post.uri))}">Context</a>`}<a href="${esc(bskyPostUrl(post.uri))}" rel="noreferrer noopener">Open in Bluesky</a></div></div></div>`;
+  const content = `<div class="feed-row">${avatarHtml}<div class="feed-body">${author}<div class="feed-text">${rich(record,quoteDepth ? 600 : Infinity)}</div>${mediaHtml}${contextLine}<div class="feed-actions">${conversationLink}${links === "public" ? "" : `<a href="/context?uri=${esc(encodeURIComponent(post.uri))}">Context</a>`}<a href="${esc(bskyPostUrl(post.uri))}" rel="noreferrer noopener">Open in Bluesky</a></div>${quoteDepth === 0 ? interactions?.(post) ?? "" : ""}</div></div>`;
   return `<article class="feed-post" ${attributes}>${decision.blur ? `<details class="content-warning"><summary>${esc(warning(decision,"Content"))}: Show post</summary>${content}</details>` : content}</article>`;
 }
 function repostContext(reader: Reader, actor: AppBskyActorDefs.ProfileViewBasic): string {
@@ -170,8 +171,8 @@ function repostContext(reader: Reader, actor: AppBskyActorDefs.ProfileViewBasic)
   if (profile.blur || profile.filter || profile.noOverride || display.blur || display.filter || display.noOverride) return "Reposted";
   return `Reposted by ${actor.displayName?.trim() || actor.handle}`;
 }
-export function renderFeed(reader: Reader, items: AppBskyFeedDefs.FeedViewPost[]): string {
-  return `<section class="following-feed" aria-label="Following posts">${items.map(item => `${AppBskyFeedDefs.isReasonRepost(item.reason) ? `<p class="feed-context">${esc(repostContext(reader,item.reason.by))}</p>` : item.reply ? '<p class="feed-context">In a conversation</p>' : ""}${renderPost(reader,item.post)}`).join("")}</section>`;
+export function renderFeed(reader: Reader, items: AppBskyFeedDefs.FeedViewPost[], interactions?: InteractionControls): string {
+  return `<section class="following-feed" aria-label="Following posts">${items.map(item => `${AppBskyFeedDefs.isReasonRepost(item.reason) ? `<p class="feed-context">${esc(repostContext(reader,item.reason.by))}</p>` : item.reply ? '<p class="feed-context">In a conversation</p>' : ""}${renderPost(reader,item.post,"contentList",false,0,"reader",interactions)}`).join("")}</section>`;
 }
 /** Only an outcome Bluesky actually reported names a decider; anything else is an observation limit. */
 function unavailableNode(node: unknown, noun: "conversation" | "reply"): string {
@@ -186,15 +187,15 @@ function unavailableNode(node: unknown, noun: "conversation" | "reply"): string 
     "Bluesky reports this post was not found. It may have been deleted or may never have been indexed; Phlogiston cannot tell which.");
   return marker({established: false}, `Phlogiston could not read this ${noun}. No decision about it is known.`);
 }
-export function renderThread(reader: Viewer, thread: ThreadResult, controls = ""): string {
+export function renderThread(reader: Viewer, thread: ThreadResult, controls = "", interactions?: InteractionControls): string {
   if (!AppBskyFeedDefs.isThreadViewPost(thread)) return unavailableNode(thread, "conversation");
   const parents: AppBskyFeedDefs.PostView[] = [];
   let parent = thread.parent;
   while (AppBskyFeedDefs.isThreadViewPost(parent) && parents.length < 6) { parents.unshift(parent.post); parent = parent.parent; }
-  return `<section class="conversation" aria-label="Conversation">${parents.map(post => renderPost(reader, post, "contentView")).join("")}<div class="thread-focus">${renderPost(reader, thread.post, "contentView", true)}</div>${controls}${renderReplies(reader, thread)}</section>`;
+  return `<section class="conversation" aria-label="Conversation">${parents.map(post => renderPost(reader, post, "contentView",false,0,"reader",interactions)).join("")}<div class="thread-focus">${renderPost(reader, thread.post, "contentView", true,0,"reader",interactions)}</div>${controls}${renderReplies(reader, thread,"reader",interactions)}</section>`;
 }
 /** Replies beneath a received post, with Phlogiston's own display bounds disclosed. */
-export function renderReplies(reader: Viewer, thread: AppBskyFeedDefs.ThreadViewPost, links: Links = "reader"): string {
+export function renderReplies(reader: Viewer, thread: AppBskyFeedDefs.ThreadViewPost, links: Links = "reader", interactions?: InteractionControls): string {
   let remaining = MAX_REPLIES;
   let capped = false, deeper = false;
   const replies = (nodes: typeof thread.replies, depth: number): string => {
@@ -204,7 +205,7 @@ export function renderReplies(reader: Viewer, thread: AppBskyFeedDefs.ThreadView
     return nodes.slice(0, MAX_REPLIES).map(node => {
       if (remaining-- <= 0) { capped = true; return ""; }
       if (!AppBskyFeedDefs.isThreadViewPost(node)) return unavailableNode(node, "reply");
-      return `<div class="thread-reply">${renderPost(reader, node.post, "contentView", false, 0, links)}${replies(node.replies, depth + 1)}</div>`;
+      return `<div class="thread-reply">${renderPost(reader, node.post, "contentView", false, 0, links, interactions)}${replies(node.replies, depth + 1)}</div>`;
     }).join("");
   };
   const rendered = replies(thread.replies, 1);
