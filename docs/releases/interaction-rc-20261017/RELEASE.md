@@ -1,7 +1,10 @@
-# Proposed opt-in interaction release
+# Opt-in interaction release — shipped
 
-Experimental ATProto/Bluesky client; not full Bluesky parity. Proposed from private
-implementation `bf10f79f49643999146b80a6c4e3f732b975a99e`; not deployed.
+Experimental ATProto/Bluesky client; not full Bluesky parity. Production serves
+public revision `860fcae4b9a97ee47982c487e7d9bc6659fefe39`, from frozen private
+implementation `bf10f79f49643999146b80a6c4e3f732b975a99e`. One owner-authorized
+release-directory permission correction changed the producer's execution umask;
+application, archive and dependency bytes stayed unchanged.
 
 Content interaction is off by default. Settings requests separate provider OAuth
 consent for create/delete on exactly `app.bsky.feed.post`, `app.bsky.feed.like`,
@@ -33,8 +36,13 @@ Actual disposable-PDS OAuth tested reader refusal, exact consent, public record
 URI/CID readback, reply lineage, undo, lost-response/restart reconciliation,
 disconnect, old refresh-token refusal and reader-only reconnection. All public
 fixture records and these OAuth grants were removed after testing. This does not
-establish fresh interaction consent on a Bluesky-hosted account or a deployed
-production cutover; normal external reader OAuth was previously qualified.
+establish fresh interaction consent on a Bluesky-hosted account; normal external
+reader OAuth was previously qualified. Canonical production acceptance subsequently
+passed with a new disposable test-PDS identity: reader defaults/refusal, explicit
+consent, exact writes and reply lineage, undo, disconnect, reader-only reconnect
+and logout. The Bluesky-hosted authorization handoff passed; full fresh consent
+remains untested without approved disposable provider credentials/browser consent.
+The disposable account, public test records and credentials were retired.
 
 Following, conversations, saved feeds, panes, local attention controls, personal
 curation, manual Cabinet admission, source distinctions and limited Labelwatch
@@ -44,7 +52,9 @@ outside this release. Eligibility remains 18+; policies remain explicitly not
 legally reviewed. Cabinet reconsideration limits, decline categories and moderation
 record retention remain owner decisions.
 
-Release/deployment identifiers, complete test and independent review evidence,
-rollback and owner dispositions are pinned in the implementation/product pull
-requests. No merge, deployment, OAuth registration change or announcement follows
-from this snapshot.
+The [operational release and rollback handoff](https://github.com/unpingable/phlogiston-pds-appview/blob/6e6adbe/docs/INTERACTION-RELEASE-20261017.md)
+pins deployment evidence, remaining qualifications and exact rollback to `26b0c5f`.
+PDS hosting remains unavailable for public registration; its qualification work
+and PR #3 remain separate. Governance decisions remain pending. No public
+announcement or real-user hosting activation occurred. This note changes only
+release documentation; the deployed runtime revision remains the frozen one above.
