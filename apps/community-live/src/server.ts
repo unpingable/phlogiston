@@ -162,6 +162,11 @@ async function route(deps: Dependencies, request: IncomingMessage, response: Ser
     secure(response, deps.config); response.setHeader("Content-Type", "text/javascript; charset=utf-8"); response.setHeader("Cache-Control", "no-cache"); response.end(body); return;
   }
   if (method === "GET" && url.pathname === "/static/app.css") return stylesheet(response, deps.config);
+  if (method === "GET" && url.pathname === "/static/social-card.png") {
+    socialCardBody ??= readFile(new URL("../static/social-card.png", import.meta.url));
+    const body = await socialCardBody;
+    secure(response, deps.config); response.setHeader("Content-Type", "image/png"); response.setHeader("Cache-Control", "public, max-age=86400"); response.end(body); return;
+  }
   if (method === "POST") requireOrigin(request, deps.config.publicUrl);
 
   if (method === "POST" && url.pathname === "/oauth/login") {
@@ -1586,6 +1591,7 @@ function html(response: ServerResponse, status: number, body: string, config: Ap
   secure(response, config); response.statusCode = status; response.setHeader("Content-Type", "text/html; charset=utf-8"); response.end(body);
 }
 let stylesheetBody: Promise<Buffer> | undefined;
+let socialCardBody: Promise<Buffer> | undefined;
 async function stylesheet(response: ServerResponse, config: AppConfig): Promise<void> {
   stylesheetBody ??= readFile(new URL("../static/app.css", import.meta.url));
   const body = await stylesheetBody;
@@ -1608,6 +1614,7 @@ function sessionActions(session: WebSession): string {
   return `<form method="post" action="/signout"><input type="hidden" name="csrf" value="${escapeHtml(session.csrf)}"><button>Sign out</button></form><form method="post" action="/disconnect"><input type="hidden" name="csrf" value="${escapeHtml(session.csrf)}"><button>Disconnect</button></form>`;
 }
 
+const SOCIAL_CARD_ALT = "Phlogiston: a different way to experience Bluesky. Feeds, conversations and curated collections, side by side.";
 function page(config: AppConfig, session: WebSession | null, title: string, body: string): string {
   const display = displayContext.getStore();
   const path = display?.path ?? "/";
@@ -1616,8 +1623,9 @@ function page(config: AppConfig, session: WebSession | null, title: string, body
   const description = path === "/community"
     ? `${config.communityName}: a human-curated collection of public posts on Phlogiston.`
     : "Your Bluesky feeds, conversations, and curated collections, side by side. More control over your attention, with context when you want it.";
+  const socialCard = new URL("/static/social-card.png", config.publicUrl).href;
   const socialMetadata = isP0(config)
-    ? `<meta name="description" content="${escapeHtml(description)}"><meta property="og:type" content="website"><meta property="og:site_name" content="Phlogiston"><meta property="og:title" content="${escapeHtml(documentTitle)}"><meta property="og:description" content="${escapeHtml(description)}"><meta name="twitter:card" content="summary"><meta name="twitter:title" content="${escapeHtml(documentTitle)}"><meta name="twitter:description" content="${escapeHtml(description)}">`
+    ? `<meta name="description" content="${escapeHtml(description)}"><meta property="og:type" content="website"><meta property="og:site_name" content="Phlogiston"><meta property="og:title" content="${escapeHtml(documentTitle)}"><meta property="og:description" content="${escapeHtml(description)}"><meta property="og:image" content="${escapeHtml(socialCard)}"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta property="og:image:alt" content="${SOCIAL_CARD_ALT}"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="${escapeHtml(documentTitle)}"><meta name="twitter:description" content="${escapeHtml(description)}"><meta name="twitter:image" content="${escapeHtml(socialCard)}"><meta name="twitter:image:alt" content="${SOCIAL_CARD_ALT}">`
     : "";
   const feedActive = ["/home", "/feed", "/thread", "/attention"].includes(path);
   const communityActive = path === "/community" || path === "/" || path.startsWith("/d/");

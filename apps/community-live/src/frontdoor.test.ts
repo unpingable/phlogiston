@@ -32,6 +32,8 @@ test("reader front door centralizes sign-in and retains anonymous Cabinet cards"
  const f = await fixture(); try {
   const home = await f.request("/"); assert.equal(home.status, 200); const body = await home.text();
   assert.match(body, /Phlogiston/); assert.ok(body.indexOf("A different way to experience Bluesky.") < body.indexOf("A real Cabinet projection fixture")); assert.match(body, /href="\/signin"/); assert.match(body, /A real Cabinet projection fixture/); assert.doesNotMatch(body, /name="handle"/);
+  assert.match(body, /<meta name="twitter:card" content="summary_large_image">/); assert.match(body, /<meta property="og:image" content="http:\/\/127\.0\.0\.1:3210\/static\/social-card\.png">/);
+  const card = await f.request("/static/social-card.png"); assert.equal(card.status, 200); assert.equal(card.headers.get("content-type"), "image/png"); assert.deepEqual([...new Uint8Array(await card.arrayBuffer()).subarray(0, 4)], [0x89, 0x50, 0x4e, 0x47]);
   const community = await f.request("/community"); assert.equal(community.status, 200); assert.doesNotMatch(await community.text(), /name="handle"/);
   const signin = await f.request("/signin"); assert.equal(signin.status, 200); const signinBody = await signin.text(); assert.equal(signinBody.match(/name="handle"/g)?.length, 1);
  } finally { await f.close(); }
