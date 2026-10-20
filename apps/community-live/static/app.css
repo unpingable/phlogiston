@@ -592,3 +592,15 @@ header nav [aria-current="page"] { color:var(--text); text-decoration-thickness:
 .site-footer { border-top: 1px solid var(--border); margin-top: 2.5rem; padding: 1rem; color: var(--muted); font-size: 0.9em; }
 .site-footer nav { display: flex; flex-wrap: wrap; gap: 0.4rem 1.2rem; justify-content: center; }
 .site-footer a { color: var(--secondary); }
+
+.labs-settings label { display:flex; align-items:center; gap:8px; min-height:44px; }
+.labs-comparison { margin:0; padding:10px 12px; border-top:1px solid var(--border); background:var(--soft); }
+.labs-comparison p,.labs-group-note { margin:4px 0; color:var(--muted); font-size:13px; }
+.labs-comparison button { min-height:36px; margin:4px 6px 0 0; }
+.labs-comparison button[aria-pressed="true"] { color:var(--surface); background:var(--accent); }
+.labs-group { border-bottom:2px solid var(--border-strong); }
+.labs-group-note { padding:8px 12px 4px; background:var(--soft); }
+.labs-group .feed-post { border-bottom:0; }
+.labs-group-members { background:var(--surface); border-top:1px solid var(--border); }
+.labs-group-members > summary { min-height:44px; padding:10px 12px; cursor:pointer; font-weight:600; }
+.labs-group-members .feed-post { border-top:1px solid var(--border); }

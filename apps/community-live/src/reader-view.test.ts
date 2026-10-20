@@ -116,7 +116,7 @@ test("blocked, deleted, detached and mismatched quote identity never disclose qu
     {$type:"app.bsky.embed.record#viewDetached",uri:uri+"quote",detached:true},
   ]) {
     const p = post();p.embed={$type:"app.bsky.embed.record#view",record};
-    assert.doesNotMatch(renderPost(reader(),p),/VISIBLE_QUOTE/);assert.match(renderPost(reader(),p),/Quoted post/);
+    assert.doesNotMatch(renderPost(reader(),p),/VISIBLE_QUOTE/);assert.match(renderPost(reader(),p),/quoted post/i);
   }
   const p=withQuote();const embedded=(p.embed as import("@atproto/api").AppBskyEmbedRecord.View).record;
   if ("author" in embedded) (embedded.author as AppBskyFeedDefs.PostView["author"]).did="did:plc:other";
@@ -246,4 +246,115 @@ test("public rendering offers only the Bluesky link, not reader-only routes", ()
   const body = renderPost(reader(), post(), "contentView", false, 0, "public");
   assert.match(body, /Open in Bluesky/);
   assert.doesNotMatch(body, /href="\/thread|href="\/context/);
+});
+
+test("quoted source outcomes and unreadable quotes carry distinct standing without withheld content", () => {
+  const cases = [
+    {record: {$type:"app.bsky.embed.record#viewBlocked",uri,blocked:true,author:{did:"did:plc:alice"}}, standing:'data-decided-by="source"', text:/A block prevents this quoted post/},
+    {record: {$type:"app.bsky.embed.record#viewBlocked",uri,blocked:true,author:{did:"did:plc:alice",viewer:{blockedBy:true}}}, standing:'data-decided-by="account"', text:/This account blocks you/},
+    {record: {$type:"app.bsky.embed.record#viewBlocked",uri,blocked:true,author:{did:"did:plc:alice",viewer:{blocking:"at://did:plc:me/app.bsky.graph.block/x"}}}, standing:'data-decided-by="viewer"', text:/You block this account/},
+    {record: {$type:"app.bsky.embed.record#viewNotFound",uri,notFound:true}, standing:'data-decided-by="source"', text:/cannot tell which/},
+    {record: {$type:"app.bsky.embed.record#viewDetached",uri,detached:true}, standing:'data-decided-by="source"', text:/detached, as reported by Bluesky/},
+  ];
+  for (const fixture of cases) {
+    const p=post();p.embed={$type:"app.bsky.embed.record#view",record:fixture.record};
+    const body=renderPost(reader(),p);
+    assert.ok(body.includes(fixture.standing));assert.match(body,fixture.text);
+    assert.doesNotMatch(body,/data-observation|Read quoted post|VISIBLE_QUOTE/);
+  }
+  const p=withQuote("WITHHELD_QUOTE");
+  ((p.embed as import("@atproto/api").AppBskyEmbedRecord.View).record as import("@atproto/api").AppBskyEmbedRecord.ViewRecord).author.did="did:plc:other";
+  const body=renderPost(reader(),p);
+  assert.match(body,/data-observation="not-established"/);assert.doesNotMatch(body,/data-decided-by|WITHHELD_QUOTE/);
+});
+
+test("nested quote expansion is an application limit with a link, not source removal", () => {
+  const p=withQuote();
+  ((p.embed as import("@atproto/api").AppBskyEmbedRecord.View).record as import("@atproto/api").AppBskyEmbedRecord.ViewRecord).embeds=[withQuote("INNER_QUOTE").embed!];
+  const body=renderPost(reader(),p);
+  assert.match(body,/data-decided-by="app"/);assert.match(body,/does not expand another quoted post/);
+  assert.match(body,/Read quoted post/);assert.doesNotMatch(body,/INNER_QUOTE/);
+});
+
+test("missing reply coverage is an observation limit and never an inferred omission count", () => {
+  const branch={$type:"app.bsky.feed.defs#threadViewPost",post:{...post(),uri:uri+"reply",replyCount:12}};
+  const body=renderThread(reader(),{$type:"app.bsky.feed.defs#threadViewPost",post:post(),replies:[branch]} as ThreadResult);
+  assert.match(body,/data-observation="not-established"/);
+  assert.match(body,/does not establish complete reply coverage/);
+  assert.doesNotMatch(body,/data-decided-by|\d+ (more|missing|absent) repl|deleted/);
+  for (const count of [undefined, 0, -1, NaN, Infinity, 1.5]) {
+    const complete=renderThread(reader(),{$type:"app.bsky.feed.defs#threadViewPost",post:{...post(),replyCount:count},replies:[]} as ThreadResult);
+    assert.doesNotMatch(complete,/data-observation/);
+  }
+});
+
+test("unavailable parents retain source standing while unfetched parents remain unknown", () => {
+  const p=post();p.record.reply={root:{uri:uri+"root",cid:realCid},parent:{uri:uri+"parent",cid:realCid}};
+  const tree={$type:"app.bsky.feed.defs#threadViewPost",post:p} as AppBskyFeedDefs.ThreadViewPost;
+  const absent=renderThread(reader(),tree);
+  assert.match(absent,/Earlier conversation context was not included/);assert.match(absent,/data-observation="not-established"/);assert.doesNotMatch(absent,/data-decided-by/);
+  tree.parent={$type:"app.bsky.feed.defs#notFoundPost",uri:uri+"parent",notFound:true};
+  const missing=renderThread(reader(),tree);
+  assert.match(missing,/data-decided-by="source"/);assert.match(missing,/Bluesky reports this post was not found/);
+  assert.doesNotMatch(missing,/Earlier conversation context was not included/);
+});
+
+test("parent display ceiling discloses received but unshown context", () => {
+  let tree:AppBskyFeedDefs.ThreadViewPost={$type:"app.bsky.feed.defs#threadViewPost",post:{...post(),record:{...post().record,text:"EARLIEST_PARENT"}}};
+  for(let i=0;i<7;i++)tree={$type:"app.bsky.feed.defs#threadViewPost",post:{...post(),uri:uri+i},parent:tree};
+  const body=renderThread(reader(),tree);
+  assert.match(body,/data-decided-by="app"/);assert.match(body,/nearest six parent posts/);assert.doesNotMatch(body,/EARLIEST_PARENT/);
+});
+
+test("feed local quiet metadata uses qualified full-item lineage and excludes unknown roots", async () => {
+  const {renderFeed}=await import("./reader-view.js");
+  const p=post();
+  assert.match(renderFeed(reader(),[{post:p}]),/data-local-quiet-root="at:\/\/did:plc:alice\/app.bsky.feed.post\/one"/);
+  const reply=post();reply.record.reply={root:{uri:uri+"root",cid:realCid},parent:{uri:uri+"root",cid:realCid}};
+  assert.match(renderFeed(reader(),[{post:reply}]),/data-local-quiet-root="at:\/\/did:plc:alice\/app.bsky.feed.post\/oneroot"/);
+  reply.record.reply={root:{uri:"invalid"}};
+  assert.doesNotMatch(renderFeed(reader(),[{post:reply}]),/data-local-quiet-root/);
+  assert.doesNotMatch(renderPost(reader(),p),/data-local-quiet-root/);
+});
+
+test("feed grouping hints preserve baseline cards and expose only exact stable membership", async () => {
+  const {renderFeed}=await import("./reader-view.js");
+  const first=post(),second={...post(),uri:uri+"second",record:{...post().record,text:"SECOND_COMMENTARY",createdAt:"2026-10-11T00:00:00Z"}};
+  first.embed={$type:"app.bsky.embed.external#view",external:{uri:"https://example.test/story?utm_source=one",title:"Story",description:"One"}};
+  second.embed={$type:"app.bsky.embed.external#view",external:{uri:"http://www.example.test/story#two",title:"Story",description:"Two"}};
+  const body=renderFeed(reader(),[{post:first},{post:second}]);
+  assert.ok(body.indexOf("private-looking")<body.indexOf("SECOND_COMMENTARY"));
+  assert.equal(body.match(/data-labs-key="https:\/\/example\.test\/story"/g)?.length,2);
+  assert.deepEqual([...body.matchAll(/data-labs-created-at="([^"]+)"/g)].map(match=>match[1]),["2026-10-12T00:00:00Z","2026-10-11T00:00:00Z"]);
+  assert.doesNotMatch(body,/data-labs-group=/);
+  assert.equal(body.match(/class="feed-post"/g)?.length,2);
+});
+test("lone matching cards on separate pages expose one raw key and timestamp", async () => {
+  const {renderFeed}=await import("./reader-view.js");
+  const first=post(),second={...post(),uri:uri+"continued",record:{...post().record,text:"CONTINUED",createdAt:"2026-10-13T00:00:00Z"}};
+  first.embed={$type:"app.bsky.embed.external#view",external:{uri:"https://example.test/story?utm_source=first",title:"Story",description:"First page"}};
+  second.embed={$type:"app.bsky.embed.external#view",external:{uri:"http://www.example.test/story#continued",title:"Story",description:"Second page"}};
+  for (const [item,createdAt] of [[first,"2026-10-12T00:00:00Z"],[second,"2026-10-13T00:00:00Z"]] as const) {
+    const body=renderFeed(reader(),[{post:item}]);
+    assert.match(body,/data-labs-key="https:\/\/example\.test\/story"/);
+    assert.match(body,new RegExp(`data-labs-created-at="${createdAt}"`));
+  }
+});
+
+test("withheld or warning-gated posts do not expose grouping source hints",async()=>{
+  const {renderFeed}=await import("./reader-view.js");
+  const item=post();item.embed={$type:"app.bsky.embed.external#view",external:{uri:"https://example.test/private-source",title:"Source",description:"Source"}};
+  for(const decision of [{filter:true},{noOverride:true},{blur:true}]) {
+    assert.doesNotMatch(renderFeed(reader(decision),[{post:item}]),/data-labs-key|data-labs-kind/);
+  }
+});
+
+
+test("independently withheld media never leaks its source through grouping hints",async()=>{
+  const {renderFeed}=await import("./reader-view.js");
+  const item=post();item.embed={$type:"app.bsky.embed.external#view",external:{uri:"https://example.test/HIDDEN_MEDIA_SENTINEL",title:"Source",description:"Source"}};
+  for(const restriction of [{filter:true},{noOverride:true},{blur:true}]) {
+    const viewer={decision:(_post:unknown,context:string)=>({filter:false,blur:false,noOverride:false,...(context==="contentMedia"?restriction:{})})} as unknown as Reader;
+    assert.doesNotMatch(renderFeed(viewer,[{post:item}]),/data-labs-key|data-labs-kind/);
+  }
 });

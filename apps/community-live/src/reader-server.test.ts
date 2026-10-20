@@ -288,3 +288,13 @@ test("a reader consent callback cannot accept an unrequested interaction grant",
   const callback=await fetch(h.origin+"/oauth/callback?code=x",{redirect:"manual",headers:{Cookie:loginCookie}});assert.equal(callback.status,403);assert.equal(h.calls.revokes,1);assert.equal(h.calls.writes,0);
  }finally{await h.close();}
 });
+
+test("Settings offers only the account-scoped grouping candidate and keeps interaction consent",async()=>{
+  const h=await harness();try {
+    const response=await h.get("/settings"),body=await response.text();assert.equal(response.status,200);
+    assert.match(body,/data-lab-grouping/);assert.match(body,new RegExp(`data-workspace-did="${DID}"`));
+    assert.match(body,/Compare ordinary and grouped Following/);assert.match(body,/\/static\/labs\.js/);
+    assert.match(body,/Enable content interaction/);
+    assert.doesNotMatch(body,/data-lab-editions|data-lab-discovery|action="\/labs"/);
+  }finally{await h.close();}
+});

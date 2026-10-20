@@ -1672,3 +1672,21 @@ removal form follows the public conversation inside a "Moderator actions"
 disclosure instead of interrupting the post and its replies; it is still shown
 only to the configured moderator and posts the same command. This release also
 carries the first rehearsed web rollback (CC3 → CC2 → CC3).
+
+## Reader correctness and optional grouping release — 2026-10-20
+
+The owner authorizes the reader update and its web-only production release:
+explain withheld context, quoted-post and incomplete-conversation outcomes;
+preserve contributions when received lineage conflicts; and offer an optional,
+browser-local grouping comparison in Settings. Grouping remains off by default,
+preserves ordinary presentation and introduces no semantic inference, telemetry,
+account permission or upstream mutation. Existing content interaction consent and
+account data lifecycle remain unchanged. Editions, themes and discovery are not
+part of this release.
+
+Source checks passed typecheck, 369 unit/route tests and 18 browser cases, with
+independent focused review. These qualify mechanics, not usefulness to readers.
+The release must use the established immutable web generation, preserve the exact
+previous generation for rollback, restart only the web service, and pass storage
+admission and canonical readback before being described as deployed. No participant
+recruitment or automatic enrollment is authorized by this release.

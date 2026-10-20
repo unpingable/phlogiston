@@ -1,7 +1,9 @@
 import { AppBskyFeedDefs, AppBskyFeedPost, AppBskyEmbedImages, AppBskyEmbedExternal, AppBskyEmbedRecord, AppBskyEmbedRecordWithMedia, AppBskyEmbedVideo, AppBskyActorDefs, RichText, type ModerationUI, type ModerationCause } from "@atproto/api";
 import { escapeHtml as esc, externalHttpsUrl, isValidPostUri, bskyPostUrl } from "./html.js";
 import type { Reader, ThreadResult } from "./reader.js";
+import { feedGroupingHints, type FeedGroupingHint } from "./grouping.js";
 import { marker } from "./attention.js";
+import { localQuietRoot } from "./local-quiet-filter.js";
 
 const UNREADABLE_POST = marker({established: false}, "Phlogiston could not read this post. Nothing here says it was removed.");
 const MAX_REPLIES = 30;
@@ -59,7 +61,7 @@ function hiddenText(ui: ModerationUI): string {
   return label?.type === "label" ? `Hidden by your Bluesky moderation settings, based on a label from ${label.label.src}.` : "Post hidden by your viewing settings.";
 }
 /** An author's signed-out opt-out is the author's decision, not the viewer's settings. */
-function hiddenMarker(ui: ModerationUI): string {
+export function hiddenMarker(ui: ModerationUI): string {
   const why = [...new Set(causes(ui).slice(0, 16).map(causeText))];
   if (causes(ui).some(cause => cause.type === "label" && cause.label.val === "!no-unauthenticated")) {
     return marker({established: true, decidedBy: "account"}, "The author asked that this not be shown to signed-out readers.");
@@ -82,9 +84,9 @@ function declaredRoot(post: AppBskyFeedDefs.PostView): string | undefined {
   const root = record.reply === undefined ? post.uri : record.reply?.root?.uri;
   return typeof root === "string" && isValidPostUri(root) ? root : undefined;
 }
-function postAttributes(post: AppBskyFeedDefs.PostView, quoted: boolean): string {
+function postAttributes(post: AppBskyFeedDefs.PostView, quoted: boolean, grouping?: FeedGroupingHint): string {
   const root = declaredRoot(post);
-  return `data-post-uri="${esc(post.uri)}"${root ? ` data-thread-root="${esc(root)}"` : ""} data-quoted="${quoted}"`;
+  return `data-post-uri="${esc(post.uri)}"${root ? ` data-thread-root="${esc(root)}"` : ""} data-quoted="${quoted}"${!quoted && grouping && grouping.kind !== "single" ? ` data-labs-key="${esc(grouping.key)}" data-labs-kind="${esc(grouping.kind)}" data-labs-created-at="${esc(grouping.createdAt)}"` : ""}`;
 }
 function quotePost(value: AppBskyEmbedRecord.ViewRecord): AppBskyFeedDefs.PostView | undefined {
   if (!isValidPostUri(value.uri) || !AppBskyActorDefs.validateProfileViewBasic(value.author).success ||
@@ -120,15 +122,17 @@ function embed(reader: Viewer, value: unknown, depth: number, parentUri: string,
   }
   if (AppBskyEmbedRecord.isView(value)) {
     const record = (value as AppBskyEmbedRecord.View).record;
-    if (AppBskyEmbedRecord.isViewBlocked(record)) return '<p class="feed-notice">Quoted post blocked.</p>';
-    if (AppBskyEmbedRecord.isViewNotFound(record)) return '<p class="feed-notice">Quoted post deleted or unavailable.</p>';
-    if (AppBskyEmbedRecord.isViewDetached(record)) return '<p class="feed-notice">Quoted post detached.</p>';
+    if (AppBskyEmbedRecord.isViewBlocked(record)) return blockedMarker(record.author?.viewer, "quoted post");
+    if (AppBskyEmbedRecord.isViewNotFound(record)) return marker({established: true, decidedBy: "source"}, "Quoted post not found by Bluesky. It may have been deleted or may never have been indexed; Phlogiston cannot tell which.");
+    if (AppBskyEmbedRecord.isViewDetached(record)) return marker({established: true, decidedBy: "source"}, "Quoted post detached, as reported by Bluesky.");
     const uri = "uri" in record && typeof record.uri === "string" ? record.uri : "";
-    const fallback = !isValidPostUri(uri) ? '<p class="feed-notice">Quoted post unavailable.</p>' : links === "public"
+    const fallback = !isValidPostUri(uri) ? "" : links === "public"
       ? `<p class="feed-quote"><a href="${esc(bskyPostUrl(uri))}" rel="noreferrer noopener">Read quoted post on Bluesky</a></p>` : `<p class="feed-quote"><a href="${esc(threadHref(uri))}">Read quoted post</a></p>`;
-    if (!AppBskyEmbedRecord.isViewRecord(record) || depth >= 1) return fallback;
+    if (depth >= 1) return marker({established: true, decidedBy: "app"}, "Phlogiston does not expand another quoted post inside a quote.") + fallback;
+    const unreadable = marker({established: false}, "Quoted post could not be read by Phlogiston. No decision about it is known.");
+    if (!AppBskyEmbedRecord.isViewRecord(record)) return unreadable + fallback;
     const post = quotePost(record);
-    return post ? `<blockquote class="feed-quote">${renderPost(reader,post,"contentList",false,depth+1,links)}</blockquote>` : fallback;
+    return post ? `<blockquote class="feed-quote">${renderPost(reader,post,"contentList",false,depth+1,links)}</blockquote>` : unreadable + fallback;
   }
   if (AppBskyEmbedRecordWithMedia.isView(value)) {
     if (!AppBskyEmbedRecordWithMedia.validateView(value).success) return '<p class="feed-notice">Embedded content unavailable.</p>';
@@ -137,9 +141,10 @@ function embed(reader: Viewer, value: unknown, depth: number, parentUri: string,
   }
   return "";
 }
-export function renderPost(reader: Viewer, post: AppBskyFeedDefs.PostView, context: "contentList" | "contentView" = "contentList", focus = false, quoteDepth = 0, links: Links = "reader", interactions?: InteractionControls): string {
+export function renderPost(reader: Viewer, post: AppBskyFeedDefs.PostView, context: "contentList" | "contentView" = "contentList", focus = false, quoteDepth = 0, links: Links = "reader", interactions?: InteractionControls, quietRoot?: string, grouping?: FeedGroupingHint): string {
   const decision = reader.decision(post, context);
-  const attributes = postAttributes(post, quoteDepth > 0);
+  const groupingMedia = grouping?.kind === "source" ? reader.decision(post,"contentMedia") : undefined;
+  const attributes = postAttributes(post, quoteDepth > 0, groupingMedia?.filter || groupingMedia?.noOverride || groupingMedia?.blur || decision.filter || decision.noOverride || decision.blur ? undefined : grouping) + (quietRoot && quoteDepth === 0 ? ` data-local-quiet-root="${esc(quietRoot)}"` : "");
   if (decision.filter || decision.noOverride) return `<article class="feed-post withheld" ${attributes}>${hiddenMarker(decision)}</article>`;
   if (!AppBskyFeedPost.isRecord(post.record) || !isValidPostUri(post.uri)) return UNREADABLE_POST;
   const record = post.record as unknown as AppBskyFeedPost.Record;
@@ -172,17 +177,18 @@ function repostContext(reader: Reader, actor: AppBskyActorDefs.ProfileViewBasic)
   return `Reposted by ${actor.displayName?.trim() || actor.handle}`;
 }
 export function renderFeed(reader: Reader, items: AppBskyFeedDefs.FeedViewPost[], interactions?: InteractionControls): string {
-  return `<section class="following-feed" aria-label="Following posts">${items.map(item => `${AppBskyFeedDefs.isReasonRepost(item.reason) ? `<p class="feed-context">${esc(repostContext(reader,item.reason.by))}</p>` : item.reply ? '<p class="feed-context">In a conversation</p>' : ""}${renderPost(reader,item.post,"contentList",false,0,"reader",interactions)}`).join("")}</section>`;
+  const hints = new Map(feedGroupingHints(items).map(hint => [hint.uri, hint]));
+  return `<section class="following-feed" aria-label="Following posts">${items.map(item => `${AppBskyFeedDefs.isReasonRepost(item.reason) ? `<p class="feed-context">${esc(repostContext(reader,item.reason.by))}</p>` : item.reply ? '<p class="feed-context">In a conversation</p>' : ""}${renderPost(reader,item.post,"contentList",false,0,"reader",interactions,localQuietRoot(item),hints.get(item.post.uri))}`).join("")}</section>`;
+}
+/** A block identifies a party only when the source supplies that relationship. */
+function blockedMarker(viewer: AppBskyActorDefs.ViewerState | undefined, noun: string): string {
+  if (viewer?.blocking || viewer?.blockingByList) return marker({established: true, decidedBy: "viewer"}, `You block this account, so this ${noun} is not shown.`);
+  if (viewer?.blockedBy) return marker({established: true, decidedBy: "account"}, `This account blocks you, so this ${noun} is not shown.`);
+  return marker({established: true, decidedBy: "source"}, `A block prevents this ${noun} from being displayed.`);
 }
 /** Only an outcome Bluesky actually reported names a decider; anything else is an observation limit. */
 function unavailableNode(node: unknown, noun: "conversation" | "reply"): string {
-  if (AppBskyFeedDefs.isBlockedPost(node)) {
-    const viewer = (node as AppBskyFeedDefs.BlockedPost).author?.viewer;
-    if (viewer?.blocking || viewer?.blockingByList) return marker({established: true, decidedBy: "viewer"}, `You block this account, so this ${noun} is not shown.`);
-    if (viewer?.blockedBy) return marker({established: true, decidedBy: "account"}, `This account blocks you, so this ${noun} is not shown.`);
-    // Bluesky reported a block without saying whose; the party is left unnamed rather than guessed.
-    return marker({established: true, decidedBy: "source"}, `A block prevents this ${noun} from being displayed.`);
-  }
+  if (AppBskyFeedDefs.isBlockedPost(node)) return blockedMarker((node as AppBskyFeedDefs.BlockedPost).author?.viewer, noun);
   if (AppBskyFeedDefs.isNotFoundPost(node)) return marker({established: true, decidedBy: "source"},
     "Bluesky reports this post was not found. It may have been deleted or may never have been indexed; Phlogiston cannot tell which.");
   return marker({established: false}, `Phlogiston could not read this ${noun}. No decision about it is known.`);
@@ -192,12 +198,23 @@ export function renderThread(reader: Viewer, thread: ThreadResult, controls = ""
   const parents: AppBskyFeedDefs.PostView[] = [];
   let parent = thread.parent;
   while (AppBskyFeedDefs.isThreadViewPost(parent) && parents.length < 6) { parents.unshift(parent.post); parent = parent.parent; }
-  return `<section class="conversation" aria-label="Conversation">${parents.map(post => renderPost(reader, post, "contentView",false,0,"reader",interactions)).join("")}<div class="thread-focus">${renderPost(reader, thread.post, "contentView", true,0,"reader",interactions)}</div>${controls}${renderReplies(reader, thread,"reader",interactions)}</section>`;
+  const oldest = parents[0] ?? thread.post;
+  const parentNotice = AppBskyFeedDefs.isThreadViewPost(parent)
+    ? marker({established: true, decidedBy: "app"}, "Phlogiston shows the nearest six parent posts it received; earlier parents are not shown here.")
+    : parent !== undefined ? unavailableNode(parent, "conversation")
+    : (oldest.record as {reply?: unknown}).reply !== undefined
+      ? marker({established: false}, "Earlier conversation context was not included in this response. Phlogiston cannot tell why.") : "";
+  return `<section class="conversation" aria-label="Conversation">${parentNotice}${parents.map(post => renderPost(reader, post, "contentView",false,0,"reader",interactions)).join("")}<div class="thread-focus">${renderPost(reader, thread.post, "contentView", true,0,"reader",interactions)}</div>${controls}${renderReplies(reader, thread,"reader",interactions)}</section>`;
 }
 /** Replies beneath a received post, with Phlogiston's own display bounds disclosed. */
 export function renderReplies(reader: Viewer, thread: AppBskyFeedDefs.ThreadViewPost, links: Links = "reader", interactions?: InteractionControls): string {
   let remaining = MAX_REPLIES;
   let capped = false, deeper = false;
+  const missingBranch = (node: AppBskyFeedDefs.ThreadViewPost): string => {
+    const count = node.post.replyCount;
+    return typeof count === "number" && Number.isSafeInteger(count) && count > (node.replies?.length ?? 0)
+      ? marker({established: false}, "The reported reply count exceeds the replies included here. This response does not establish complete reply coverage or why replies are absent.") : "";
+  };
   const replies = (nodes: typeof thread.replies, depth: number): string => {
     if (!nodes?.length) return "";
     if (depth > 2) { deeper = true; return ""; }
@@ -205,10 +222,10 @@ export function renderReplies(reader: Viewer, thread: AppBskyFeedDefs.ThreadView
     return nodes.slice(0, MAX_REPLIES).map(node => {
       if (remaining-- <= 0) { capped = true; return ""; }
       if (!AppBskyFeedDefs.isThreadViewPost(node)) return unavailableNode(node, "reply");
-      return `<div class="thread-reply">${renderPost(reader, node.post, "contentView", false, 0, links, interactions)}${replies(node.replies, depth + 1)}</div>`;
+      return `<div class="thread-reply">${renderPost(reader, node.post, "contentView", false, 0, links, interactions)}${replies(node.replies, depth + 1)}${missingBranch(node)}</div>`;
     }).join("");
   };
-  const rendered = replies(thread.replies, 1);
+  const rendered = replies(thread.replies, 1) + missingBranch(thread);
   const bounds = [capped ? `Phlogiston shows the first ${MAX_REPLIES} replies it received; more were received and are not shown here.` : "",
     deeper ? "Phlogiston received deeper replies than it shows here." : ""].filter(Boolean).join(" ");
   const bounded = bounds ? `${marker({established: true, decidedBy: "app"}, bounds)}<p class="feed-notice"><a href="${esc(bskyPostUrl(thread.post.uri))}" rel="noreferrer noopener">Open the whole conversation in Bluesky</a></p>` : "";

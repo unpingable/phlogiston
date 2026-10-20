@@ -103,6 +103,7 @@ function privacy(): string {
 <tr><td>A mirror of public Bluesky records relevant to the Cabinet</td><td>Showing the collection and conversations</td><td>As long as the Cabinet runs; it is public data and can be rebuilt</td></tr>
 <tr><td>Your display theme</td><td>Light or dark mode</td><td>A cookie in your browser, 1 year</td></tr>
 <tr><td>Your pane layout</td><td>Side-by-side reading</td><td>Your browser’s local storage only, until you clear it or use Delete my Phlogiston data</td></tr>
+<tr><td>Your account-specific grouping Labs choice</td><td>Optional reading comparison</td><td>Browser local storage until reset, cleared, or Delete my Phlogiston data</td></tr>
 </tbody></table>
 <p>Phlogiston does not log your requests or keep an access log, and it has no analytics, trackers, ads or third-party scripts. System logs on the server last a few days and contain errors, not browsing. Phlogiston makes <strong>no backups</strong> of the data above, so deleted data is not restored later.</p>
 <p>Cookies: <code>community_session</code> (sign-in, 8 hours), <code>community_login</code> (during sign-in, 10 minutes) and <code>phlogiston_display</code> (theme, 1 year). All three are strictly necessary for what you asked for, so there is no cookie banner.</p>

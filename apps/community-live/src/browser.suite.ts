@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { existsSync } from "node:fs";
-import { mkdir, mkdtemp, readFile, writeFile } from "node:fs/promises";
-import type { BskyPreferences } from "@atproto/api";
+import { mkdir, mkdtemp, readFile, writeFile, rm } from "node:fs/promises";
+import type { AppBskyFeedDefs, BskyPreferences } from "@atproto/api";
 import { Reader, type ReaderTransport } from "./reader.js";
 import { LocalQuietStore } from "./local-quiet.js";
 import { FEED_SCOPE, READER_INTERACTION_SCOPE } from "./p0.js";
@@ -780,6 +780,110 @@ test("AG1: Quiet here, Undo and Restore keep the page's accounting truthful", as
   const post = (name: string, text: string) => ({ post: { uri: `at://${MEMBER}/app.bsky.feed.post/${name}`,
     cid: "bafyreifkpymf7jb3jg5giimeyzab6lbokwi3ko5hdutcj7ift54i64zqxu", author: { did: MEMBER, handle: "alice.test" },
     record: { $type: "app.bsky.feed.post", text, createdAt: "2026-10-12T00:00:00Z" }, indexedAt: "2026-10-12T00:00:00Z" } });
+  const conflicting: AppBskyFeedDefs.FeedViewPost = post("conflicting", "Conflicting lineage stays visible");
+  const firstPost = post("first", "First fixture post").post;
+  const secondPost = post("second", "Second fixture post").post;
+  conflicting.post.record = {...conflicting.post.record, reply: {
+    root: {uri: firstPost.uri, cid: firstPost.cid}, parent: {uri: firstPost.uri, cid: firstPost.cid}}};
+  conflicting.reply = {root: {...secondPost, $type: "app.bsky.feed.defs#postView"}, parent: {...secondPost, $type: "app.bsky.feed.defs#postView"}};
+  let hideContext = false, unavailableContext = false, labelLookups = 0;
+  const transport: ReaderTransport = {
+    preferences: async () => ({ feedViewPrefs: { home: { hideReplies: false, hideRepliesByUnfollowed: false, hideRepliesByLikeCount: 0,
+      hideReposts: false, hideQuotePosts: false } }, moderationPrefs: { adultContentEnabled: false, labels: {}, labelers: [],
+      mutedWords: [], hiddenPosts: hideContext ? [firstPost.uri] : [] } }) as unknown as BskyPreferences,
+    savedFeedPreferences: async () => [], labelDefinitions: async () => ({}),
+    timeline: async () => ({ feed: [{post: firstPost}, {post: secondPost}, conflicting] }),
+    postThread: async (uri) => unavailableContext ? {$type: "app.bsky.feed.defs#notFoundPost", uri, notFound: true} :
+      ({ $type: "app.bsky.feed.defs#threadViewPost", post: firstPost, uri }),
+    muteThread: async () => {}, unmuteThread: async () => {},
+  };
+  const oauthSession = (did: string) => ({ did, getTokenInfo: async () => ({ sub: did, iss: "https://bsky.social",
+    aud: "https://fixture.host.bsky.network", scope: FEED_SCOPE }), signOut: async () => {} }) as unknown as OAuthSession;
+  const deps = { config, webSessions: sessions, localQuiet, reader: (s: OAuthSession) => new Reader(s, transport),
+    oauth: { authorize: async () => new URL("https://auth.invalid.test/authorize"), restore: async (did: string) => oauthSession(did),
+      callback: async () => ({ session: oauthSession(MEMBER) }) }, labels: { lookup: async () => {labelLookups++;return null;} } } as unknown as Dependencies;
+  app.on("request", (request, response) => void createHandler(deps)(request, response));
+  const session = await context({ width: 1280, height: 900 });
+  try {
+    const { token } = await sessions.issue(MEMBER, new Date(), FEED_SCOPE);
+    await session.addCookies([{ name: "community_session", value: token, url: origin }]);
+    const page = await session.newPage();
+    const errors: string[] = [];
+    page.on("pageerror", (error) => errors.push(error.message));
+    await page.goto(`${origin}/home`);
+    const first = page.locator('.workspace-primary article[data-post-uri$="/first"]');
+    const conflict = page.locator('.workspace-primary article[data-post-uri$="/conflicting"]');
+    const summary = page.locator(".workspace-primary .feed-surface > .attention-summary");
+    await first.getByRole("button", { name: "Quiet here" }).waitFor();
+    assert.equal(await conflict.isVisible(), true);
+    assert.equal(await conflict.getByRole("button", {name: "Quiet here"}).count(), 0);
+    assert.equal(await summary.count(), 0);
+
+    await first.getByRole("button", { name: "Quiet here" }).click();
+    await page.locator('.workspace-primary .attention-summary[data-stale="true"]').waitFor();
+    assert.equal(await first.isHidden(), true);
+    assert.equal(await conflict.isVisible(), true);
+    assert.match(await summary.innerText(), /no longer match\. Refresh to recount\./);
+    assert.deepEqual(localQuiet.list(MEMBER, "following"), [`at://${MEMBER}/app.bsky.feed.post/first`]);
+
+    await page.getByRole("button", { name: "Undo" }).click();
+    await page.getByText("Conversation restored in this feed.").waitFor();
+    assert.equal(await first.isVisible(), true);
+    assert.match(await summary.innerText(), /Refresh to recount\./);
+    assert.deepEqual(localQuiet.list(MEMBER, "following"), []);
+
+    await first.getByRole("button", { name: "Quiet here" }).click();
+    await page.getByText("Conversation quieted in this feed.").waitFor();
+    await page.reload();
+    await page.locator('.workspace-primary article[data-post-uri$="/second"]').waitFor();
+    assert.equal(await first.count(), 0);
+    assert.match(await summary.innerText(), /Showing 2 of the 3 posts received for this page\. 1 hidden by your settings\./);
+    assert.equal(await conflict.isVisible(), true);
+    assert.equal(await page.locator('.workspace-primary .attention-summary[data-stale]').count(), 0);
+    await page.screenshot({ path: join(SHOTS, "ag1-quiet-summary.png"), fullPage: true });
+
+    await page.locator(".workspace-primary .local-quiet-review summary").click();
+    await page.getByRole("button", { name: "Restore conversation" }).click();
+    await first.waitFor();
+    assert.equal(await summary.count(), 0);
+    assert.deepEqual(localQuiet.list(MEMBER, "following"), []);
+    hideContext = true;
+    await first.getByRole("link", {name: "Context", exact: true}).click();
+    const companion = page.locator(".companion-content");
+    await companion.locator('.attention-marker[data-decided-by="viewer"]').waitFor();
+    assert.doesNotMatch(await companion.innerText(), /First fixture post|Independent observations/);
+    assert.equal(await first.isVisible(), true);
+    await page.getByRole("button", {name: "Back to companion"}).click();
+    unavailableContext = true;
+    await page.locator('.workspace-primary article[data-post-uri$="/second"]').getByRole("link", {name: "Context", exact: true}).click();
+    await companion.locator('.attention-marker[data-decided-by="source"]').waitFor();
+    assert.match(await companion.innerText(), /may have been deleted or may never have been indexed/);
+    assert.equal(labelLookups, 0);
+    assert.deepEqual(errors, []);
+  } finally {
+    await session.close();
+    await closeServer(app);
+    localQuiet.close();
+  }
+});
+
+test("grouping candidate: local opt-in, preservation, quiet, reload and exit", async () => {
+  const root = await mkdtemp(join(tmpdir(), "community-browser-grouping-"));
+  const app = createServer();
+  await new Promise<void>((resolve) => app.listen(0, "127.0.0.1", resolve));
+  const origin = `http://127.0.0.1:${(app.address() as AddressInfo).port}`;
+  const config = loadConfig({ COMMUNITY_PROFILE: "p0", COMMUNITY_READER_ENABLED: "true", COMMUNITY_PUBLIC_URL: origin,
+    COMMUNITY_DID: COMMUNITY, COMMUNITY_NAME: "The Cabinet", COMMUNITY_PURPOSE: "Fixture collection",
+    COMMUNITY_MODERATOR_DID: MODERATOR, COMMUNITY_RUNTIME_DIR: root, COMMUNITY_OBSERVER_URL: "http://127.0.0.1:8080",
+    COMMUNITY_AUTHORITY_SOCKET: join(root, "socket"), COMMUNITY_SITE_PAUSE_PATH: join(root, "site"),
+    COMMUNITY_ADMISSION_PAUSE_PATH: join(root, "admission") });
+  await writeFile(config.sitePausePath!, "open\n", { mode: 0o600 });
+  const sessions = new WebSessionStore(join(root, "sessions"));
+  const localQuiet = new LocalQuietStore(join(root, "local-quiet.sqlite"));
+  const post = (name: string, text: string) => ({ post: { uri: `at://${MEMBER}/app.bsky.feed.post/${name}`,
+    cid: "bafyreifkpymf7jb3jg5giimeyzab6lbokwi3ko5hdutcj7ift54i64zqxu", author: { did: MEMBER, handle: "alice.test" },
+    record: { $type: "app.bsky.feed.post", text, createdAt: name === "first" ? "2026-10-12T01:00:00Z" : "2026-10-12T00:00:00Z" },
+    indexedAt: "2026-10-12T00:00:00Z", embed: {$type:"app.bsky.embed.external#view",external:{uri:name === "first" ? "https://example.test/story?utm_source=fixture" : "https://www.example.test/story",title:"Fixture source",description:"The same exact source"}} } });
   const transport: ReaderTransport = {
     preferences: async () => ({ feedViewPrefs: { home: { hideReplies: false, hideRepliesByUnfollowed: false, hideRepliesByLikeCount: 0,
       hideReposts: false, hideQuotePosts: false } }, moderationPrefs: { adultContentEnabled: false, labels: {}, labelers: [],
@@ -795,18 +899,64 @@ test("AG1: Quiet here, Undo and Restore keep the page's accounting truthful", as
     oauth: { authorize: async () => new URL("https://auth.invalid.test/authorize"), restore: async (did: string) => oauthSession(did),
       callback: async () => ({ session: oauthSession(MEMBER) }) }, labels: { lookup: async () => null } } as unknown as Dependencies;
   app.on("request", (request, response) => void createHandler(deps)(request, response));
-  const session = await context({ width: 1280, height: 900 });
+  const session = await context({ width: 390, height: 844 });
   try {
     const { token } = await sessions.issue(MEMBER, new Date(), FEED_SCOPE);
     await session.addCookies([{ name: "community_session", value: token, url: origin }]);
     const page = await session.newPage();
     const errors: string[] = [];
     page.on("pageerror", (error) => errors.push(error.message));
+    await page.goto(`${origin}/settings`);
+    const labs=page.getByRole('group',{name:'Optional grouping comparison'});
+    assert.equal(await labs.getByRole('checkbox').isChecked(),false);
+    await labs.getByRole('checkbox').check();
+    await page.evaluate(()=>localStorage.setItem('phlogiston.labs.grouping.v1:did:plc:other','on'));
+    await page.getByRole('button',{name:'Reset Labs'}).click();
+    assert.equal(await labs.getByRole('checkbox').isChecked(),false);
+    assert.equal(await page.evaluate(()=>localStorage.getItem('phlogiston.labs.grouping.v1:did:plc:other')),'on');
+    await page.evaluate(()=>localStorage.removeItem('phlogiston.labs.grouping.v1:did:plc:other'));
+    await labs.getByRole('checkbox').check();
+    assert.equal(await page.evaluate(did=>localStorage.getItem(`phlogiston.labs.grouping.v1:${did}`),MEMBER),'on');
+    assert.equal(await page.evaluate(()=>[...Array(localStorage.length)].map((_,i)=>localStorage.key(i)).filter(key=>key?.startsWith('phlogiston.labs.')).length),1);
     await page.goto(`${origin}/home`);
     const first = page.locator('.workspace-primary article[data-post-uri$="/first"]');
     const summary = page.locator(".workspace-primary .feed-surface > .attention-summary");
     await first.getByRole("button", { name: "Quiet here" }).waitFor();
     assert.equal(await summary.count(), 0);
+    const comparison=page.locator('.workspace-primary .labs-comparison');await comparison.waitFor();
+    await comparison.getByRole('button',{name:'Grouped'}).focus();await page.keyboard.press('Enter');
+    assert.equal(await page.locator('.workspace-primary .labs-group').count(),1);assert.equal(await page.locator('.workspace-primary article[data-post-uri]').count(),2);
+    const members=page.locator('.workspace-primary .labs-group-members');assert.equal(await members.getByText('Second fixture post').isVisible(),false);await members.getByText(/Show 1 more contribution/).click();assert.equal(await members.getByText('Second fixture post').isVisible(),true);
+    assert.match(await page.locator('.workspace-primary .labs-group-note').innerText(),/does not mean agreement or corroboration/);
+    await comparison.getByRole('button',{name:'Ordinary'}).click();await comparison.getByRole('button',{name:'Grouped'}).click();
+    assert.equal(await members.getByText('Second fixture post').isVisible(),true);
+    assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
+    const nextHtml=(await (await page.request.get(`${origin}/home`)).text()).replaceAll('/first','/third').replaceAll('/second','/fourth');
+    let releaseNext!:()=>void,receivedNext!:()=>void;
+    const nextGate=new Promise<void>(resolve=>{releaseNext=resolve;}),nextRequested=new Promise<void>(resolve=>{receivedNext=resolve;});
+    await page.route('**/home?grouping-fixture=next',async route=>{receivedNext();await nextGate;await route.fulfill({status:200,contentType:'text/html',body:nextHtml});});
+    await page.locator('.workspace-primary .feed-surface').evaluate(surface=>{const more=document.createElement('p');more.className='feed-next';more.innerHTML='<a href="/home?grouping-fixture=next">Continue fixture</a>';surface.append(more);});
+    await page.getByRole('link',{name:'Continue fixture'}).click();await nextRequested;
+    await comparison.getByRole('button',{name:'Ordinary'}).click();await comparison.getByRole('button',{name:'Grouped'}).click();releaseNext();
+    await page.locator('.workspace-primary article[data-post-uri$="/third"]').waitFor({state:'attached'});
+    assert.equal(await page.locator('.workspace-primary article[data-post-uri]').count(),4);
+    await comparison.getByRole('button',{name:'Ordinary'}).click();assert.equal(await page.locator('.workspace-primary .following-feed > article').count(),4);
+    const settingsPage=await session.newPage();await settingsPage.goto(`${origin}/settings`);await settingsPage.getByRole('button',{name:'Reset Labs'}).click();
+    await comparison.waitFor({state:'detached'});assert.equal(await page.locator('.workspace-primary .labs-group').count(),0);
+    await settingsPage.getByRole('checkbox',{name:/grouped Following/}).check();await settingsPage.close();
+    await page.reload();await comparison.waitFor();assert.equal(await page.locator('.workspace-primary .labs-group').count(),0);assert.equal(await comparison.getByRole('button',{name:'Ordinary'}).getAttribute('aria-pressed'),'true');
+    await comparison.getByRole('button',{name:'Grouped'}).click();
+    await page.evaluate(()=>{(window as unknown as {groupingOld?:Element}).groupingOld=document.querySelector('.workspace-primary .workspace-view')!;});
+    let releaseReplaced!:()=>void,receivedReplaced!:()=>void;
+    const replacedGate=new Promise<void>(resolve=>{releaseReplaced=resolve;}),replacedRequested=new Promise<void>(resolve=>{receivedReplaced=resolve;});
+    await page.route('**/home?grouping-fixture=replaced',async route=>{receivedReplaced();await replacedGate;await route.fulfill({status:200,contentType:'text/html',body:nextHtml});});
+    await page.locator('.workspace-primary .feed-surface').evaluate(surface=>{const more=document.createElement('p');more.className='feed-next';more.innerHTML='<a href="/home?grouping-fixture=replaced">Continue replaced fixture</a>';surface.append(more);});
+    await page.getByRole('link',{name:'Continue replaced fixture'}).click();await replacedRequested;
+    await page.locator('.workspace-primary .feed-refresh').click();
+    await page.waitForFunction(()=>!(window as unknown as {groupingOld:Element}).groupingOld.querySelector('.labs-comparison'));
+    releaseReplaced();await page.waitForLoadState('networkidle');
+    assert.equal(await page.evaluate(()=>(window as unknown as {groupingOld:Element}).groupingOld.querySelectorAll('.labs-comparison,article[data-post-uri$="/third"]').length),0);
+    await comparison.waitFor();await comparison.getByRole('button',{name:'Grouped'}).click();
 
     await first.getByRole("button", { name: "Quiet here" }).click();
     await page.locator('.workspace-primary .attention-summary[data-stale="true"]').waitFor();
@@ -834,10 +984,13 @@ test("AG1: Quiet here, Undo and Restore keep the page's accounting truthful", as
     await first.waitFor();
     assert.equal(await summary.count(), 0);
     assert.deepEqual(localQuiet.list(MEMBER, "following"), []);
+    await comparison.getByRole('button',{name:'Exit Labs'}).click();assert.equal(await comparison.count(),0);
+    assert.equal(await page.evaluate(did=>localStorage.getItem(`phlogiston.labs.grouping.v1:${did}`),MEMBER),null);
     assert.deepEqual(errors, []);
   } finally {
     await session.close();
     await closeServer(app);
     localQuiet.close();
+    await rm(root,{recursive:true,force:true});
   }
 });

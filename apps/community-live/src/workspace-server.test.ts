@@ -6,10 +6,10 @@ import {tmpdir} from "node:os";
 import {join} from "node:path";
 import test from "node:test";
 import type {OAuthSession} from "@atproto/oauth-client-node";
-import type {AppBskyFeedDefs, BskyPreferences} from "@atproto/api";
+import type {AppBskyFeedDefs, BskyPreferences, ModerationCause, ModerationUI} from "@atproto/api";
 import {loadConfig} from "./config.js";
 import {createHandler, type Dependencies} from "./server.js";
-import {Reader, type ReaderTransport} from "./reader.js";
+import {Reader, type ReaderTransport, type ThreadResult} from "./reader.js";
 import {LocalQuietStore} from "./local-quiet.js";
 import {WebSessionStore} from "./storage.js";
 import {FEED_SCOPE, READER_SCOPE} from "./p0.js";
@@ -39,7 +39,9 @@ async function harness(scope = FEED_SCOPE) {
   const signed = await webSessions.issue(DID, new Date(), scope);
   const second = await webSessions.issue(OTHER, new Date(), scope);
   const localQuiet = new LocalQuietStore(join(directory, "local-quiet.sqlite"));
-  const calls = {feeds: [] as string[], effects: 0, roots: 0, auth: [] as string[], unavailableRoot: false,
+  const calls = {feeds: [] as string[], effects: 0, roots: 0, labels: 0, auth: [] as string[], unavailableRoot: false,
+    threadResult: null as ThreadResult | null, decision: null as Partial<ModerationUI> | null,
+    feed: [{post: post()}] as AppBskyFeedDefs.FeedViewPost[],
     holdRoot: null as null | (() => Promise<void>)};
   const session = (did: string) => ({did, getTokenInfo: async () => ({sub: did,
     aud: "https://phellinus.us-west.host.bsky.network", iss: "https://bsky.social", scope}),
@@ -52,19 +54,27 @@ async function harness(scope = FEED_SCOPE) {
     savedFeedPreferences: async () => [{$type: "app.bsky.actor.defs#savedFeedsPrefV2", items: [
       {id: "one", type: "feed", value: FEED, pinned: true}]}],
     labelDefinitions: async () => ({}),
-    timeline: async () => ({feed: [{post: post()}]}),
+    timeline: async () => ({feed: calls.feed}),
     customFeed: async uri => {calls.feeds.push(uri); return {feed: [{post: post()}]};},
     feedGenerators: async uri => [{uri, cid: CID, did: DID, creator: {did: DID, handle: "alice.test"},
       displayName: "Interesting", indexedAt: "2026-10-12T00:00:00Z"}],
-    postThread: async uri => {calls.roots++;await calls.holdRoot?.();return calls.unavailableRoot ?
+    postThread: async uri => {calls.roots++;await calls.holdRoot?.();return calls.threadResult ?? (calls.unavailableRoot ?
       {$type: "app.bsky.feed.defs#notFoundPost", uri, notFound: true} :
-      {$type: "app.bsky.feed.defs#threadViewPost", post: post(uri)};},
+      {$type: "app.bsky.feed.defs#threadViewPost", post: post(uri)});},
     muteThread: async () => {calls.effects++;}, unmuteThread: async () => {calls.effects++;},
   };
-  const deps = {config, webSessions, localQuiet, reader: (s: OAuthSession) => new Reader(s, transport),
+  const deps = {config, webSessions, localQuiet, reader: (s: OAuthSession) => {
+    const reader = new Reader(s, transport);
+    const decision = reader.decision.bind(reader);
+    reader.decision = (value, context) => {
+      const base = decision(value, context);
+      return calls.decision ? {...base, filter: base.filter, blur: base.blur, alert: base.alert, inform: base.inform, ...calls.decision} : base;
+    };
+    return reader;
+  },
     oauth: {authorize: async (_handle: string, options: {scope: string}) => {calls.auth.push(options.scope);return new URL("https://bsky.social/auth");},
       restore: async (did: string) => session(did), callback: async () => ({session: session(DID)})},
-    labels: {lookup: async () => null},
+    labels: {lookup: async () => {calls.labels++;return null;}},
   } as unknown as Dependencies;
   const server = createServer(createHandler(deps));
   await new Promise<void>(resolve => server.listen(0, "127.0.0.1", resolve));
@@ -155,6 +165,82 @@ test("pause after root resolution but before local write refuses the state trans
     const response = await h.postForm("/local-quiet", {csrf: h.signed.csrf, feed: "following", uri: ROOT, action: "quiet"});
     assert.equal(response.status, 503);
     assert.deepEqual(h.localQuiet.list(DID, "following"), []);
+    assert.equal(h.calls.effects, 0);
+  } finally {await h.close();}
+});
+
+test("withheld post context explains moderation without rendering content or looking up observations", async () => {
+  const h = await harness();
+  const cause = {type: "label", label: {val: "<fixture-warning>", src: "did:plc:labeler"},
+    target: "content", setting: "hide"} as unknown as ModerationCause;
+  try {
+    for (const state of [{filter: true}, {noOverride: true}, {blur: true}]) {
+      h.calls.decision = {...state, filters: [cause]};
+      const response = await h.get(`/context?uri=${encodeURIComponent(ROOT)}`);
+      assert.equal(response.status, 403);
+      assert.equal(response.headers.get("cache-control"), "no-store");
+      const body = await response.text();
+      assert.match(body, /attention-marker" data-decided-by="viewer"/);
+      assert.match(body, /moderation settings, based on a label from did:plc:labeler/);
+      assert.match(body, /&lt;fixture-warning&gt;/);
+      assert.doesNotMatch(body, /A fixture post|alice\.test|<fixture-warning>|Labels supplied with this post|<h2>Independent observations/);
+    }
+    assert.equal(h.calls.labels, 0);
+    assert.equal(h.calls.effects, 0);
+  } finally {await h.close();}
+});
+
+test("unavailable post context reports only the supplied outcome", async () => {
+  const h = await harness();
+  try {
+    for (const [thread, expected, absent] of [
+      [{$type: "app.bsky.feed.defs#blockedPost", uri: ROOT, blocked: true, author: {did: OTHER, viewer: {blockedBy: true}}}, /data-decided-by="account"/, /data-decided-by="viewer"/],
+      [{$type: "app.bsky.feed.defs#blockedPost", uri: ROOT, blocked: true, author: {did: OTHER}}, /data-decided-by="source"/, /You block|This account blocks you/],
+      [{$type: "app.bsky.feed.defs#notFoundPost", uri: ROOT, notFound: true}, /may have been deleted or may never have been indexed/, /was deleted/],
+    ] as const) {
+      h.calls.threadResult = thread as ThreadResult;
+      const response = await h.get(`/context?uri=${encodeURIComponent(ROOT)}`);
+      assert.equal(response.status, 404);
+      const body = await response.text();
+      assert.match(body, expected);
+      assert.doesNotMatch(body, absent);
+      assert.doesNotMatch(body, /A fixture post|Labels supplied with this post/);
+    }
+    h.calls.threadResult = {$type: "app.bsky.feed.defs#threadViewPost", post: post(ROOT + "-different")};
+    const mismatch = await h.get(`/context?uri=${encodeURIComponent(ROOT)}`);
+    assert.equal(mismatch.status, 404);
+    assert.match(await mismatch.text(), /data-observation="not-established"/);
+    for (const malformed of [
+      {$type: "app.bsky.feed.defs#notFoundPost", uri: ROOT + "-different", notFound: true},
+      {$type: "app.bsky.feed.defs#blockedPost", uri: ROOT + "-different", blocked: true, author: {did: OTHER, viewer: {blockedBy: true}}},
+      {$type: "app.bsky.feed.defs#threadViewPost"},
+    ]) {
+      h.calls.threadResult = malformed as ThreadResult;
+      const response = await h.get(`/context?uri=${encodeURIComponent(ROOT)}`);
+      assert.equal(response.status, 404);
+      const body = await response.text();
+      assert.match(body, /data-observation="not-established"/);
+      assert.doesNotMatch(body, /data-decided-by=|This account blocks you|Bluesky reports this post was not found/);
+    }
+    assert.equal(h.calls.labels, 0);
+  } finally {await h.close();}
+});
+
+test("local quiet keeps conflicting received lineage visible and counts only established roots", async () => {
+  const h = await harness();
+  const reply = post(ROOT + "-reply");
+  reply.record = {...reply.record, reply: {root: {uri: ROOT, cid: CID}, parent: {uri: ROOT, cid: CID}}};
+  const other = post(ROOT + "-other");
+  const conflict = {post: reply, reply: {root: other, parent: other}} as AppBskyFeedDefs.FeedViewPost;
+  h.calls.feed = [{post: post()}, conflict, {post: other}];
+  try {
+    h.localQuiet.set(DID, "following", ROOT);
+    const body = await (await h.get("/home")).text();
+    assert.match(body, /Showing 2 of the 3 posts received for this page\. 1 hidden by your settings/);
+    const article = body.match(/<article[^>]*data-post-uri="[^"]*-reply"[^>]*>/)?.[0];
+    assert.ok(article);
+    assert.doesNotMatch(article, /data-local-quiet-root/);
+    assert.match(body, new RegExp(`data-local-quiet-root="${other.uri}"`));
     assert.equal(h.calls.effects, 0);
   } finally {await h.close();}
 });
