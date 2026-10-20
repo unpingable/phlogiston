@@ -86,6 +86,8 @@ export function createOAuthClient(config: AppConfig): NodeOAuthClient {
     };
     const authorize = client.authorize.bind(client);
     client.authorize = async (input, options) => {
+      // The hosted PDS origin itself starts its sign-up page; there is no identity to check yet.
+      if (config.p0HostedPdsOrigin !== undefined && input === config.p0HostedPdsOrigin && options?.prompt === "create") return authorize(input, options);
       const identity = await client.oauthResolver.resolveIdentity(input, {noCache:true});
       const service = identity.didDoc.service?.find(s => s.id === "#atproto_pds" || s.id === `${identity.did}#atproto_pds`);
       if (!identity.did.startsWith("did:plc:") || !service || service.type !== "AtprotoPersonalDataServer" || typeof service.serviceEndpoint !== "string" || !supportedPds(config,service.serviceEndpoint)) throw new Error("unsupported identity custody; no fallback");

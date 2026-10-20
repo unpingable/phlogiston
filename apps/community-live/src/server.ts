@@ -63,7 +63,7 @@ const UNFINISHED_ACTIONS_LIMIT = 25;
 // Same record-key character class as the post AT URI pattern in html.ts.
 const RKEY_PATTERN = /^[a-zA-Z0-9._:-]{1,512}$/;
 interface OAuthFacade {
-  authorize(input: string, options: { scope: string; state?: string }): Promise<URL>;
+  authorize(input: string, options: { scope: string; state?: string; prompt?: "create" }): Promise<URL>;
   callback(params: URLSearchParams): Promise<{ session: OAuthSession; state?: string | null }>;
   restore(did: string): Promise<OAuthSession>;
   /** Revoke the account's tokens at its provider (best effort) and delete them here. */
@@ -172,6 +172,8 @@ async function route(deps: Dependencies, request: IncomingMessage, response: Ser
   if (method === "POST" && url.pathname === "/oauth/login") {
     const form = await readForm(request);
     const handle = required(form, "handle").replace(/^@/, "");
+    // Account creation goes to the hosted PDS's own sign-up page; registration there stays invite-only.
+    const create = form.get("create") === "account" && isP0(deps.config) && deps.config.p0HostedPdsOrigin !== undefined && handle === deps.config.p0HostedPdsOrigin;
     const returnTo = returnPath(form.get("return"), deps.config.readerEnabled);
     const nonce = randomBytes(16).toString("base64url");
     const loginSession = await deps.webSessions.resolve(cookieValue(request.headers.cookie, COOKIE));
@@ -184,7 +186,7 @@ async function route(deps: Dependencies, request: IncomingMessage, response: Ser
     }
     let target: URL;
     try {
-      target = await deps.oauth.authorize(handle, { scope: requestedScope, state: loginState(nonce, returnTo, loginSession?.did, requestedScope) });
+      target = await deps.oauth.authorize(handle, { scope: requestedScope, state: loginState(nonce, returnTo, loginSession?.did, requestedScope), ...(create ? { prompt: "create" as const } : {}) });
     } catch {
       throw new HttpError(400, "That handle could not be found. Check it and try again.");
     }
@@ -251,6 +253,11 @@ async function route(deps: Dependencies, request: IncomingMessage, response: Ser
     const destination = returnPath(url.searchParams.get("return"), true) ?? "/home";
     if (webSession) return redirect(response, destination, deps.config);
     return html(response, 200, page(deps.config, null, "Sign in to Phlogiston", `${productIntro(false)}${signInForm(deps.config, destination)}${accountAvailability()}<p><a href="/community">Explore The Cabinet without signing in</a></p>`), deps.config);
+  }
+  if (method === "GET" && url.pathname === "/join" && isP0(deps.config) && deps.config.readerEnabled && deps.config.p0HostedPdsOrigin !== undefined) {
+    noStore(response);
+    if (webSession) return redirect(response, "/home", deps.config);
+    return html(response, 200, page(deps.config, null, "Join phlogiston.social", joinForm(deps.config.p0HostedPdsOrigin)), deps.config);
   }
   if (method === "GET" && url.pathname === "/help" && isP0(deps.config)) return html(response, 200, page(deps.config, webSession, "Getting started", READER_HELP), deps.config);
   if (url.pathname === "/display") {
@@ -844,6 +851,10 @@ function accountAvailability(): string {
 }
 
 /** Explicit local read destinations only; no arbitrary URLs or mutation replay. */
+function joinForm(origin: string): string {
+  const host = new URL(origin).host;
+  return `<form method="post" action="/oauth/login" class="signin"><p>You’ve been invited to an account on ${escapeHtml(host)}, a small invite-only Bluesky host. Have your invite code ready. You’ll choose a username, then enter the code, your email and a password on ${escapeHtml(host)}’s own sign-up page. Afterwards you’re signed in to Phlogiston, and the account works in any Bluesky app.</p><input type="hidden" name="handle" value="${escapeHtml(origin)}"><input type="hidden" name="create" value="account"><input type="hidden" name="return" value="/home"><button>Create your ${escapeHtml(host)} account</button><p><a href="https://${escapeHtml(host)}/terms">Terms</a> · <a href="https://${escapeHtml(host)}/privacy">Privacy</a></p></form><p>Already have an account? <a href="/signin">Sign in</a></p>`;
+}
 function returnPath(value: string | null | undefined, reader = false): string | undefined {
   if (typeof value !== "string") return undefined;
   if (reader) {

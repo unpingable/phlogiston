@@ -13,19 +13,20 @@ import { READER_SCOPE } from "./p0.js";
 
 const DID = "did:plc:frontdoorfixture";
 const POST = "at://did:plc:source/app.bsky.feed.post/example";
-async function fixture(readerEnabled = true) {
+async function fixture(readerEnabled = true, extra: Partial<AppConfig> = {}) {
   const root = await mkdtemp(join(tmpdir(), "frontdoor-test-"));
   let state = "";
   let callbackState: string | undefined;
-  const config = { publicUrl: "http://127.0.0.1:3210", communityDid: DID, communityName: "The Cabinet", communityPurpose: "Internet curiosities worth preserving", moderatorDid: DID, runtimeDirectory: root, observerUrl: "http://127.0.0.1:1", observerMaxResponseBytes: 65536, discussionsMaxItems: 500, appViewOrigin: "https://api.bsky.app", avatarsEnabled: false, authoritySocket: join(root, "authority.sock"), port: 3210, profile: "p0", readerEnabled } as AppConfig;
+  const authorized: { actor: string; prompt: string | undefined }[] = [];
+  const config = { publicUrl: "http://127.0.0.1:3210", communityDid: DID, communityName: "The Cabinet", communityPurpose: "Internet curiosities worth preserving", moderatorDid: DID, runtimeDirectory: root, observerUrl: "http://127.0.0.1:1", observerMaxResponseBytes: 65536, discussionsMaxItems: 500, appViewOrigin: "https://api.bsky.app", avatarsEnabled: false, authoritySocket: join(root, "authority.sock"), port: 3210, profile: "p0", readerEnabled, ...extra } as AppConfig;
   const session = { did: DID, getTokenInfo: async () => ({ sub: DID, iss: "https://bsky.social", aud: "https://phellinus.us-west.host.bsky.network", scope: readerEnabled ? READER_SCOPE : "atproto repo:app.phlogiston.community.submit?action=create" }), signOut: async () => {} } as unknown as OAuthSession;
   const document = { communityDid: DID, discussions: [{ discussion: { uri: `at://${DID}/app.phlogiston.community.admission/card`, cid: "admission-cid" }, root: { uri: POST, cid: "post-cid" }, post: { text: "A real Cabinet projection fixture", createdAt: "2026-10-12T00:00:00Z" }, authorDid: DID, admittedAt: "2026-10-12T00:00:00Z", status: "visible", closed: false }], cursor: null, snapshot: {} };
   const sessions = new WebSessionStore(join(root, "sessions"));
-  const deps = { config, webSessions: sessions, plans: new ContributionPlanStore(join(root, "plans")), oauth: { authorize: async (_actor: string, options: { state?: string }) => { state = options.state ?? ""; return new URL("https://auth.fixture.test/authorize"); }, callback: async () => ({ session, state: callbackState ?? state }), restore: async () => session }, projection: { get: async () => document, getCapped: async () => document }, profiles: { lookup: async () => new Map() }, authority: { request: async () => { throw new Error("anonymous dispatch must not occur"); } } } as unknown as Dependencies;
+  const deps = { config, webSessions: sessions, plans: new ContributionPlanStore(join(root, "plans")), oauth: { authorize: async (actor: string, options: { state?: string; prompt?: string }) => { state = options.state ?? ""; authorized.push({ actor, prompt: options.prompt }); return new URL("https://auth.fixture.test/authorize"); }, callback: async () => ({ session, state: callbackState ?? state }), restore: async () => session }, projection: { get: async () => document, getCapped: async () => document }, profiles: { lookup: async () => new Map() }, authority: { request: async () => { throw new Error("anonymous dispatch must not occur"); } } } as unknown as Dependencies;
   const server = createServer((req, res) => void createHandler(deps)(req, res));
   await new Promise<void>(resolve => server.listen(0, "127.0.0.1", resolve));
   const origin = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;
-  return { sessions, state: () => state, callbackState: (value: string) => { callbackState = value; }, request: async (path: string, form?: Record<string,string>, cookie?: string) => fetch(origin + path, { redirect: "manual", ...(form ? { method: "POST", body: new URLSearchParams(form), headers: { Origin: config.publicUrl, "Content-Type": "application/x-www-form-urlencoded", ...(cookie ? { Cookie: cookie } : {}) } } : { headers: cookie ? { Cookie: cookie } : {} }) }), close: async () => { await new Promise<void>((resolve, reject) => server.close(error => error ? reject(error) : resolve())); await rm(root, { recursive: true }); } };
+  return { sessions, authorized, state: () => state, callbackState: (value: string) => { callbackState = value; }, request: async (path: string, form?: Record<string,string>, cookie?: string) => fetch(origin + path, { redirect: "manual", ...(form ? { method: "POST", body: new URLSearchParams(form), headers: { Origin: config.publicUrl, "Content-Type": "application/x-www-form-urlencoded", ...(cookie ? { Cookie: cookie } : {}) } } : { headers: cookie ? { Cookie: cookie } : {} }) }), close: async () => { await new Promise<void>((resolve, reject) => server.close(error => error ? reject(error) : resolve())); await rm(root, { recursive: true }); } };
 }
 
 test("reader front door centralizes sign-in and retains anonymous Cabinet cards", async () => {
@@ -37,6 +38,17 @@ test("reader front door centralizes sign-in and retains anonymous Cabinet cards"
   const community = await f.request("/community"); assert.equal(community.status, 200); assert.doesNotMatch(await community.text(), /name="handle"/);
   const signin = await f.request("/signin"); assert.equal(signin.status, 200); const signinBody = await signin.text(); assert.equal(signinBody.match(/name="handle"/g)?.length, 1);
  } finally { await f.close(); }
+});
+
+test("unlisted join page starts hosted-PDS sign-up and only for the exact hosted origin", async () => {
+ const f = await fixture(true, { p0HostedPdsOrigin: "https://phlogiston.social", p0AllowBluesky: true }); try {
+  const join = await f.request("/join"); assert.equal(join.status, 200); const body = await join.text();
+  assert.match(body, /name="create" value="account"/); assert.match(body, /value="https:\/\/phlogiston\.social"/);
+  const start = await f.request("/oauth/login", { handle: "https://phlogiston.social", create: "account", return: "/home" }); assert.equal(start.status, 303);
+  assert.deepEqual(f.authorized.at(-1), { actor: "https://phlogiston.social", prompt: "create" });
+  await f.request("/oauth/login", { handle: "someone.bsky.social", create: "account" }); assert.deepEqual(f.authorized.at(-1), { actor: "someone.bsky.social", prompt: undefined });
+ } finally { await f.close(); }
+ const plain = await fixture(); try { const none = await plain.request("/join"); assert.notEqual(none.status, 200); assert.doesNotMatch(await none.text(), /name="create"/); } finally { await plain.close(); }
 });
 
 test("anonymous reader documents redirect while JSON and mutations remain unauthorized", async () => {
